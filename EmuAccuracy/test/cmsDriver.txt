@@ -1,6 +1,6 @@
 cmsDriver.py l1Ntuple \
   --step RAW2DIGI \
-  --data --no_output \
+  --data --eventcontent RAW \
   --era Run2_2016 \
   --conditions auto:run2_data \
   --geometry Extended2016,Extended2016Reco \

@@ -2,7 +2,7 @@
 # using: 
 # Revision: 1.19 
 # Source: /local/reps/CMSSW/CMSSW/Configuration/Applications/python/ConfigBuilder.py,v 
-# with command line options: l1Ntuple --step RAW2DIGI --data --no_output --era Run2_2016 --conditions auto:run2_data --geometry Extended2016,Extended2016Reco --customise L1Trigger/Configuration/customiseReEmul.L1TEventSetupForHF1x1TPs --customise L1Trigger/Configuration/customiseReEmul.L1TReEmulFromRAW --customise L1Trigger/L1TNtuples/customiseL1Ntuple.L1NtupleEMU --customise L1Trigger/Configuration/customiseUtils.L1TTurnOffUnpackStage2GtGmtAndCalo --filein /store/data/Run2016F/SingleMuon/RAW/v1/000/278/018/00000/A015A25D-A058-E611-9DF0-02163E011E0F.root --no_exec -n 100
+# with command line options: l1Ntuple --step RAW2DIGI --data --eventcontent RAW --era Run2_2016 --conditions auto:run2_data --geometry Extended2016,Extended2016Reco --customise L1Trigger/Configuration/customiseReEmul.L1TEventSetupForHF1x1TPs --customise L1Trigger/Configuration/customiseReEmul.L1TReEmulFromRAW --customise L1Trigger/L1TNtuples/customiseL1Ntuple.L1NtupleEMU --customise L1Trigger/Configuration/customiseUtils.L1TTurnOffUnpackStage2GtGmtAndCalo --filein /store/data/Run2016F/SingleMuon/RAW/v1/000/278/018/00000/A015A25D-A058-E611-9DF0-02163E011E0F.root --no_exec -n 100
 import FWCore.ParameterSet.Config as cms
 
 from Configuration.StandardSequences.Eras import eras
@@ -44,6 +44,17 @@ process.configurationMetadata = cms.untracked.PSet(
 
 # Output definition
 
+process.RAWoutput = cms.OutputModule("PoolOutputModule",
+    dataset = cms.untracked.PSet(
+        dataTier = cms.untracked.string(''),
+        filterName = cms.untracked.string('')
+    ),
+    eventAutoFlushCompressedSize = cms.untracked.int32(5242880),
+    fileName = cms.untracked.string('SingleMuon_Run2016F_RAW2DIGI.root'),
+    outputCommands = process.RAWEventContent.outputCommands,
+    splitLevel = cms.untracked.int32(0)
+)
+
 # Additional output definition
 
 # Other statements
@@ -53,9 +64,10 @@ process.GlobalTag = GlobalTag(process.GlobalTag, 'auto:run2_data', '')
 # Path and EndPath definitions
 process.raw2digi_step = cms.Path(process.RawToDigi)
 process.endjob_step = cms.EndPath(process.endOfProcess)
+process.RAWoutput_step = cms.EndPath(process.RAWoutput)
 
 # Schedule definition
-process.schedule = cms.Schedule(process.raw2digi_step,process.endjob_step)
+process.schedule = cms.Schedule(process.raw2digi_step,process.endjob_step,process.RAWoutput_step)
 
 # customisation of the process.
 
@@ -82,6 +94,9 @@ process = L1TTurnOffUnpackStage2GtGmtAndCalo(process)
 
 # End of customisation functions
 
+
+# Modify output
+process.RAWoutput.outputCommands = ['drop *','keep *_emtfStage2Digis_*_*','keep *_simEmtfDigis_*_*']
 
 # Modify source
 fileNames = [
@@ -153,7 +168,7 @@ process.simEmtfDigis.GMTInput = cms.InputTag('gtDigis')
 #process.simEmtfDigis.isData = cms.bool(True)
 process.step1 = cms.Path((process.gtDigis)+(process.emtfStage2Digis)+(process.muonCSCDigis)+(process.simEmtfDigis))
 #process.step1 = cms.Path((process.csctfDigis+process.gtDigis)+(process.emtfStage2Digis)+(process.muonCSCDigis+process.muonRPCDigis)+(process.simCscTriggerPrimitiveDigis+process.simEmtfDigis))
-process.schedule = cms.Schedule(process.step1)
+process.schedule = cms.Schedule(process.step1, process.RAWoutput_step)
 
 
 # Configure framework report and summary
