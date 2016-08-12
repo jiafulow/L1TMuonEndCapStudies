@@ -1,0 +1,12 @@
+cmsDriver.py l1Ntuple \
+  --step RAW2DIGI \
+  --data --no_output \
+  --era Run2_2016 \
+  --conditions auto:run2_data \
+  --geometry Extended2016,Extended2016Reco \
+  --customise L1Trigger/Configuration/customiseReEmul.L1TEventSetupForHF1x1TPs \
+  --customise L1Trigger/Configuration/customiseReEmul.L1TReEmulFromRAW \
+  --customise L1Trigger/L1TNtuples/customiseL1Ntuple.L1NtupleEMU \
+  --customise L1Trigger/Configuration/customiseUtils.L1TTurnOffUnpackStage2GtGmtAndCalo \
+  --filein /store/data/Run2016F/SingleMuon/RAW/v1/000/278/018/00000/A015A25D-A058-E611-9DF0-02163E011E0F.root \
+  --no_exec -n 100
