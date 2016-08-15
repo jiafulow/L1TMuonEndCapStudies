@@ -160,6 +160,11 @@ fileNames = [
 ]
 process.source.fileNames = cms.untracked.vstring(fileNames)
 
+eventsToProcess = [
+    '278018:1686648178',
+]
+process.source.eventsToProcess = cms.untracked.VEventRange(eventsToProcess)
+
 # From Matt
 process.load('EventFilter.L1TRawToDigi.emtfStage2Digis_cfi')
 process.simEmtfDigis.CSCInput = cms.InputTag('emtfStage2Digis')

@@ -11,7 +11,10 @@
 #include "DataFormats/L1TMuon/interface/EMTFTrack.h"
 #include "DataFormats/L1TMuon/interface/EMTFTrackExtra.h"
 
+#include "Helper.hh"
+
 #include <memory>
+#include <iostream>
 
 
 // _____________________________________________________________________________
@@ -28,21 +31,34 @@ private:
     virtual void endJob() override;
 
     // Member functions
-    void find_matches(const edm::Handle<l1t::EMTFTrackCollection>& unpTracks,
-            const edm::Handle<l1t::EMTFTrackExtraCollection>& emuTracks);
+    void findMatches();
+
+    void printTracks();
 
     // Member data
-    const edm::InputTag unpTrackTag_, emuTrackTag_;
-
-    edm::EDGetTokenT<l1t::EMTFTrackCollection> unpTrackToken_;
+    const edm::InputTag unpHitTag_, emuHitTag_, unpTrackTag_, emuTrackTag_;
+    edm::EDGetTokenT<l1t::EMTFHitCollection>        unpHitToken_;
+    edm::EDGetTokenT<l1t::EMTFHitExtraCollection>   emuHitToken_;
+    edm::EDGetTokenT<l1t::EMTFTrackCollection>      unpTrackToken_;
     edm::EDGetTokenT<l1t::EMTFTrackExtraCollection> emuTrackToken_;
+
+    // Global objects
+    edm::EventID eid_;
+    edm::Handle<l1t::EMTFHitCollection>         unpHits_;
+    edm::Handle<l1t::EMTFHitExtraCollection>    emuHits_;
+    edm::Handle<l1t::EMTFTrackCollection>       unpTracks_;
+    edm::Handle<l1t::EMTFTrackExtraCollection>  emuTracks_;
 };
 
 // _____________________________________________________________________________
 EmuAccuracy::EmuAccuracy(const edm::ParameterSet& iConfig) :
+    unpHitTag_(iConfig.getParameter<edm::InputTag>("unpHitTag")),
+    emuHitTag_(iConfig.getParameter<edm::InputTag>("emuHitTag")),
     unpTrackTag_(iConfig.getParameter<edm::InputTag>("unpTrackTag")),
     emuTrackTag_(iConfig.getParameter<edm::InputTag>("emuTrackTag"))
 {
+    unpHitToken_ = consumes<l1t::EMTFHitCollection>(unpHitTag_);
+    emuHitToken_ = consumes<l1t::EMTFHitExtraCollection>(emuHitTag_);
     unpTrackToken_ = consumes<l1t::EMTFTrackCollection>(unpTrackTag_);
     emuTrackToken_ = consumes<l1t::EMTFTrackExtraCollection>(emuTrackTag_);
 }
@@ -53,69 +69,152 @@ EmuAccuracy::~EmuAccuracy() {}
 void EmuAccuracy::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
 {
     using namespace edm;
+    eid_ = iEvent.id();
 
     if (iEvent.isRealData()) {
         // Get products
-        edm::Handle<l1t::EMTFTrackCollection> unpTracks;
-        if (!unpTrackToken_.isUninitialized()) {
-            iEvent.getByToken(unpTrackToken_, unpTracks);
+        if (!unpHitToken_.isUninitialized()) {
+            iEvent.getByToken(unpHitToken_, unpHits_);
         }
-        if (!unpTracks.isValid()) {
+        if (!unpHits_.isValid()) {
+            edm::LogError("EmuAccuracy") << "Cannot get the product: " << unpHitTag_;
+            return;
+        }
+
+        if (!emuHitToken_.isUninitialized()) {
+            iEvent.getByToken(emuHitToken_, emuHits_);
+        }
+        if (!emuHits_.isValid()) {
+            edm::LogError("EmuAccuracy") << "Cannot get the product: " << emuHitTag_;
+            return;
+        }
+
+        if (!unpTrackToken_.isUninitialized()) {
+            iEvent.getByToken(unpTrackToken_, unpTracks_);
+        }
+        if (!unpTracks_.isValid()) {
             edm::LogError("EmuAccuracy") << "Cannot get the product: " << unpTrackTag_;
             return;
         }
 
-        edm::Handle<l1t::EMTFTrackExtraCollection> emuTracks;
         if (!emuTrackToken_.isUninitialized()) {
-            iEvent.getByToken(emuTrackToken_, emuTracks);
+            iEvent.getByToken(emuTrackToken_, emuTracks_);
         }
-        if (!emuTracks.isValid()) {
+        if (!emuTracks_.isValid()) {
             edm::LogError("EmuAccuracy") << "Cannot get the product: " << emuTrackTag_;
             return;
         }
 
         // Find matches
-        find_matches(unpTracks, emuTracks);
+        findMatches();
 
     }  // end iEvent.isRealData()
 }
 
 // _____________________________________________________________________________
-void EmuAccuracy::find_matches(const edm::Handle<l1t::EMTFTrackCollection>& unpTracks,
-        const edm::Handle<l1t::EMTFTrackExtraCollection>& emuTracks)
+void EmuAccuracy::findMatches()
+{
+    // Check that unpacker tracks have match in emulator
+    bool unp_has_match = false;
+    std::vector<int> unp_matches(unpTracks_->size(), -999);
+
+    // Unpacker tracks
+    if (unpTracks_->empty()) {
+        unp_has_match = true;
+    }
+
+    for (l1t::EMTFTrackCollection::const_iterator it1 = unpTracks_->begin(); it1 != unpTracks_->end(); ++it1) {
+        // Emulator tracks
+        for (l1t::EMTFTrackExtraCollection::const_iterator it2 = emuTracks_->begin(); it2 != emuTracks_->end(); ++it2) {
+            bool m = tracksMatch(*it1, *it2);
+            if (m) {
+                unp_has_match = true;
+                unp_matches.at(it1 - unpTracks_->begin()) = (it2 - emuTracks_->begin());
+            }
+        }
+    }
+
+    // Check that emulator tracks have match in unpacker
+    bool emu_has_match = false;
+    std::vector<int> emu_matches(emuTracks_->size(), -999);
+
+    // Emulator tracks
+    if (emuTracks_->empty()) {
+        emu_has_match = true;
+    }
+
+    for (l1t::EMTFTrackExtraCollection::const_iterator it2 = emuTracks_->begin(); it2 != emuTracks_->end(); ++it2) {
+        // Unpacker tracks
+        for (l1t::EMTFTrackCollection::const_iterator it1 = unpTracks_->begin(); it1 != unpTracks_->end(); ++it1) {
+            bool m = tracksMatch(*it2, *it1);
+            if (m) {
+                emu_has_match = true;
+                emu_matches.at(it2 - emuTracks_->begin()) = (it1 - unpTracks_->begin());
+            }
+        }
+    }
+
+    bool always_print = false;
+    if (!unp_has_match || !emu_has_match || always_print) {
+        printEvent(eid_);
+
+        if (!unp_has_match) {
+            std::cout << "ERROR: Unpacker tracks have no match in emulator!" << std::endl;
+            for (unsigned i=0; i<unp_matches.size(); ++i) {
+                int j = unp_matches.at(i);
+                std::cout << "  unp " << i << " --> emu " << j << std::endl;
+            }
+        }
+
+        if (!emu_has_match) {
+            std::cout << "ERROR: Emulator tracks have no match in unpacker!" << std::endl;
+            for (unsigned i=0; i<emu_matches.size(); ++i) {
+                int j = emu_matches.at(i);
+                std::cout << "  emu " << i << " --> unp " << j << std::endl;
+            }
+        }
+
+        printTracks();
+    }
+}
+
+// _____________________________________________________________________________
+void EmuAccuracy::printTracks()
 {
     // Unpacker tracks
-    for (l1t::EMTFTrackCollection::const_iterator it = unpTracks->begin(); it != unpTracks->end(); ++it) {
-        const l1t::EMTFTrack& t = *it;
-
-        // From Andrew
-        edm::LogVerbatim("EmuAccuracy")
-            << "BX = "            << t.BX()
-            << " sector = "       << t.Sector()
-            << " mode = "         << t.Mode()
-            << " quality = "      << t.Quality()
-            << " phi_loc_int = "  << t.Phi_loc_int()
-            << " phi_GMT = "      << t.Phi_GMT()
-            << " eta_GMT = "      << t.Eta_GMT()
-            << " pT_GMT = "       << t.Pt_GMT()
-            << " phi_glob_deg = " << t.Phi_glob_deg()
-            << " eta = "          << t.Eta()
-            << " pT = "           << t.Pt()
-            << " has some (all) neighbor hits = " << t.Has_neighbor() << " (" << t.All_neighbor() << ")"
-            ;
-        edm::LogVerbatim("EmuAccuracy")
-            << "dPhi_12 = "       << t.DPhi_12()
-            << " dPhi_24 = "      << t.DPhi_24()
-            << " dTheta_14 = "    << t.DTheta_14()
-            << " clct_1 = "       << t.CLCT_1()
-            << " fr_1 = "         << t.FR_1()
-            << " address = "      << t.Pt_LUT_addr()
-            ;
+    std::cout << "Number of unpacker tracks = " << unpTracks_->size() << std::endl;
+    for (l1t::EMTFTrackCollection::const_iterator it1 = unpTracks_->begin(); it1 != unpTracks_->end(); ++it1) {
+        //std::cout << "Unpacker track " << it1 - unpTracks_->begin() << std::endl;
+        printEMTFTrack(*it1);
+        printPtLUT(*it1);
     }
 
     // Emulator tracks
-    for (l1t::EMTFTrackExtraCollection::const_iterator it = emuTracks->begin(); it != emuTracks->end(); ++it) {
-        // pass
+    std::cout << "Number of emulator tracks = " << emuTracks_->size() << std::endl;
+    for (l1t::EMTFTrackExtraCollection::const_iterator it2 = emuTracks_->begin(); it2 != emuTracks_->end(); ++it2) {
+        //std::cout << "Emulator track " << it2 - emuTracks_->begin() << std::endl;
+        printEMTFTrack(*it2);
+        printPtLUT(*it2);
+    }
+
+    // Unpacker hits
+    //std::cout << "Number of unpacker hits = " << unpHits_->size() << std::endl;
+    //for (l1t::EMTFHitCollection::const_iterator it1 = unpHits_->begin(); it1 != unpHits_->end(); ++it1) {
+    //    //std::cout << "Unpacker hit " << it1 - unpHits_->begin() << std::endl;
+    //    printEMTFHit(*it1);
+    //}
+
+    // Emulator hits
+    std::cout << "Number of emulator hits = " << emuHits_->size() << std::endl;
+    for (l1t::EMTFHitExtraCollection::const_iterator it2 = emuHits_->begin(); it2 != emuHits_->end(); ++it2) {
+        //std::cout << "Emulator hit " << it2 - emuHits_->begin() << std::endl;
+        printEMTFHitExtra(*it2);
+    }
+
+    printSimulatorHitHeader();
+    for (l1t::EMTFHitExtraCollection::const_iterator it2 = emuHits_->begin(); it2 != emuHits_->end(); ++it2) {
+        //std::cout << "Emulator hit " << it2 - emuHits_->begin() << std::endl;
+        printSimulatorHit(*it2);
     }
 }
 

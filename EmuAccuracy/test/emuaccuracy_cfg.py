@@ -18,7 +18,8 @@ process.source = cms.Source("PoolSource",
 from L1TMuonEndCapStudies.EmuAccuracy.emuaccuracy_cfi import emuaccuracy
 process.emuaccuracy = emuaccuracy
 
-process.MessageLogger.categories.append('EmuAccuracy')
+#process.MessageLogger.categories.append('EmuAccuracy')
+process.MessageLogger.cerr.FwkReport.reportEvery = 1000
 
 
 process.p = cms.Path(process.emuaccuracy)
