@@ -41,6 +41,7 @@ private:
     edm::EDGetTokenT<l1t::EMTFHitExtraCollection>   emuHitToken_;
     edm::EDGetTokenT<l1t::EMTFTrackCollection>      unpTrackToken_;
     edm::EDGetTokenT<l1t::EMTFTrackExtraCollection> emuTrackToken_;
+    int verbose_;
 
     // Global objects
     edm::EventID eid_;
@@ -55,7 +56,8 @@ EmuAccuracy::EmuAccuracy(const edm::ParameterSet& iConfig) :
     unpHitTag_(iConfig.getParameter<edm::InputTag>("unpHitTag")),
     emuHitTag_(iConfig.getParameter<edm::InputTag>("emuHitTag")),
     unpTrackTag_(iConfig.getParameter<edm::InputTag>("unpTrackTag")),
-    emuTrackTag_(iConfig.getParameter<edm::InputTag>("emuTrackTag"))
+    emuTrackTag_(iConfig.getParameter<edm::InputTag>("emuTrackTag")),
+    verbose_(iConfig.getUntrackedParameter<int>("verbose"))
 {
     unpHitToken_ = consumes<l1t::EMTFHitCollection>(unpHitTag_);
     emuHitToken_ = consumes<l1t::EMTFHitExtraCollection>(emuHitTag_);
@@ -154,8 +156,8 @@ void EmuAccuracy::findMatches()
         }
     }
 
-    bool always_print = false;
-    if (!unp_has_match || !emu_has_match || always_print) {
+    bool no_match = (!unp_has_match || !emu_has_match);
+    if (verbose_ || no_match) {  // if verbose, always print
         printEvent(eid_);
 
         if (!unp_has_match) {

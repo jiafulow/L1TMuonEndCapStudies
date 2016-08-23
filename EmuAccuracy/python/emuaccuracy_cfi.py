@@ -5,4 +5,5 @@ emuaccuracy = cms.EDAnalyzer('EmuAccuracy',
     emuHitTag = cms.InputTag('simEmtfDigis', 'EMTF'),
     unpTrackTag = cms.InputTag('emtfStage2Digis'),
     emuTrackTag = cms.InputTag('simEmtfDigis', 'EMTF'),
+    verbose = cms.untracked.int32(0),
 )
