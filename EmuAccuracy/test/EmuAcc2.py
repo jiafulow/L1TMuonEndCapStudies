@@ -96,7 +96,7 @@ process = L1TTurnOffUnpackStage2GtGmtAndCalo(process)
 
 
 # Modify output
-process.RAWoutput.outputCommands = ['drop *','keep *_emtfStage2Digis_*_*','keep *_simEmtfDigis_*_*']
+process.RAWoutput.outputCommands = ['drop *','keep *_emtfStage2Digis_*_*','keep *_simEmtfDigis_*_*','keep *_muonRPCDigis_*_*']
 
 # Modify source
 fileNames = [
@@ -187,7 +187,7 @@ process.simEmtfDigis.CSCInput = cms.InputTag('emtfStage2Digis')
 process.simEmtfDigis.GenInput = cms.InputTag('genParticles')
 process.simEmtfDigis.GMTInput = cms.InputTag('gtDigis')
 #process.simEmtfDigis.isData = cms.bool(True)
-process.step1 = cms.Path((process.gtDigis)+(process.emtfStage2Digis)+(process.muonCSCDigis)+(process.simEmtfDigis))
+process.step1 = cms.Path((process.gtDigis)+(process.emtfStage2Digis)+(process.muonCSCDigis+process.muonRPCDigis)+(process.simEmtfDigis))
 #process.step1 = cms.Path((process.csctfDigis+process.gtDigis)+(process.emtfStage2Digis)+(process.muonCSCDigis+process.muonRPCDigis)+(process.simCscTriggerPrimitiveDigis+process.simEmtfDigis))
 process.schedule = cms.Schedule(process.step1, process.RAWoutput_step)
 
