@@ -21,7 +21,7 @@ process.load('Configuration.StandardSequences.EndOfProcess_cff')
 process.load('Configuration.StandardSequences.FrontierConditions_GlobalTag_cff')
 
 process.maxEvents = cms.untracked.PSet(
-    input = cms.untracked.int32(100)
+    input = cms.untracked.int32(1000)
 )
 
 # Input source
@@ -96,7 +96,7 @@ process = L1TTurnOffUnpackStage2GtGmtAndCalo(process)
 
 
 # Modify output
-process.RAWoutput.outputCommands = ['drop *','keep *_emtfStage2Digis_*_*','keep *_simEmtfDigis_*_*','keep *_muonRPCDigis_*_*']
+process.RAWoutput.outputCommands = ['drop *','keep *_emtfStage2Digis_*_*','keep *_muonRPCDigis_*_*','keep *_simEmtfDigis_*_*','keep *_simEmtfDigisData_*_*',]
 
 # Modify source
 fileNames = [
@@ -163,7 +163,7 @@ process.source.fileNames = cms.untracked.vstring(fileNames)
 eventsToProcess = [
     #'278018:1539957230',
     #'278018:1540061587',
-    '278018:1540745931',
+    #'278018:1540745931',
     #'278018:1541093157',
     #'278018:1686648178',
     #'278018:1686541662',
@@ -185,19 +185,30 @@ eventsToProcess = [
 ]
 process.source.eventsToProcess = cms.untracked.VEventRange(eventsToProcess)
 
-# From Matt
-process.load('EventFilter.L1TRawToDigi.emtfStage2Digis_cfi')
-process.simEmtfDigis.CSCInput = cms.InputTag('emtfStage2Digis')
-process.simEmtfDigis.GenInput = cms.InputTag('genParticles')
-process.simEmtfDigis.GMTInput = cms.InputTag('gtDigis')
-#process.simEmtfDigis.isData = cms.bool(True)
-process.step1 = cms.Path((process.gtDigis)+(process.emtfStage2Digis)+(process.muonCSCDigis+process.muonRPCDigis)+(process.simEmtfDigis))
-#process.step1 = cms.Path((process.csctfDigis+process.gtDigis)+(process.emtfStage2Digis)+(process.muonCSCDigis+process.muonRPCDigis)+(process.simCscTriggerPrimitiveDigis+process.simEmtfDigis))
-process.schedule = cms.Schedule(process.step1, process.RAWoutput_step)
+# Plugin: simEmtfDigis
+if False:
+    process.load('EventFilter.L1TRawToDigi.emtfStage2Digis_cfi')
+    process.simEmtfDigis.CSCInput = cms.InputTag('emtfStage2Digis')
+    process.simEmtfDigis.GenInput = cms.InputTag('genParticles')
+    process.simEmtfDigis.GMTInput = cms.InputTag('gtDigis')
+    #process.simEmtfDigis.isData = cms.bool(True)
+    process.step1 = cms.Path((process.gtDigis)+(process.emtfStage2Digis)+(process.muonCSCDigis+process.muonRPCDigis)+(process.simEmtfDigis))
+    #process.step1 = cms.Path((process.csctfDigis+process.gtDigis)+(process.emtfStage2Digis)+(process.muonCSCDigis+process.muonRPCDigis)+(process.simCscTriggerPrimitiveDigis+process.simEmtfDigis))
+    process.schedule = cms.Schedule(process.step1, process.RAWoutput_step)
 
+# Plugin: simEmtfDigis (NEW)
+if True:
+    #process.load("L1TriggerSep2016.L1TMuonEndCap.simEmtfDigis_cfi")
+    if True:
+        process.load('EventFilter.L1TRawToDigi.emtfStage2Digis_cfi')
+        from L1TriggerSep2016.L1TMuonEndCap.simEmtfDigis_cfi import simEmtfDigisData
+        process.simEmtfDigisData = simEmtfDigisData
+    process.simEmtfDigisData.verbosity = 0
+    process.step1 = cms.Path((process.gtDigis)+(process.emtfStage2Digis)+(process.muonCSCDigis+process.muonRPCDigis)+(process.simEmtfDigisData))
+    process.schedule = cms.Schedule(process.step1, process.RAWoutput_step)
 
 # Configure framework report and summary
-process.options = cms.untracked.PSet(wantSummary = cms.untracked.bool(False))
+process.options = cms.untracked.PSet(wantSummary = cms.untracked.bool(True))
 process.MessageLogger.cerr.FwkReport.reportEvery = 1
 
 # Dump the full python config
