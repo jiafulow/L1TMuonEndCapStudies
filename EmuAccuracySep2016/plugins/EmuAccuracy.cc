@@ -42,9 +42,12 @@ private:
   virtual void endJob() override;
 
   // Member functions
+  bool skipEvent();
+
   void findMatches();
 
   void printEventId();
+  void printHits();
   void printTracks();
 
   // Member data
@@ -60,6 +63,9 @@ private:
   edm::EDGetTokenT<l1t_std::EMTFTrackCollection> unpTrackToken_;
   edm::EDGetTokenT<l1t_sep::EMTFTrackCollection> emuTrackToken_;
 
+  edm::EDGetTokenT<l1t_sep::EMTFHitExtraCollection>   emuHitToken2_;
+  edm::EDGetTokenT<l1t_sep::EMTFTrackExtraCollection> emuTrackToken2_;
+
   unsigned nBadEvents_;
   unsigned nEvents_;
 
@@ -69,6 +75,9 @@ private:
   edm::Handle<l1t_sep::EMTFHitCollection>    emuHits_;
   edm::Handle<l1t_std::EMTFTrackCollection>  unpTracks_;
   edm::Handle<l1t_sep::EMTFTrackCollection>  emuTracks_;
+
+  edm::Handle<l1t_sep::EMTFHitExtraCollection>    emuHits2_;
+  edm::Handle<l1t_sep::EMTFTrackExtraCollection>  emuTracks2_;
 };
 
 // _____________________________________________________________________________
@@ -84,6 +93,9 @@ EmuAccuracy::EmuAccuracy(const edm::ParameterSet& iConfig) :
     unpTrackToken_ = consumes<l1t_std::EMTFTrackCollection>(unpTrackTag_);
     emuTrackToken_ = consumes<l1t_sep::EMTFTrackCollection>(emuTrackTag_);
 
+    emuHitToken2_    = consumes<l1t_sep::EMTFHitExtraCollection>  (emuHitTag_);
+    emuTrackToken2_  = consumes<l1t_sep::EMTFTrackExtraCollection>(emuTrackTag_);
+
     nBadEvents_ = 0;
     nEvents_    = 0;
 }
@@ -97,40 +109,94 @@ void EmuAccuracy::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetu
   if (iEvent.isRealData()) {
     // Get products
     if (!unpHitToken_.isUninitialized()) {
-        iEvent.getByToken(unpHitToken_, unpHits_);
+      iEvent.getByToken(unpHitToken_, unpHits_);
     }
     if (!unpHits_.isValid()) {
-        edm::LogError("EmuAccuracy") << "Cannot get the product: " << unpHitTag_;
-        return;
+      edm::LogError("EmuAccuracy") << "Cannot get the product: " << unpHitTag_;
+      return;
     }
 
     if (!emuHitToken_.isUninitialized()) {
-        iEvent.getByToken(emuHitToken_, emuHits_);
+      iEvent.getByToken(emuHitToken_, emuHits_);
     }
     if (!emuHits_.isValid()) {
-        edm::LogError("EmuAccuracy") << "Cannot get the product: " << emuHitTag_;
-        return;
+      edm::LogError("EmuAccuracy") << "Cannot get the product: " << emuHitTag_;
+      return;
     }
 
     if (!unpTrackToken_.isUninitialized()) {
-        iEvent.getByToken(unpTrackToken_, unpTracks_);
+      iEvent.getByToken(unpTrackToken_, unpTracks_);
     }
     if (!unpTracks_.isValid()) {
-        edm::LogError("EmuAccuracy") << "Cannot get the product: " << unpTrackTag_;
-        return;
+      edm::LogError("EmuAccuracy") << "Cannot get the product: " << unpTrackTag_;
+      return;
     }
 
     if (!emuTrackToken_.isUninitialized()) {
-        iEvent.getByToken(emuTrackToken_, emuTracks_);
+      iEvent.getByToken(emuTrackToken_, emuTracks_);
     }
     if (!emuTracks_.isValid()) {
-        edm::LogError("EmuAccuracy") << "Cannot get the product: " << emuTrackTag_;
-        return;
+      edm::LogError("EmuAccuracy") << "Cannot get the product: " << emuTrackTag_;
+      return;
+    }
+
+    if (!emuHitToken2_.isUninitialized()) {
+      iEvent.getByToken(emuHitToken2_, emuHits2_);
+    }
+    if (!emuHits2_.isValid()) {
+      edm::LogError("EmuAccuracy") << "Cannot get the product: " << emuHitTag_;
+      return;
+    }
+
+    if (!emuTrackToken2_.isUninitialized()) {
+      iEvent.getByToken(emuTrackToken2_, emuTracks2_);
+    }
+    if (!emuTracks2_.isValid()) {
+      edm::LogError("EmuAccuracy") << "Cannot get the product: " << emuTrackTag_;
+      return;
     }
   }  // end if iEvent.isRealData()
 
+  if (skipEvent())
+    return;
+
   // Find matches
   findMatches();
+  return;
+}
+
+// _____________________________________________________________________________
+bool EmuAccuracy::skipEvent() {
+  // Skip empty events
+  {
+    if (emuHits2_->empty())
+      return true;
+  }
+
+  // Skip events with >= 2 LCTs in the same ME1/1 chamber
+  {
+    bool skip = false;
+    for (unsigned i = 0; i < emuHits2_->size()-1; ++i) {
+      const auto& hit1 = emuHits2_->at(i);
+      for (unsigned j = i+1; j < emuHits2_->size(); ++j) {
+        const auto& hit2 = emuHits2_->at(j);
+
+        if (hit1.station == 1 && (hit1.ring == 1 || hit1.ring == 4)) {  // ME1/1
+          if (
+              (hit1.pc_sector == hit2.pc_sector) &&     // 2 LCTs in the same chamber
+              (hit1.pc_station == hit2.pc_station) &&
+              (hit1.pc_chamber == hit2.pc_chamber)
+          ) {
+            skip = true;
+          }
+        }
+      }
+    }
+    if (skip)
+      return true;
+  }
+
+  return false;
 }
 
 // _____________________________________________________________________________
@@ -196,6 +262,7 @@ void EmuAccuracy::findMatches() {
   bool no_match = (!unp_has_match || !emu_has_match);
   if (verbose_ || no_match) {  // if verbose, always print
     printEventId();
+    printHits();
 
     if (!unp_has_match) {
       std::cout << "ERROR: Unpacker tracks have no matching emulator tracks." << std::endl;
@@ -225,6 +292,27 @@ void EmuAccuracy::findMatches() {
 // _____________________________________________________________________________
 void EmuAccuracy::printEventId() {
   std::cout << "******** Run " << eid_.run() << ", Lumi " << eid_.luminosityBlock() << ", Event " << eid_.event() << " ********" << std::endl;
+}
+
+void EmuAccuracy::printHits() {
+  HitPrint hitPrint;
+
+  // Emulator hits
+  std::cout << "Num of emulator hits = " << emuHits2_->size() << std::endl;
+  std::cout << "bx e s ss st vf ql cp wg id bd hs" << std::endl;
+  for (const auto& hit : (*emuHits2_)) {
+    hitPrint(hit);
+  }
+
+  bool printUnpacker = false;
+  if (printUnpacker) {
+    // Unpacker hits
+    std::cout << "Num of unpacker hits = " << unpHits_->size() << std::endl;
+    std::cout << "bx e s ss st" << std::endl;
+    for (const auto& hit : (*unpHits_)) {
+      std::cout << hit.BX() + 6 - 3 << " " << hit.Endcap() << " " << hit.Sector() << " " << hit.Subsector() << " " << hit.Station() << std::endl;
+    }
+  }
 }
 
 void EmuAccuracy::printTracks() {
