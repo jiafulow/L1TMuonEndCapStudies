@@ -22,10 +22,18 @@
 #include "DataFormatsSep2016/L1TMuon/interface/EMTFTrack.h"
 #include "DataFormatsSep2016/L1TMuon/interface/EMTFTrackExtra.h"
 
-#include "Helper.hh"
 
+#define SEP2016_VERSION
+
+#ifdef SEP2016_VERSION
 namespace l1t_std = l1t;
 namespace l1t_sep = L1TMuonEndCap;
+#else
+namespace l1t_std = l1t;
+namespace l1t_sep = l1t;
+#endif
+
+#include "Helper.hh"
 
 
 // _____________________________________________________________________________
@@ -367,12 +375,14 @@ void EmuAccuracy::sitrep(const std::vector<int>& unp_matches, const std::vector<
     typedef std::array<int, 5> reference_t;
     std::map<reference_t, int> counting;
 
+#ifdef SEP2016_VERSION
     for (const auto& hit : (*emuHits2_)) {
       if (hit.station == 1 && (hit.ring == 1 || hit.ring == 4)) {
         reference_t ref = {{hit.endcap, hit.sector, hit.subsector, hit.station, hit.csc_ID}};
         counting[ref]++;
       }
     }
+#endif
 
     bool found = false;
     for (const auto& kv : counting)
@@ -388,6 +398,7 @@ void EmuAccuracy::sitrep(const std::vector<int>& unp_matches, const std::vector<
     minima.fill(999999);
     next_minima.fill(999999);
 
+#ifdef SEP2016_VERSION
     const int bw_fph = 13;
     const int bpow = 7;
     int ph_pat = trk.xroad.ph_num;
@@ -411,6 +422,7 @@ void EmuAccuracy::sitrep(const std::vector<int>& unp_matches, const std::vector<
         }
       }
     }
+#endif
 
     bool found = false;
     for (int istation = 0; istation < 4; ++istation) {
