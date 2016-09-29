@@ -42,13 +42,15 @@ private:
   virtual void endJob() override;
 
   // Member functions
-  bool skipEvent();
-
   void findMatches();
 
   void printEventId();
   void printHits();
   void printTracks();
+
+  void sitrep(const std::vector<int>& unp_matches, const std::vector<int>& emu_matches);
+
+  void printSitrep();
 
   // Member data
   const edm::InputTag unpHitTag_;
@@ -66,9 +68,6 @@ private:
   edm::EDGetTokenT<l1t_sep::EMTFHitExtraCollection>   emuHitToken2_;
   edm::EDGetTokenT<l1t_sep::EMTFTrackExtraCollection> emuTrackToken2_;
 
-  unsigned nBadEvents_;
-  unsigned nEvents_;
-
   edm::EventID eid_;
 
   edm::Handle<l1t_std::EMTFHitCollection>    unpHits_;
@@ -78,6 +77,12 @@ private:
 
   edm::Handle<l1t_sep::EMTFHitExtraCollection>    emuHits2_;
   edm::Handle<l1t_sep::EMTFTrackExtraCollection>  emuTracks2_;
+
+  std::map<int, int> sitrep_why_;
+  std::map<int, int> sitrep_why_address_;
+
+  unsigned nBadEvents_;
+  unsigned nEvents_;
 };
 
 // _____________________________________________________________________________
@@ -157,46 +162,9 @@ void EmuAccuracy::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetu
     }
   }  // end if iEvent.isRealData()
 
-  if (skipEvent())
-    return;
-
   // Find matches
   findMatches();
   return;
-}
-
-// _____________________________________________________________________________
-bool EmuAccuracy::skipEvent() {
-  // Skip empty events
-  {
-    if (emuHits2_->empty())
-      return true;
-  }
-
-  // Skip events with >= 2 LCTs in the same ME1/1 chamber
-  {
-    bool skip = false;
-    for (unsigned i = 0; i < emuHits2_->size()-1; ++i) {
-      const auto& hit1 = emuHits2_->at(i);
-      for (unsigned j = i+1; j < emuHits2_->size(); ++j) {
-        const auto& hit2 = emuHits2_->at(j);
-
-        if (hit1.station == 1 && (hit1.ring == 1 || hit1.ring == 4)) {  // ME1/1
-          if (
-              (hit1.pc_sector == hit2.pc_sector) &&     // 2 LCTs in the same chamber
-              (hit1.pc_station == hit2.pc_station) &&
-              (hit1.pc_chamber == hit2.pc_chamber)
-          ) {
-            skip = true;
-          }
-        }
-      }
-    }
-    if (skip)
-      return true;
-  }
-
-  return false;
 }
 
 // _____________________________________________________________________________
@@ -284,9 +252,11 @@ void EmuAccuracy::findMatches() {
   }
 
   if (no_match) {
-    nBadEvents_ += 1;
+    nBadEvents_++;
   }
-  nEvents_ += 1;
+  nEvents_++;
+
+  sitrep(unp_matches, emu_matches);
 }
 
 // _____________________________________________________________________________
@@ -337,10 +307,238 @@ void EmuAccuracy::printTracks() {
 }
 
 // _____________________________________________________________________________
+void EmuAccuracy::sitrep(const std::vector<int>& unp_matches, const std::vector<int>& emu_matches) {
+
+  auto check_ntracks = [](const auto& tracks1, const auto& tracks2) {
+    bool match = false;
+    if (tracks1.size() == tracks2.size())
+      match = true;
+    return match;
+  };
+
+  auto check_tracks = [](const auto& tracks1, const auto& tracks2, auto cmp) {
+    bool match = false;
+    for (const auto& trk1 : tracks1)
+      for (const auto& trk2 : tracks2)
+        if (cmp(trk1, trk2))
+          match = true;
+    return match;
+  };
+
+  auto check_track_bx = [](const auto& trk1, const auto& trk2) {
+    bool match = (
+        std::make_tuple(trk1.BX(), trk1.Endcap(), trk1.Sector()) ==
+        std::make_tuple(trk2.BX(), trk2.Endcap(), trk2.Sector())
+    );
+    return match;
+  };
+
+  auto check_track_address = [](const auto& trk1, const auto& trk2) {
+    bool match = (trk1.Pt_LUT_addr() == trk2.Pt_LUT_addr());
+    return match;
+  };
+
+  auto check_track_mode = [](const auto& trk1, const auto& trk2) {
+    bool match = (trk1.Mode() == trk2.Mode());
+    return match;
+  };
+
+  auto check_track_eta = [](const auto& trk1, const auto& trk2) {
+    bool match = (trk1.Eta_GMT() == trk2.Eta_GMT());
+    return match;
+  };
+
+  auto check_track_phi = [](const auto& trk1, const auto& trk2) {
+    bool match = (trk1.Phi_GMT() == trk2.Phi_GMT());
+    return match;
+  };
+
+  auto check_track_charge = [](const auto& trk1, const auto& trk2) {
+    bool match = (trk1.Charge_GMT() == trk2.Charge_GMT());
+    return match;
+  };
+
+  auto check_track_quality = [](const auto& trk1, const auto& trk2) {
+    bool match = (trk1.Quality() == trk2.Quality());
+    return match;
+  };
+
+  auto check_me11_dupes = [](const auto& emuHits2_) {
+    typedef std::array<int, 5> reference_t;
+    std::map<reference_t, int> counting;
+
+    for (const auto& hit : (*emuHits2_)) {
+      if (hit.station == 1 && (hit.ring == 1 || hit.ring == 4)) {
+        reference_t ref = {{hit.endcap, hit.sector, hit.subsector, hit.station, hit.csc_ID}};
+        counting[ref]++;
+      }
+    }
+
+    bool found = false;
+    for (const auto& kv : counting)
+      if (kv.second > 1)
+        found = true;
+    return found;
+  };
+
+  auto check_prim_match = [](const auto& emuHits2_, const auto& trk) {
+    std::array<int, 4> minima;
+    std::array<int, 4> next_minima;
+
+    minima.fill(999999);
+    next_minima.fill(999999);
+
+    const int bw_fph = 13;
+    const int bpow = 7;
+    int ph_pat = trk.xroad.ph_num;
+
+    for (const auto& hit : (*emuHits2_)) {
+      if (
+          (hit.endcap == trk.endcap) &&
+          (hit.sector == trk.sector) &&
+          (hit.zone_code & (1<<trk.zone))
+      ) {
+        int ph_seg = hit.phi_fp;
+        int ph_seg_red = ph_seg >> (bw_fph-bpow-1);
+        int ph_diff = (ph_pat > ph_seg_red) ? (ph_pat - ph_seg_red) : (ph_seg_red - ph_pat);
+
+        int istation = (hit.station-1);
+
+        if (minima.at(istation) > ph_diff) {
+          minima.at(istation) = ph_diff;
+        } else if (next_minima.at(istation) > ph_diff) {
+          next_minima.at(istation) = ph_diff;
+        }
+      }
+    }
+
+    bool found = false;
+    for (int istation = 0; istation < 4; ++istation) {
+      if (
+        (minima.at(istation) != 999999) &&
+        (minima.at(istation) == next_minima.at(istation))
+      ) {
+        found = true;
+      }
+    }
+    return found;
+  };
+
+  bool mis_mis_ntracks = check_ntracks(*unpTracks_, *emuTracks_);  // missing or have extra tracks
+  bool mis_mis_bx = check_tracks(*unpTracks_, *emuTracks_, check_track_bx);
+  if (mis_mis_ntracks && mis_mis_bx) {}
+
+  bool mis_unp_ntracks = false;
+  bool mis_emu_ntracks = false;
+  bool mis_unp_2       = false;
+  bool mis_emu_2       = false;
+  bool mis_bx          = false;
+  bool mis_address     = false;
+  bool mis_mode        = false;
+  bool mis_eta         = false;
+  bool mis_phi         = false;
+  bool mis_charge      = false;
+  bool mis_quality     = false;
+  bool mis_me11_dupes  = false;
+  bool mis_prim_match  = false;
+
+  mis_unp_ntracks = unpTracks_->size() > emuTracks_->size();
+  mis_emu_ntracks = unpTracks_->size() < emuTracks_->size();
+  if (!mis_unp_ntracks && !mis_emu_ntracks) {
+    int cnt_mis_unp = (std::count(unp_matches.begin(), unp_matches.end(), -99));
+    int cnt_mis_emu = (std::count(emu_matches.begin(), emu_matches.end(), -99));
+    mis_unp_2 = cnt_mis_unp > 1;
+    mis_emu_2 = cnt_mis_emu > 1;
+
+    if (cnt_mis_unp == 1)
+      assert(cnt_mis_emu == 1);
+
+    if (cnt_mis_unp == 1) {
+      auto found_unp = std::find(unp_matches.begin(), unp_matches.end(), -99);
+      auto found_emu = std::find(emu_matches.begin(), emu_matches.end(), -99);
+
+      auto index_unp = std::distance(unp_matches.begin(), found_unp);
+      auto index_emu = std::distance(emu_matches.begin(), found_emu);
+
+      const auto& trk1 = unpTracks_->at(index_unp);
+      const auto& trk2 = emuTracks_->at(index_emu);
+
+      mis_bx = !check_track_bx(trk1, trk2);
+
+      if (!mis_bx) {
+        mis_address = !check_track_address(trk1, trk2);
+        mis_mode    = !check_track_mode(trk1, trk2);
+        mis_eta     = !check_track_eta(trk1, trk2);
+        mis_phi     = !check_track_phi(trk1, trk2);
+        mis_charge  = !check_track_charge(trk1, trk2);
+        mis_quality = !check_track_quality(trk1, trk2);
+
+        const auto& trkExtra = emuTracks2_->at(index_emu);
+        mis_me11_dupes = check_me11_dupes(emuHits2_);
+        mis_prim_match = check_prim_match(emuHits2_, trkExtra);
+      }
+    }
+  }
+
+  int why = 0;
+  if (mis_unp_ntracks) {
+    why = 1;
+  } else if (mis_emu_ntracks) {
+    why = 2;
+  } else if (mis_unp_2) {
+    why = 3;
+  } else if (mis_emu_2) {
+    why = 4;
+  } else if (mis_bx) {
+    why = 5;
+  } else if (mis_address) {
+    why = 6;
+  } else if (mis_mode) {
+    why = 7;
+  } else if (mis_eta) {
+    why = 8;
+  } else if (mis_phi) {
+    why = 9;
+  } else if (mis_charge) {
+    why = 10;
+  } else if (mis_quality) {
+    why = 11;
+  }
+
+  int why_address = 0;
+  if (mis_address) {
+    if (mis_me11_dupes) {
+      why_address = 1;
+    } else if (mis_prim_match) {
+      why_address = 2;
+    }
+  }
+
+  sitrep_why_[why]++;
+  sitrep_why_address_[why_address]++;
+
+  if (why) {
+    std::cout << ">> why: " << why << std::endl;
+    std::cout << ">> why_address: " << why_address << std::endl;
+  }
+}
+
+void EmuAccuracy::printSitrep() {
+  std::cout << "**************** SITREP ****************" << std::endl;
+  for (const auto& kv : sitrep_why_) {
+    std::cout << "why: " << kv.first << " count: " << kv.second << std::endl;
+  }
+  for (const auto& kv : sitrep_why_address_) {
+    std::cout << "why_address: " << kv.first << " count: " << kv.second << std::endl;
+  }
+}
+
+// _____________________________________________________________________________
 void EmuAccuracy::beginJob() {}
 
 void EmuAccuracy::endJob() {
   std::cout << "Num of bad events: " << nBadEvents_ << "/" << nEvents_ << std::endl;
+  printSitrep();
 }
 
 void EmuAccuracy::fillDescriptions(edm::ConfigurationDescriptions& descriptions) {
