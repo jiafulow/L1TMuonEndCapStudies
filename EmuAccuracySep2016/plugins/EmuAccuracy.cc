@@ -3,6 +3,7 @@
 #include <string>
 #include <vector>
 #include <iostream>
+#include <algorithm>
 
 #include "FWCore/Framework/interface/Frameworkfwd.h"
 #include "FWCore/Framework/interface/EDAnalyzer.h"
@@ -50,6 +51,8 @@ private:
   virtual void endJob() override;
 
   // Member functions
+  void getHandles(const edm::Event& iEvent);
+
   void findMatches();
 
   void printEventId();
@@ -119,21 +122,20 @@ EmuAccuracy::~EmuAccuracy() {}
 void EmuAccuracy::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup) {
   eid_ = iEvent.id();
 
+  getHandles(iEvent);
+
+  findMatches();
+  return;
+}
+
+// _____________________________________________________________________________
+void EmuAccuracy::getHandles(const edm::Event& iEvent) {
   if (iEvent.isRealData()) {
-    // Get products
     if (!unpHitToken_.isUninitialized()) {
       iEvent.getByToken(unpHitToken_, unpHits_);
     }
     if (!unpHits_.isValid()) {
       edm::LogError("EmuAccuracy") << "Cannot get the product: " << unpHitTag_;
-      return;
-    }
-
-    if (!emuHitToken_.isUninitialized()) {
-      iEvent.getByToken(emuHitToken_, emuHits_);
-    }
-    if (!emuHits_.isValid()) {
-      edm::LogError("EmuAccuracy") << "Cannot get the product: " << emuHitTag_;
       return;
     }
 
@@ -144,40 +146,51 @@ void EmuAccuracy::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetu
       edm::LogError("EmuAccuracy") << "Cannot get the product: " << unpTrackTag_;
       return;
     }
+  }
 
-    if (!emuTrackToken_.isUninitialized()) {
-      iEvent.getByToken(emuTrackToken_, emuTracks_);
-    }
-    if (!emuTracks_.isValid()) {
-      edm::LogError("EmuAccuracy") << "Cannot get the product: " << emuTrackTag_;
-      return;
-    }
+  if (!emuHitToken_.isUninitialized()) {
+    iEvent.getByToken(emuHitToken_, emuHits_);
+  }
+  if (!emuHits_.isValid()) {
+    edm::LogError("EmuAccuracy") << "Cannot get the product: " << emuHitTag_;
+    return;
+  }
 
-    if (!emuHitToken2_.isUninitialized()) {
-      iEvent.getByToken(emuHitToken2_, emuHits2_);
-    }
-    if (!emuHits2_.isValid()) {
-      edm::LogError("EmuAccuracy") << "Cannot get the product: " << emuHitTag_;
-      return;
-    }
+  if (!emuTrackToken_.isUninitialized()) {
+    iEvent.getByToken(emuTrackToken_, emuTracks_);
+  }
+  if (!emuTracks_.isValid()) {
+    edm::LogError("EmuAccuracy") << "Cannot get the product: " << emuTrackTag_;
+    return;
+  }
 
-    if (!emuTrackToken2_.isUninitialized()) {
-      iEvent.getByToken(emuTrackToken2_, emuTracks2_);
-    }
-    if (!emuTracks2_.isValid()) {
-      edm::LogError("EmuAccuracy") << "Cannot get the product: " << emuTrackTag_;
-      return;
-    }
-  }  // end if iEvent.isRealData()
+  if (!emuHitToken2_.isUninitialized()) {
+    iEvent.getByToken(emuHitToken2_, emuHits2_);
+  }
+  if (!emuHits2_.isValid()) {
+    edm::LogError("EmuAccuracy") << "Cannot get the product: " << emuHitTag_;
+    return;
+  }
 
-  // Find matches
-  findMatches();
-  return;
+  if (!emuTrackToken2_.isUninitialized()) {
+    iEvent.getByToken(emuTrackToken2_, emuTracks2_);
+  }
+  if (!emuTracks2_.isValid()) {
+    edm::LogError("EmuAccuracy") << "Cannot get the product: " << emuTrackTag_;
+    return;
+  }
+
 }
 
 // _____________________________________________________________________________
 void EmuAccuracy::findMatches() {
   TracksMatch tracksMatch;
+
+  auto out_of_emu_bx = [](const auto& trk) {
+    bool out = (trk.BX() < -1) || (+2 < trk.BX());
+    //bool out = (trk.BX() != 0);
+    return out;
+  };
 
   // Check that unpacker tracks have matching emulator tracks
   std::vector<int> unp_matches(unpTracks_->size(), -99);
@@ -198,6 +211,12 @@ void EmuAccuracy::findMatches() {
           unp_matches.at(i) = j;
         }
         j++;
+      }
+
+      // Exclude out-of-emu BX
+      bool out_bx = out_of_emu_bx(trk1);
+      if (unp_matches.at(i) == -99 && out_bx) {
+        unp_matches.at(i) = -1;
       }
 
       if (unp_matches.at(i) == -99) {
@@ -226,6 +245,12 @@ void EmuAccuracy::findMatches() {
           emu_matches.at(i) = j;
         }
         j++;
+      }
+
+      // Exclude out-of-emu BX
+      bool out_bx = out_of_emu_bx(trk1);
+      if (emu_matches.at(i) == -99 && out_bx) {
+        emu_matches.at(i) = -1;
       }
 
       if (emu_matches.at(i) == -99) {
@@ -454,11 +479,12 @@ void EmuAccuracy::sitrep(const std::vector<int>& unp_matches, const std::vector<
   bool mis_me11_dupes  = false;
   bool mis_prim_match  = false;
 
-  mis_unp_ntracks = unpTracks_->size() > emuTracks_->size();
-  mis_emu_ntracks = unpTracks_->size() < emuTracks_->size();
+  int cnt_mis_unp = (std::count(unp_matches.begin(), unp_matches.end(), -99));
+  int cnt_mis_emu = (std::count(emu_matches.begin(), emu_matches.end(), -99));
+
+  mis_unp_ntracks = cnt_mis_unp > cnt_mis_emu;
+  mis_emu_ntracks = cnt_mis_unp < cnt_mis_emu;
   if (!mis_unp_ntracks && !mis_emu_ntracks) {
-    int cnt_mis_unp = (std::count(unp_matches.begin(), unp_matches.end(), -99));
-    int cnt_mis_emu = (std::count(emu_matches.begin(), emu_matches.end(), -99));
     mis_unp_2 = cnt_mis_unp > 1;
     mis_emu_2 = cnt_mis_emu > 1;
 
@@ -503,9 +529,9 @@ void EmuAccuracy::sitrep(const std::vector<int>& unp_matches, const std::vector<
     why = 4;
   } else if (mis_bx) {
     why = 5;
-  } else if (mis_address) {
-    why = 6;
   } else if (mis_mode) {
+    why = 6;
+  } else if (mis_address) {
     why = 7;
   } else if (mis_eta) {
     why = 8;
@@ -518,7 +544,7 @@ void EmuAccuracy::sitrep(const std::vector<int>& unp_matches, const std::vector<
   }
 
   int why_address = 0;
-  if (mis_address) {
+  if (!mis_bx && !mis_mode && mis_address) {
     if (mis_me11_dupes) {
       why_address = 1;
     } else if (mis_prim_match) {

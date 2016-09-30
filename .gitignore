@@ -8,3 +8,8 @@ __init__.py
 dump.py
 *.log
 *.root
+
+igprof.mp.gz
+igreport_tester_mp.sql3
+igprof.pp.gz
+igreport_tester_pp.sql3
