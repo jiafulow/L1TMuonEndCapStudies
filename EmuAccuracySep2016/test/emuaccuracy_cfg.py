@@ -4,7 +4,7 @@ process = cms.Process("Demo")
 
 # Message logger
 process.load("FWCore.MessageService.MessageLogger_cfi")
-process.MessageLogger.cerr.FwkReport.reportEvery = 1000
+process.MessageLogger.cerr.FwkReport.reportEvery = 1
 
 # Number of events
 process.maxEvents = cms.untracked.PSet(

@@ -552,6 +552,41 @@ void EmuAccuracy::sitrep(const std::vector<int>& unp_matches, const std::vector<
     }
   }
 
+  if (why == 0) {
+    // Compare pT
+    auto approx_equal = [] (float a, float b) { return std::abs(a-b) < 1e-6; };
+
+    int i = 0;
+    for (const auto& trk1 : (*unpTracks_)) {
+      if (unp_matches.at(i) >= 0) {
+        const auto& trk2 = (*emuTracks_).at(unp_matches.at(i));
+        if (!approx_equal(trk1.Pt(), trk2.Pt())) {
+          // See DataFormats/L1TMuon/interface/EMTFTrack.h
+          // See DataFormats/L1TMuon/interface/EMTF/SP.h
+          std::cout << i << " Address  : " << trk1.Pt_LUT_addr()  << " vs " << trk2.Pt_LUT_addr()  << std::endl;
+          std::cout << i << " Pt       : " << trk1.Pt()           << " vs " << trk2.Pt()           << std::endl;
+          std::cout << i << " Pt_GMT   : " << trk1.Pt_GMT()       << " vs " << trk2.Pt_GMT()       << std::endl;
+          std::cout << i << " Eta      : " << trk1.Eta()          << " vs " << trk2.Eta()          << std::endl;
+          std::cout << i << " Eta_GMT  : " << trk1.Eta_GMT()      << " vs " << trk2.Eta_GMT()      << std::endl;
+          std::cout << i << " Eta_LUT  : " << trk1.Eta_LUT()      << " vs " << trk2.Eta_LUT()      << std::endl;
+          std::cout << i << " Phi_loc  : " << trk1.Phi_loc_int()  << " vs " << trk2.Phi_loc_int()  << std::endl;
+          std::cout << i << " Phi_glob : " << trk1.Phi_glob_rad() << " vs " << trk2.Phi_glob_rad() << std::endl;
+          std::cout << i << " Phi_GMT  : " << trk1.Phi_GMT()      << " vs " << trk2.Phi_GMT()      << std::endl;
+          std::cout << i << " Mode_LUT : " << trk1.Mode_LUT()     << " vs " << trk2.Mode_LUT()     << std::endl;
+          std::cout << i << " Quality  : " << trk1.Quality()      << " vs " << trk2.Quality()      << std::endl;
+          std::cout << i << " Charge   : " << trk1.Charge()       << " vs " << trk2.Charge()       << std::endl;
+          std::cout << i << " DPhi_12  : " << trk1.DPhi_12()      << " vs " << trk2.DPhi_12()      << std::endl;
+          std::cout << i << " DPhi_23  : " << trk1.DPhi_23()      << " vs " << trk2.DPhi_23()      << std::endl;
+          std::cout << i << " DTheta_12: " << trk1.DTheta_12()    << " vs " << trk2.DTheta_12()    << std::endl;
+          std::cout << i << " DTheta_23: " << trk1.DTheta_23()    << " vs " << trk2.DTheta_23()    << std::endl;
+          std::cout << i << " CLCT_1   : " << trk1.CLCT_1()       << " vs " << trk2.CLCT_1()       << std::endl;
+          std::cout << i << " FR_1     : " << trk1.FR_1()         << " vs " << trk2.FR_1()         << std::endl;
+        }
+      }
+      i += 1;
+    }
+  }
+
   sitrep_why_[why]++;
   sitrep_why_address_[why_address]++;
 

@@ -21,6 +21,7 @@ process.load('Configuration.StandardSequences.EndOfProcess_cff')
 process.load('Configuration.StandardSequences.FrontierConditions_GlobalTag_cff')
 
 process.maxEvents = cms.untracked.PSet(
+    #input = cms.untracked.int32(-1)
     input = cms.untracked.int32(1000)
 )
 
@@ -203,6 +204,11 @@ if True:
         process.load('EventFilter.L1TRawToDigi.emtfStage2Digis_cfi')
         from L1TriggerSep2016.L1TMuonEndCap.simEmtfDigis_cfi import simEmtfDigisData
         process.simEmtfDigisData = simEmtfDigisData
+        if True:
+            process.simEmtfDigisData.spPCParams16.FixZonePhi = False
+            process.simEmtfDigisData.spPRParams16.UseSecondEarliest = False
+            process.simEmtfDigisData.spPRParams16.UseSymmetricalPatterns = False
+            process.simEmtfDigisData.spPAParams16.Fix9bDPhi = False
     process.simEmtfDigisData.verbosity = 0
     process.step1 = cms.Path((process.gtDigis)+(process.emtfStage2Digis)+(process.muonCSCDigis+process.muonRPCDigis)+(process.simEmtfDigisData))
     process.schedule = cms.Schedule(process.step1, process.RAWoutput_step)
