@@ -91,6 +91,7 @@ private:
 
   std::map<int, int> sitrep_why_;
   std::map<int, int> sitrep_why_address_;
+  std::map<int, int> sitrep_why_eta_;
 
   unsigned nBadEvents_;
   unsigned nEvents_;
@@ -192,8 +193,14 @@ void EmuAccuracy::getHandles(const edm::Event& iEvent) {
 
   // Exclude out-of-emu BX
   auto out_of_emu_bx = [](const auto& trk) {
-    bool out = (trk.BX() < -1) || (+2 < trk.BX());
+    bool out = (trk.BX() < -1) || (+1 < trk.BX());
     //bool out = (trk.BX() != 0);
+    return out;
+  };
+
+  // Exclude sector -6
+  auto out_of_emu_sector = [](const auto& trk) {
+    bool out = (trk.Endcap() == -1 && trk.Sector() == 6);
     return out;
   };
 
@@ -209,13 +216,15 @@ void EmuAccuracy::getHandles(const edm::Event& iEvent) {
 
   unpTracks_.clear();
   for (const auto& trk : reversed(*unpTracks_handle)) {
-    if (out_of_emu_bx(trk))  continue;
+    if (out_of_emu_bx(trk))      continue;
+    if (out_of_emu_sector(trk))  continue;
     unpTracks_.push_back(trk);
   }
 
   emuTracks_.clear();
   for (const auto& trk : (*emuTracks_handle)) {
-    if (out_of_emu_bx(trk))  continue;
+    if (out_of_emu_bx(trk))      continue;
+    if (out_of_emu_sector(trk))  continue;
     emuTracks_.push_back(trk);
   }
 
@@ -223,11 +232,20 @@ void EmuAccuracy::getHandles(const edm::Event& iEvent) {
   for (const auto& hit : (*emuHits2_handle)) {
     emuHits2_.push_back(hit);
   }
+  //assert(emuHits_.size() == emuHits2_.size());
 
   emuTracks2_.clear();
   for (const auto& trk : (*emuTracks2_handle)) {
+#ifdef SEP2016_VERSION
+    if (trk.bx < -1 || +1 < trk.bx)      continue;  //if (out_of_emu_bx(trk))      continue;
+    if (trk.endcap==2 && trk.sector==6)  continue;  //if (out_of_emu_sector(trk))  continue;
+#else
+    if (out_of_emu_bx(trk))      continue;
+    if (out_of_emu_sector(trk))  continue;
+#endif
     emuTracks2_.push_back(trk);
   }
+  //assert(emuTracks_.size() == emuTracks2_.size());
 
 }
 
@@ -390,6 +408,11 @@ void EmuAccuracy::sitrep(const std::vector<int>& unp_matches, const std::vector<
     return match;
   };
 
+  auto check_track_eta_1 = [](const auto& trk1, const auto& trk2) {
+    bool match = (std::abs(int(trk1.Eta_GMT()) - int(trk2.Eta_GMT())) <= 1);
+    return match;
+  };
+
   auto check_track_phi = [](const auto& trk1, const auto& trk2) {
     bool match = (trk1.Phi_GMT() == trk2.Phi_GMT());
     return match;
@@ -484,6 +507,7 @@ void EmuAccuracy::sitrep(const std::vector<int>& unp_matches, const std::vector<
   bool mis_quality     = false;
   bool mis_me11_dupes  = false;
   bool mis_prim_match  = false;
+  bool mis_eta_1       = false;
 
   int cnt_mis_unp = (std::count(unp_matches.begin(), unp_matches.end(), -99));
   int cnt_mis_emu = (std::count(emu_matches.begin(), emu_matches.end(), -99));
@@ -520,6 +544,7 @@ void EmuAccuracy::sitrep(const std::vector<int>& unp_matches, const std::vector<
         const auto& trkExtra = emuTracks2_.at(index_emu);
         mis_me11_dupes = check_me11_dupes(emuHits2_);
         mis_prim_match = check_prim_match(emuHits2_, trkExtra);
+        mis_eta_1      = check_track_eta_1(trk1, trk2);
       }
     }
   }
@@ -555,6 +580,13 @@ void EmuAccuracy::sitrep(const std::vector<int>& unp_matches, const std::vector<
       why_address = 1;
     } else if (mis_prim_match) {
       why_address = 2;
+    }
+  }
+
+  int why_eta = 0;
+  if (!mis_bx && !mis_mode && !mis_address && mis_eta) {
+    if (mis_eta_1) {
+      why_eta = 1;
     }
   }
 
@@ -597,20 +629,25 @@ void EmuAccuracy::sitrep(const std::vector<int>& unp_matches, const std::vector<
 
   sitrep_why_[why]++;
   sitrep_why_address_[why_address]++;
+  sitrep_why_eta_[why_eta]++;
 
   if (why) {
-    std::cout << ">> why: " << why << std::endl;
+    std::cout << ">> why        : " << why << std::endl;
     std::cout << ">> why_address: " << why_address << std::endl;
+    std::cout << ">> why_eta    : " << why_eta << std::endl;
   }
 }
 
 void EmuAccuracy::printSitrep() {
   std::cout << "**************** SITREP ****************" << std::endl;
   for (const auto& kv : sitrep_why_) {
-    std::cout << "why: " << kv.first << " count: " << kv.second << std::endl;
+    std::cout << "why        : " << kv.first << " count: " << kv.second << std::endl;
   }
   for (const auto& kv : sitrep_why_address_) {
     std::cout << "why_address: " << kv.first << " count: " << kv.second << std::endl;
+  }
+  for (const auto& kv : sitrep_why_eta_) {
+    std::cout << "why_eta    : " << kv.first << " count: " << kv.second << std::endl;
   }
 }
 
