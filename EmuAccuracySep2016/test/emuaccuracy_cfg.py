@@ -13,8 +13,8 @@ process.maxEvents = cms.untracked.PSet(
 
 # Input source
 process.source = cms.Source("PoolSource",
-    fileNames = cms.untracked.vstring('file:SingleMuon_Run2016F_RAW2DIGI.root'),
-    #fileNames = cms.untracked.vstring('file:SingleMuon_Run2016F_RAW2DIGI.15k.root'),
+    fileNames = cms.untracked.vstring('file:l1Ntuple_RAW2DIGI_sep.root'),
+    #fileNames = cms.untracked.vstring('file:l1Ntuple_RAW2DIGI.root'),
 )
 
 process.options = cms.untracked.PSet()
@@ -22,8 +22,10 @@ process.options = cms.untracked.PSet()
 
 # Plugin: EmuAccuracy
 process.load("L1TMuonEndCapStudies.EmuAccuracySep2016.emuaccuracy_cfi")
-#process.emuaccuracy.emuHitTag = cms.InputTag('simEmtfDigis', 'EMTF')
-#process.emuaccuracy.emuTrackTag = cms.InputTag('simEmtfDigis', 'EMTF')
+#process.emuaccuracy.emuHitTag = cms.InputTag('simEmtfDigis', '')
+#process.emuaccuracy.emuTrackTag = cms.InputTag('simEmtfDigis', '')
+#process.emuaccuracy.emuHitTag2 = cms.InputTag('simEmtfDigis', 'CSC')
+#process.emuaccuracy.emuTrackTag2 = cms.InputTag('simEmtfDigis', '')
 process.emuaccuracy.verbosity = 0
 
 # Paths

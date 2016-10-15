@@ -10,6 +10,7 @@ struct TracksMatch {
           trk1.Endcap(),
           trk1.Sector(),
           trk1.Pt_LUT_addr(),
+          //trk1.Pt_GMT(),
           trk1.Mode(),
           trk1.Eta_GMT(),
           trk1.Phi_GMT(),
@@ -20,6 +21,7 @@ struct TracksMatch {
           trk2.Endcap(),
           trk2.Sector(),
           trk2.Pt_LUT_addr(),
+          //trk2.Pt_GMT(),
           trk2.Mode(),
           trk2.Eta_GMT(),
           trk2.Phi_GMT(),
@@ -39,6 +41,7 @@ struct TrackPrint {
         << " endcap: "      << trk.Endcap()
         << " sector: "      << trk.Sector()
         << " ptlut_addr: "  << trk.Pt_LUT_addr()
+        << " gmt_pt: "      << trk.Pt_GMT()
         << " mode: "        << trk.Mode()
         << " eta: "         << trk.Eta_GMT()
         << " phi: "         << trk.Phi_GMT()

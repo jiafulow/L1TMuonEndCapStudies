@@ -7,5 +7,7 @@ emuaccuracy = cms.EDAnalyzer('EmuAccuracySep2016',
     #emuTrackTag = cms.InputTag('simEmtfDigis', 'EMTF'),
     emuHitTag = cms.InputTag('simEmtfDigisData'),
     emuTrackTag = cms.InputTag('simEmtfDigisData'),
+    emuHitTag2 = cms.InputTag('simEmtfDigisData'),
+    emuTrackTag2 = cms.InputTag('simEmtfDigisData'),
     verbosity = cms.untracked.int32(0),
 )

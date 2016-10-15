@@ -55,7 +55,6 @@ private:
 
   void findMatches();
 
-  void printEventId();
   void printHits();
   void printTracks();
 
@@ -69,6 +68,9 @@ private:
   const edm::InputTag unpTrackTag_;
   const edm::InputTag emuTrackTag_;
 
+  const edm::InputTag emuHitTag2_;
+  const edm::InputTag emuTrackTag2_;
+
   int verbose_;
 
   edm::EDGetTokenT<l1t_std::EMTFHitCollection>   unpHitToken_;
@@ -78,8 +80,6 @@ private:
 
   edm::EDGetTokenT<l1t_sep::EMTFHitExtraCollection>   emuHitToken2_;
   edm::EDGetTokenT<l1t_sep::EMTFTrackExtraCollection> emuTrackToken2_;
-
-  edm::EventID eid_;
 
   edm::Handle<l1t_std::EMTFHitCollection>    unpHits_;
   edm::Handle<l1t_sep::EMTFHitCollection>    emuHits_;
@@ -98,19 +98,21 @@ private:
 
 // _____________________________________________________________________________
 EmuAccuracy::EmuAccuracy(const edm::ParameterSet& iConfig) :
-    unpHitTag_  (iConfig.getParameter<edm::InputTag>("unpHitTag")),
-    emuHitTag_  (iConfig.getParameter<edm::InputTag>("emuHitTag")),
-    unpTrackTag_(iConfig.getParameter<edm::InputTag>("unpTrackTag")),
-    emuTrackTag_(iConfig.getParameter<edm::InputTag>("emuTrackTag")),
-    verbose_    (iConfig.getUntrackedParameter<int> ("verbosity"))
+    unpHitTag_   (iConfig.getParameter<edm::InputTag>("unpHitTag")),
+    emuHitTag_   (iConfig.getParameter<edm::InputTag>("emuHitTag")),
+    unpTrackTag_ (iConfig.getParameter<edm::InputTag>("unpTrackTag")),
+    emuTrackTag_ (iConfig.getParameter<edm::InputTag>("emuTrackTag")),
+    emuHitTag2_  (iConfig.getParameter<edm::InputTag>("emuHitTag2")),
+    emuTrackTag2_(iConfig.getParameter<edm::InputTag>("emuTrackTag2")),
+    verbose_     (iConfig.getUntrackedParameter<int> ("verbosity"))
 {
     unpHitToken_   = consumes<l1t_std::EMTFHitCollection>  (unpHitTag_);
     emuHitToken_   = consumes<l1t_sep::EMTFHitCollection>  (emuHitTag_);
     unpTrackToken_ = consumes<l1t_std::EMTFTrackCollection>(unpTrackTag_);
     emuTrackToken_ = consumes<l1t_sep::EMTFTrackCollection>(emuTrackTag_);
 
-    emuHitToken2_    = consumes<l1t_sep::EMTFHitExtraCollection>  (emuHitTag_);
-    emuTrackToken2_  = consumes<l1t_sep::EMTFTrackExtraCollection>(emuTrackTag_);
+    emuHitToken2_    = consumes<l1t_sep::EMTFHitExtraCollection>  (emuHitTag2_);
+    emuTrackToken2_  = consumes<l1t_sep::EMTFTrackExtraCollection>(emuTrackTag2_);
 
     nBadEvents_ = 0;
     nEvents_    = 0;
@@ -120,12 +122,9 @@ EmuAccuracy::~EmuAccuracy() {}
 
 // _____________________________________________________________________________
 void EmuAccuracy::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup) {
-  eid_ = iEvent.id();
-
   getHandles(iEvent);
 
   findMatches();
-  return;
 }
 
 // _____________________________________________________________________________
@@ -168,7 +167,7 @@ void EmuAccuracy::getHandles(const edm::Event& iEvent) {
     iEvent.getByToken(emuHitToken2_, emuHits2_);
   }
   if (!emuHits2_.isValid()) {
-    edm::LogError("EmuAccuracy") << "Cannot get the product: " << emuHitTag_;
+    edm::LogError("EmuAccuracy") << "Cannot get the product: " << emuHitTag2_;
     return;
   }
 
@@ -176,7 +175,7 @@ void EmuAccuracy::getHandles(const edm::Event& iEvent) {
     iEvent.getByToken(emuTrackToken2_, emuTracks2_);
   }
   if (!emuTracks2_.isValid()) {
-    edm::LogError("EmuAccuracy") << "Cannot get the product: " << emuTrackTag_;
+    edm::LogError("EmuAccuracy") << "Cannot get the product: " << emuTrackTag2_;
     return;
   }
 
@@ -262,7 +261,6 @@ void EmuAccuracy::findMatches() {
 
   bool no_match = (!unp_has_match || !emu_has_match);
   if (verbose_ || no_match) {  // if verbose, always print
-    printEventId();
     printHits();
 
     if (!unp_has_match) {
@@ -293,10 +291,6 @@ void EmuAccuracy::findMatches() {
 }
 
 // _____________________________________________________________________________
-void EmuAccuracy::printEventId() {
-  std::cout << "******** Run " << eid_.run() << ", Lumi " << eid_.luminosityBlock() << ", Event " << eid_.event() << " ********" << std::endl;
-}
-
 void EmuAccuracy::printHits() {
   HitPrint hitPrint;
 
@@ -366,13 +360,18 @@ void EmuAccuracy::sitrep(const std::vector<int>& unp_matches, const std::vector<
     return match;
   };
 
+  auto check_track_mode = [](const auto& trk1, const auto& trk2) {
+    bool match = (trk1.Mode() == trk2.Mode());
+    return match;
+  };
+
   auto check_track_address = [](const auto& trk1, const auto& trk2) {
     bool match = (trk1.Pt_LUT_addr() == trk2.Pt_LUT_addr());
     return match;
   };
 
-  auto check_track_mode = [](const auto& trk1, const auto& trk2) {
-    bool match = (trk1.Mode() == trk2.Mode());
+  auto check_track_pt = [](const auto& trk1, const auto& trk2) {
+    bool match = (trk1.Pt_GMT() == trk2.Pt_GMT());
     return match;
   };
 
@@ -470,8 +469,8 @@ void EmuAccuracy::sitrep(const std::vector<int>& unp_matches, const std::vector<
   bool mis_unp_2       = false;
   bool mis_emu_2       = false;
   bool mis_bx          = false;
-  bool mis_address     = false;
   bool mis_mode        = false;
+  bool mis_address     = false;
   bool mis_eta         = false;
   bool mis_phi         = false;
   bool mis_charge      = false;
@@ -504,8 +503,8 @@ void EmuAccuracy::sitrep(const std::vector<int>& unp_matches, const std::vector<
       mis_bx = !check_track_bx(trk1, trk2);
 
       if (!mis_bx) {
-        mis_address = !check_track_address(trk1, trk2);
         mis_mode    = !check_track_mode(trk1, trk2);
+        mis_address = !check_track_address(trk1, trk2);
         mis_eta     = !check_track_eta(trk1, trk2);
         mis_phi     = !check_track_phi(trk1, trk2);
         mis_charge  = !check_track_charge(trk1, trk2);
@@ -580,7 +579,9 @@ void EmuAccuracy::sitrep(const std::vector<int>& unp_matches, const std::vector<
           std::cout << i << " DTheta_12: " << trk1.DTheta_12()    << " vs " << trk2.DTheta_12()    << std::endl;
           std::cout << i << " DTheta_23: " << trk1.DTheta_23()    << " vs " << trk2.DTheta_23()    << std::endl;
           std::cout << i << " CLCT_1   : " << trk1.CLCT_1()       << " vs " << trk2.CLCT_1()       << std::endl;
+          std::cout << i << " CLCT_2   : " << trk1.CLCT_2()       << " vs " << trk2.CLCT_2()       << std::endl;
           std::cout << i << " FR_1     : " << trk1.FR_1()         << " vs " << trk2.FR_1()         << std::endl;
+          std::cout << i << " FR_2     : " << trk1.FR_2()         << " vs " << trk2.FR_2()         << std::endl;
         }
       }
       i += 1;
