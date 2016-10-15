@@ -81,13 +81,13 @@ private:
   edm::EDGetTokenT<l1t_sep::EMTFHitExtraCollection>   emuHitToken2_;
   edm::EDGetTokenT<l1t_sep::EMTFTrackExtraCollection> emuTrackToken2_;
 
-  edm::Handle<l1t_std::EMTFHitCollection>    unpHits_;
-  edm::Handle<l1t_sep::EMTFHitCollection>    emuHits_;
-  edm::Handle<l1t_std::EMTFTrackCollection>  unpTracks_;
-  edm::Handle<l1t_sep::EMTFTrackCollection>  emuTracks_;
+  l1t_std::EMTFHitCollection    unpHits_;
+  l1t_sep::EMTFHitCollection    emuHits_;
+  l1t_std::EMTFTrackCollection  unpTracks_;
+  l1t_sep::EMTFTrackCollection  emuTracks_;
 
-  edm::Handle<l1t_sep::EMTFHitExtraCollection>    emuHits2_;
-  edm::Handle<l1t_sep::EMTFTrackExtraCollection>  emuTracks2_;
+  l1t_sep::EMTFHitExtraCollection    emuHits2_;
+  l1t_sep::EMTFTrackExtraCollection  emuTracks2_;
 
   std::map<int, int> sitrep_why_;
   std::map<int, int> sitrep_why_address_;
@@ -129,54 +129,104 @@ void EmuAccuracy::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetu
 
 // _____________________________________________________________________________
 void EmuAccuracy::getHandles(const edm::Event& iEvent) {
+
+  edm::Handle<decltype(unpHits_)>    unpHits_handle;
+  edm::Handle<decltype(emuHits_)>    emuHits_handle;
+  edm::Handle<decltype(unpTracks_)>  unpTracks_handle;
+  edm::Handle<decltype(emuTracks_)>  emuTracks_handle;
+
+  edm::Handle<decltype(emuHits2_)>   emuHits2_handle;
+  edm::Handle<decltype(emuTracks2_)> emuTracks2_handle;
+
   if (iEvent.isRealData()) {
     if (!unpHitToken_.isUninitialized()) {
-      iEvent.getByToken(unpHitToken_, unpHits_);
+      iEvent.getByToken(unpHitToken_, unpHits_handle);
     }
-    if (!unpHits_.isValid()) {
+    if (!unpHits_handle.isValid()) {
       edm::LogError("EmuAccuracy") << "Cannot get the product: " << unpHitTag_;
       return;
     }
 
     if (!unpTrackToken_.isUninitialized()) {
-      iEvent.getByToken(unpTrackToken_, unpTracks_);
+      iEvent.getByToken(unpTrackToken_, unpTracks_handle);
     }
-    if (!unpTracks_.isValid()) {
+    if (!unpTracks_handle.isValid()) {
       edm::LogError("EmuAccuracy") << "Cannot get the product: " << unpTrackTag_;
       return;
     }
   }
 
   if (!emuHitToken_.isUninitialized()) {
-    iEvent.getByToken(emuHitToken_, emuHits_);
+    iEvent.getByToken(emuHitToken_, emuHits_handle);
   }
-  if (!emuHits_.isValid()) {
+  if (!emuHits_handle.isValid()) {
     edm::LogError("EmuAccuracy") << "Cannot get the product: " << emuHitTag_;
     return;
   }
 
   if (!emuTrackToken_.isUninitialized()) {
-    iEvent.getByToken(emuTrackToken_, emuTracks_);
+    iEvent.getByToken(emuTrackToken_, emuTracks_handle);
   }
-  if (!emuTracks_.isValid()) {
+  if (!emuTracks_handle.isValid()) {
     edm::LogError("EmuAccuracy") << "Cannot get the product: " << emuTrackTag_;
     return;
   }
 
   if (!emuHitToken2_.isUninitialized()) {
-    iEvent.getByToken(emuHitToken2_, emuHits2_);
+    iEvent.getByToken(emuHitToken2_, emuHits2_handle);
   }
-  if (!emuHits2_.isValid()) {
+  if (!emuHits2_handle.isValid()) {
     edm::LogError("EmuAccuracy") << "Cannot get the product: " << emuHitTag2_;
     return;
   }
 
   if (!emuTrackToken2_.isUninitialized()) {
-    iEvent.getByToken(emuTrackToken2_, emuTracks2_);
+    iEvent.getByToken(emuTrackToken2_, emuTracks2_handle);
   }
-  if (!emuTracks2_.isValid()) {
+  if (!emuTracks2_handle.isValid()) {
     edm::LogError("EmuAccuracy") << "Cannot get the product: " << emuTrackTag2_;
     return;
+  }
+
+  // Clone
+
+  // Exclude out-of-emu BX
+  auto out_of_emu_bx = [](const auto& trk) {
+    bool out = (trk.BX() < -1) || (+2 < trk.BX());
+    //bool out = (trk.BX() != 0);
+    return out;
+  };
+
+  unpHits_.clear();
+  for (const auto& hit : (*unpHits_handle)) {
+    unpHits_.push_back(hit);
+  }
+
+  emuHits_.clear();
+  for (const auto& hit : (*emuHits_handle)) {
+    emuHits_.push_back(hit);
+  }
+
+  unpTracks_.clear();
+  for (const auto& trk : reversed(*unpTracks_handle)) {
+    if (out_of_emu_bx(trk))  continue;
+    unpTracks_.push_back(trk);
+  }
+
+  emuTracks_.clear();
+  for (const auto& trk : (*emuTracks_handle)) {
+    if (out_of_emu_bx(trk))  continue;
+    emuTracks_.push_back(trk);
+  }
+
+  emuHits2_.clear();
+  for (const auto& hit : (*emuHits2_handle)) {
+    emuHits2_.push_back(hit);
+  }
+
+  emuTracks2_.clear();
+  for (const auto& trk : (*emuTracks2_handle)) {
+    emuTracks2_.push_back(trk);
   }
 
 }
@@ -185,37 +235,22 @@ void EmuAccuracy::getHandles(const edm::Event& iEvent) {
 void EmuAccuracy::findMatches() {
   TracksMatch tracksMatch;
 
-  auto out_of_emu_bx = [](const auto& trk) {
-    bool out = (trk.BX() < -1) || (+2 < trk.BX());
-    //bool out = (trk.BX() != 0);
-    return out;
-  };
-
   // Check that unpacker tracks have matching emulator tracks
-  std::vector<int> unp_matches(unpTracks_->size(), -99);
+  std::vector<int> unp_matches(unpTracks_.size(), -99);
   bool unp_has_match = true;
 
-  if (unpTracks_->empty()) {
-    unp_has_match = true;
-
-  } else {
-    // Unpacker tracks
+  // Unpacker tracks
+  if (!unpTracks_.empty()) {
     int i = 0;
-    for (const auto& trk1 : (*unpTracks_)) {
-      // Emulator tracks
+    for (const auto& trk1 : unpTracks_) {
+      // Compare emulator tracks
       int j = 0;
-      for (const auto& trk2 : (*emuTracks_)) {
+      for (const auto& trk2 : emuTracks_) {
         bool m = tracksMatch(trk1, trk2);
         if (m) {
           unp_matches.at(i) = j;
         }
         j++;
-      }
-
-      // Exclude out-of-emu BX
-      bool out_bx = out_of_emu_bx(trk1);
-      if (unp_matches.at(i) == -99 && out_bx) {
-        unp_matches.at(i) = -1;
       }
 
       if (unp_matches.at(i) == -99) {
@@ -226,30 +261,21 @@ void EmuAccuracy::findMatches() {
   }
 
   // Check that emulator tracks have matching unpacker tracks
-  std::vector<int> emu_matches(emuTracks_->size(), -99);
+  std::vector<int> emu_matches(emuTracks_.size(), -99);
   bool emu_has_match = true;
 
-  if (emuTracks_->empty()) {
-    emu_has_match = true;
-
-  } else {
-    // Emulator tracks
+  // Emulator tracks
+  if (!emuTracks_.empty()) {
     int i = 0;
-    for (const auto& trk1 : (*emuTracks_)) {
-      // Unpacker tracks
+    for (const auto& trk1 : emuTracks_) {
+      // Compare unpacker tracks
       int j = 0;
-      for (const auto& trk2 : (*unpTracks_)) {
+      for (const auto& trk2 : unpTracks_) {
         bool m = tracksMatch(trk1, trk2);
         if (m) {
           emu_matches.at(i) = j;
         }
         j++;
-      }
-
-      // Exclude out-of-emu BX
-      bool out_bx = out_of_emu_bx(trk1);
-      if (emu_matches.at(i) == -99 && out_bx) {
-        emu_matches.at(i) = -1;
       }
 
       if (emu_matches.at(i) == -99) {
@@ -295,18 +321,18 @@ void EmuAccuracy::printHits() {
   HitPrint hitPrint;
 
   // Emulator hits
-  std::cout << "Num of emulator hits = " << emuHits2_->size() << std::endl;
+  std::cout << "Num of emulator hits = " << emuHits2_.size() << std::endl;
   std::cout << "bx e s ss st vf ql cp wg id bd hs" << std::endl;
-  for (const auto& hit : (*emuHits2_)) {
+  for (const auto& hit : emuHits2_) {
     hitPrint(hit);
   }
 
   bool printUnpacker = false;
   if (printUnpacker) {
     // Unpacker hits
-    std::cout << "Num of unpacker hits = " << unpHits_->size() << std::endl;
+    std::cout << "Num of unpacker hits = " << unpHits_.size() << std::endl;
     std::cout << "bx e s ss st" << std::endl;
-    for (const auto& hit : (*unpHits_)) {
+    for (const auto& hit : unpHits_) {
       std::cout << hit.BX() + 6 - 3 << " " << hit.Endcap() << " " << hit.Sector() << " " << hit.Subsector() << " " << hit.Station() << std::endl;
     }
   }
@@ -317,17 +343,17 @@ void EmuAccuracy::printTracks() {
   int i = 0;
 
   // Unpacker tracks
-  std::cout << "Num of unpacker tracks = " << unpTracks_->size() << std::endl;
+  std::cout << "Num of unpacker tracks = " << unpTracks_.size() << std::endl;
   i = 0;
-  for (const auto& trk : (*unpTracks_)) {
+  for (const auto& trk : unpTracks_) {
     std::cout << i++ << " ";
     trackPrint(trk);
   }
 
   // Emulator tracks
-  std::cout << "Num of emulator tracks = " << emuTracks_->size() << std::endl;
+  std::cout << "Num of emulator tracks = " << emuTracks_.size() << std::endl;
   i = 0;
-  for (const auto& trk : (*emuTracks_)) {
+  for (const auto& trk : emuTracks_) {
     std::cout << i++ << " ";
     trackPrint(trk);
   }
@@ -335,22 +361,6 @@ void EmuAccuracy::printTracks() {
 
 // _____________________________________________________________________________
 void EmuAccuracy::sitrep(const std::vector<int>& unp_matches, const std::vector<int>& emu_matches) {
-
-  auto check_ntracks = [](const auto& tracks1, const auto& tracks2) {
-    bool match = false;
-    if (tracks1.size() == tracks2.size())
-      match = true;
-    return match;
-  };
-
-  auto check_tracks = [](const auto& tracks1, const auto& tracks2, auto cmp) {
-    bool match = false;
-    for (const auto& trk1 : tracks1)
-      for (const auto& trk2 : tracks2)
-        if (cmp(trk1, trk2))
-          match = true;
-    return match;
-  };
 
   auto check_track_bx = [](const auto& trk1, const auto& trk2) {
     bool match = (
@@ -400,7 +410,7 @@ void EmuAccuracy::sitrep(const std::vector<int>& unp_matches, const std::vector<
     std::map<reference_t, int> counting;
 
 #ifdef SEP2016_VERSION
-    for (const auto& hit : (*emuHits2_)) {
+    for (const auto& hit : emuHits2_) {
       if (hit.station == 1 && (hit.ring == 1 || hit.ring == 4)) {
         reference_t ref = {{hit.endcap, hit.sector, hit.subsector, hit.station, hit.csc_ID}};
         counting[ref]++;
@@ -427,7 +437,7 @@ void EmuAccuracy::sitrep(const std::vector<int>& unp_matches, const std::vector<
     const int bpow = 7;
     int ph_pat = trk.xroad.ph_num;
 
-    for (const auto& hit : (*emuHits2_)) {
+    for (const auto& hit : emuHits2_) {
       if (
           (hit.endcap == trk.endcap) &&
           (hit.sector == trk.sector) &&
@@ -460,9 +470,6 @@ void EmuAccuracy::sitrep(const std::vector<int>& unp_matches, const std::vector<
     return found;
   };
 
-  bool mis_mis_ntracks = check_ntracks(*unpTracks_, *emuTracks_);  // missing or have extra tracks
-  bool mis_mis_bx = check_tracks(*unpTracks_, *emuTracks_, check_track_bx);
-  if (mis_mis_ntracks && mis_mis_bx) {}
 
   bool mis_unp_ntracks = false;
   bool mis_emu_ntracks = false;
@@ -497,8 +504,8 @@ void EmuAccuracy::sitrep(const std::vector<int>& unp_matches, const std::vector<
       auto index_unp = std::distance(unp_matches.begin(), found_unp);
       auto index_emu = std::distance(emu_matches.begin(), found_emu);
 
-      const auto& trk1 = unpTracks_->at(index_unp);
-      const auto& trk2 = emuTracks_->at(index_emu);
+      const auto& trk1 = unpTracks_.at(index_unp);
+      const auto& trk2 = emuTracks_.at(index_emu);
 
       mis_bx = !check_track_bx(trk1, trk2);
 
@@ -510,7 +517,7 @@ void EmuAccuracy::sitrep(const std::vector<int>& unp_matches, const std::vector<
         mis_charge  = !check_track_charge(trk1, trk2);
         mis_quality = !check_track_quality(trk1, trk2);
 
-        const auto& trkExtra = emuTracks2_->at(index_emu);
+        const auto& trkExtra = emuTracks2_.at(index_emu);
         mis_me11_dupes = check_me11_dupes(emuHits2_);
         mis_prim_match = check_prim_match(emuHits2_, trkExtra);
       }
@@ -553,12 +560,12 @@ void EmuAccuracy::sitrep(const std::vector<int>& unp_matches, const std::vector<
 
   if (why == 0) {
     // Compare pT
-    auto approx_equal = [] (float a, float b) { return std::abs(a-b) < 1e-6; };
+    auto approx_equal = [] (float a, float b) { return std::abs(a-b) < 0.5+1e-3; };
 
     int i = 0;
-    for (const auto& trk1 : (*unpTracks_)) {
+    for (const auto& trk1 : unpTracks_) {
       if (unp_matches.at(i) >= 0) {
-        const auto& trk2 = (*emuTracks_).at(unp_matches.at(i));
+        const auto& trk2 = emuTracks_.at(unp_matches.at(i));
         if (!approx_equal(trk1.Pt(), trk2.Pt())) {
           // See DataFormats/L1TMuon/interface/EMTFTrack.h
           // See DataFormats/L1TMuon/interface/EMTF/SP.h
