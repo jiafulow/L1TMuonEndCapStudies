@@ -50,7 +50,7 @@ process.RAWoutput = cms.OutputModule("PoolOutputModule",
         filterName = cms.untracked.string('')
     ),
     eventAutoFlushCompressedSize = cms.untracked.int32(5242880),
-    fileName = cms.untracked.string('l1Ntuple_RAW2DIGI.root'),
+    fileName = cms.untracked.string('l1Ntuple_RAW2DIGI_sep.root'),
     outputCommands = process.RAWEventContent.outputCommands,
     splitLevel = cms.untracked.int32(0)
 )
@@ -87,7 +87,7 @@ process = L1NtupleAODRAWEMU(process)
 
 
 # Modify output
-process.RAWoutput.outputCommands = ['drop *', 'keep *_emtfStage2Digis_*_*', 'keep *_muonCSCDigis_*_*', 'keep *_muonRPCDigis_*_*', 'keep *_simEmtfDigis_*_*']
+process.RAWoutput.outputCommands = ['drop *', 'keep *_emtfStage2Digis_*_*', 'keep *_muonCSCDigis_*_*', 'keep *_muonRPCDigis_*_*', 'keep *_simEmtfDigis_*_*', 'keep *_simEmtfDigisData_*_*']
 
 # Modify source
 fileNames = [
@@ -127,10 +127,17 @@ process.source.eventsToProcess = cms.untracked.VEventRange(eventsToProcess)
 
 # My paths and schedule definitions
 process.load('EventFilter.L1TRawToDigi.emtfStage2Digis_cfi')
+from L1TriggerSep2016.L1TMuonEndCap.simEmtfDigis_cfi import simEmtfDigisData
+process.simEmtfDigisData = simEmtfDigisData
 process.simEmtfDigis.CSCInput = cms.InputTag('emtfStage2Digis')
-process.simEmtfDigis.CSCInputBxShift = cms.untracked.int32(0)
 process.simEmtfDigis.RPCInput = cms.InputTag("muonRPCDigis")
-process.step1 = cms.Path((process.emtfStage2Digis) + (process.muonCSCDigis+process.muonRPCDigis) + process.simEmtfDigis)
+process.simEmtfDigisData.verbosity = cms.untracked.int32(0)
+if True:
+    #process.simEmtfDigisData.spPRParams16.UseSecondEarliest = False
+    process.simEmtfDigisData.spPCParams16.FixZonePhi = False
+    process.simEmtfDigisData.spPRParams16.UseSymmetricalPatterns = False
+    process.simEmtfDigisData.spPAParams16.Fix9bDPhi = False
+process.step1 = cms.Path((process.emtfStage2Digis) + (process.muonCSCDigis+process.muonRPCDigis) + process.simEmtfDigisData)
 process.schedule = cms.Schedule(process.step1, process.RAWoutput_step)
 
 
