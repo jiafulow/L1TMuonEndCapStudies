@@ -389,7 +389,7 @@ void EmuAccuracy::sitrep(const std::vector<int>& unp_matches, const std::vector<
   };
 
   auto check_track_mode = [](const auto& trk1, const auto& trk2) {
-    bool match = (trk1.Mode() == trk2.Mode());
+    bool match = (trk1.Mode() == trk2.Mode() && trk1.Mode_LUT() == trk2.Mode_LUT());
     return match;
   };
 
@@ -419,7 +419,7 @@ void EmuAccuracy::sitrep(const std::vector<int>& unp_matches, const std::vector<
   };
 
   auto check_track_charge = [](const auto& trk1, const auto& trk2) {
-    bool match = (trk1.Charge_GMT() == trk2.Charge_GMT());
+    bool match = (trk1.Charge_GMT() == trk2.Charge_GMT() && trk1.Charge_valid() == trk2.Charge_valid());
     return match;
   };
 
