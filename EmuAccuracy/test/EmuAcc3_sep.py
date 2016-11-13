@@ -87,13 +87,13 @@ process = L1NtupleAODRAWEMU(process)
 
 
 # Modify output
-process.RAWoutput.outputCommands = ['drop *', 'keep *_emtfStage2Digis_*_*', 'keep *_muonCSCDigis_*_*', 'keep *_muonRPCDigis_*_*', 'keep *_simEmtfDigis_*_*', 'keep *_simEmtfDigisData_*_*']
+process.RAWoutput.outputCommands = ['drop *', 'keep *_emtfStage2Digis_*_*', 'keep *_muonCSCDigis_*_*', 'keep *_muonRPCDigis_*_*', 'keep *_simEmtfDigis_*_*']
 
 # Modify source
 fileNames = [
     "/store/express/Run2016H/ExpressPhysics/FEVT/Express-v2/000/281/707/00000/00148DAF-A684-E611-960A-02163E0134A9.root",
-    #"/store/express/Run2016H/ExpressPhysics/FEVT/Express-v2/000/281/707/00000/00469FF0-C684-E611-88F8-02163E013620.root",
-    #"/store/express/Run2016H/ExpressPhysics/FEVT/Express-v2/000/281/707/00000/008389AD-A684-E611-9B1D-FA163E480423.root",
+    "/store/express/Run2016H/ExpressPhysics/FEVT/Express-v2/000/281/707/00000/00469FF0-C684-E611-88F8-02163E013620.root",
+    "/store/express/Run2016H/ExpressPhysics/FEVT/Express-v2/000/281/707/00000/008389AD-A684-E611-9B1D-FA163E480423.root",
     #"/store/express/Run2016H/ExpressPhysics/FEVT/Express-v2/000/281/707/00000/00AABA9A-B684-E611-B508-FA163EFD691C.root",
     #"/store/express/Run2016H/ExpressPhysics/FEVT/Express-v2/000/281/707/00000/00DA5315-AA84-E611-8AA9-02163E01199A.root",
     #"/store/express/Run2016H/ExpressPhysics/FEVT/Express-v2/000/281/707/00000/00FD3DF7-A184-E611-9841-02163E01347D.root",
@@ -120,7 +120,9 @@ eventsToProcess = [
     #"281707:134963582",
     #"281707:1713517148",
     #"281707:300921221",
-    "281707:715148676",
+    #"281707:715148676",
+    #"281707:135509344",
+    "281707:1289966989",
 ]
 process.source.eventsToProcess = cms.untracked.VEventRange(eventsToProcess)
 
@@ -128,16 +130,16 @@ process.source.eventsToProcess = cms.untracked.VEventRange(eventsToProcess)
 # My paths and schedule definitions
 process.load('EventFilter.L1TRawToDigi.emtfStage2Digis_cfi')
 from L1TriggerSep2016.L1TMuonEndCap.simEmtfDigis_cfi import simEmtfDigisData
-process.simEmtfDigisData = simEmtfDigisData
-process.simEmtfDigis.CSCInput = cms.InputTag('emtfStage2Digis')
-process.simEmtfDigis.RPCInput = cms.InputTag("muonRPCDigis")
-process.simEmtfDigisData.verbosity = cms.untracked.int32(0)
+process.simEmtfDigis = simEmtfDigisData
+process.simEmtfDigis.verbosity = cms.untracked.int32(0)
 if True:
-    #process.simEmtfDigisData.spPRParams16.UseSecondEarliest = False
-    process.simEmtfDigisData.spPCParams16.FixZonePhi = False
-    process.simEmtfDigisData.spPRParams16.UseSymmetricalPatterns = False
-    process.simEmtfDigisData.spPAParams16.Fix9bDPhi = False
-process.step1 = cms.Path((process.emtfStage2Digis) + (process.muonCSCDigis+process.muonRPCDigis) + process.simEmtfDigisData)
+    #process.simEmtfDigis.spPRParams16.UseSecondEarliest = False
+    process.simEmtfDigis.spPCParams16.FixZonePhi = False
+    process.simEmtfDigis.spPRParams16.UseSymmetricalPatterns = False
+    process.simEmtfDigis.spPAParams16.Bug9BitDPhi = True
+    process.simEmtfDigis.spPAParams16.BugMode7CLCT = True
+    process.simEmtfDigis.spPAParams16.BugNegPt = True
+process.step1 = cms.Path((process.emtfStage2Digis) + (process.muonCSCDigis+process.muonRPCDigis) + process.simEmtfDigis)
 process.schedule = cms.Schedule(process.step1, process.RAWoutput_step)
 
 
