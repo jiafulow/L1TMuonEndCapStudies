@@ -1,0 +1,19 @@
+cmsDriver.py l1NtupleMC \
+  --step RAW2DIGI \
+  --mc --eventcontent RAWSIM \
+  --era Run2_2016 \
+  --conditions auto:run2_mc \
+  --customise L1Trigger/Configuration/customiseReEmul.L1TReEmulMCFromRAW \
+  --customise L1Trigger/L1TNtuples/customiseL1Ntuple.L1NtupleRAWEMUGEN_MC \
+  --filein /store/mc/RunIISpring16DR80/SingleMu_Pt1To1000_FlatRandomOneOverPt/GEN-SIM-RAW/NoPURAW_NZS_withHLT_80X_mcRun2_asymptotic_v14-v1/60000/26CA310A-4164-E611-BE48-001E67248566.root \
+  --no_exec -n 100
+
+#cmsDriver.py l1NtupleMC \
+#  --step L1REPACK:FullMC,RAW2DIGI \
+#  --mc --eventcontent RAWSIM \
+#  --era Run2_2016 \
+#  --conditions auto:run2_mc \
+#  --customise L1Trigger/L1TNtuples/customiseL1Ntuple.L1NtupleRAWEMUGEN_MC \
+#  --filein /store/mc/RunIISpring16DR80/SingleMu_Pt1To1000_FlatRandomOneOverPt/GEN-SIM-RAW/NoPURAW_NZS_withHLT_80X_mcRun2_asymptotic_v14-v1/60000/26CA310A-4164-E611-BE48-001E67248566.root \
+#  --no_exec -n 100
+
