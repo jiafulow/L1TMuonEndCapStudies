@@ -34,7 +34,7 @@ namespace l1t_std = l1t;
 namespace l1t_sep = l1t;
 #endif
 
-#include "Helper.hh"
+#include "helper.hh"
 
 
 // _____________________________________________________________________________
@@ -189,7 +189,7 @@ void EmuAccuracy::getHandles(const edm::Event& iEvent) {
     return;
   }
 
-  // Clone
+  // Object filters
 
   // Exclude out-of-emu BX
   auto out_of_emu_bx = [](const auto& trk) {
@@ -458,7 +458,8 @@ void EmuAccuracy::sitrep(const std::vector<int>& unp_matches, const std::vector<
 #ifdef SEP2016_VERSION
     const int bw_fph = 13;
     const int bpow = 7;
-    int ph_pat = trk.xroad.ph_num;
+    //int ph_pat = trk.xroad.ph_num;
+    int ph_pat = 0; //FIXME
 
     for (const auto& hit : emuHits2_) {
       if (

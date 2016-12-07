@@ -1,5 +1,5 @@
-#ifndef Helper_hh
-#define Helper_hh
+#ifndef helper_hh
+#define helper_hh
 
 struct TracksMatch {
   template<class T1, class T2>
