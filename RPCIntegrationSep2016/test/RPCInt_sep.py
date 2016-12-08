@@ -28,7 +28,8 @@ process.maxEvents = cms.untracked.PSet(
 
 # Input source
 process.source = cms.Source("PoolSource",
-    fileNames = cms.untracked.vstring('/store/mc/RunIISpring16DR80/SingleMu_Pt1To1000_FlatRandomOneOverPt/GEN-SIM-RAW/NoPURAW_NZS_withHLT_80X_mcRun2_asymptotic_v14-v1/60000/26CA310A-4164-E611-BE48-001E67248566.root'),
+    #fileNames = cms.untracked.vstring('/store/mc/RunIISpring16DR80/SingleMu_Pt1To1000_FlatRandomOneOverPt/GEN-SIM-RAW/NoPURAW_NZS_withHLT_80X_mcRun2_asymptotic_v14-v1/60000/26CA310A-4164-E611-BE48-001E67248566.root'),
+    fileNames = cms.untracked.vstring('/store/mc/RunIISpring16DR80/SingleMu_Pt1To1000_FlatRandomOneOverPt/GEN-SIM-RAW/NoPURAW_NZS_withHLT_80X_mcRun2_asymptotic_v14-v1/60000/EC6D71F4-2F64-E611-A229-001EC9ADC0B4.root'),
     secondaryFileNames = cms.untracked.vstring()
 )
 
@@ -51,7 +52,7 @@ process.RAWSIMoutput = cms.OutputModule("PoolOutputModule",
         filterName = cms.untracked.string('')
     ),
     eventAutoFlushCompressedSize = cms.untracked.int32(5242880),
-    fileName = cms.untracked.string('l1NtupleMC_RAW2DIGI.root'),
+    fileName = cms.untracked.string('l1NtupleMC_RAW2DIGI_sep.root'),
     outputCommands = process.RAWSIMEventContent.outputCommands,
     splitLevel = cms.untracked.int32(0)
 )
@@ -88,7 +89,7 @@ process = L1NtupleRAWEMUGEN_MC(process)
 
 
 # Modify output
-process.RAWSIMoutput.outputCommands = ['drop *', 'keep *_simCscTriggerPrimitiveDigis_*_*', 'keep *_simMuonRPCDigis_*_*', 'keep *_simEmtfDigis_*_*']
+process.RAWSIMoutput.outputCommands = ['drop *', 'keep *_genParticles_*_*', 'keep *_simCscTriggerPrimitiveDigis_*_*', 'keep *_simMuonRPCDigis_*_*', 'keep *_simEmtfDigis_*_*']
 
 # Modify source
 fileNames = [
@@ -109,14 +110,16 @@ fileNames = [
 # My paths and schedule definitions
 from L1TriggerSep2016.L1TMuonEndCap.simEmtfDigis_cfi import simEmtfDigisMC
 process.simEmtfDigis = simEmtfDigisMC
-process.simEmtfDigis.verbosity = cms.untracked.int32(1)
+process.simEmtfDigis.verbosity = cms.untracked.int32(0)
 if True:
     process.simCscTriggerPrimitiveDigis.CSCComparatorDigiProducer = cms.InputTag("simMuonCSCDigis","MuonCSCComparatorDigi")
     process.simCscTriggerPrimitiveDigis.CSCWireDigiProducer = cms.InputTag("simMuonCSCDigis","MuonCSCWireDigi")
 
     process.simEmtfDigis.RPCEnable                   = True
-    #process.simEmtfDigis.spPCParams16.UseNewZones    = True
     #process.simEmtfDigis.spPCParams16.ZoneBoundaries = [0,36,54,96,127]
+    #process.simEmtfDigis.spPCParams16.UseNewZones    = True
+    process.simEmtfDigis.spPCParams16.CoordLUTDir    = 'ph_lut_v2'
+    process.simEmtfDigis.spPCParams16.FixME11Edges   = True
 process.step1 = cms.Path((process.simCscTriggerPrimitiveDigis) + process.simEmtfDigis)
 process.schedule = cms.Schedule(process.step1, process.RAWSIMoutput_step)
 
