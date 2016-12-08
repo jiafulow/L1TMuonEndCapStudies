@@ -5,9 +5,10 @@
 #include <iostream>
 #include <algorithm>
 
+#include "TString.h"
 #include "TFile.h"
 #include "TH1F.h"
-#include "TString.h"
+#include "TEfficiency.h"
 
 #include "FWCore/Framework/interface/Frameworkfwd.h"
 #include "FWCore/Framework/interface/EDAnalyzer.h"
@@ -17,29 +18,24 @@
 #include "FWCore/ParameterSet/interface/ParameterSet.h"
 #include "FWCore/MessageLogger/interface/MessageLogger.h"
 
-#include "DataFormats/L1TMuon/interface/EMTFHit.h"
-#include "DataFormats/L1TMuon/interface/EMTFHitExtra.h"
-#include "DataFormats/L1TMuon/interface/EMTFTrack.h"
-#include "DataFormats/L1TMuon/interface/EMTFTrackExtra.h"
+//#include "DataFormats/L1TMuon/interface/EMTFHit.h"
+//#include "DataFormats/L1TMuon/interface/EMTFHitExtra.h"
+//#include "DataFormats/L1TMuon/interface/EMTFTrack.h"
+//#include "DataFormats/L1TMuon/interface/EMTFTrackExtra.h"
 
-#include "DataFormatsSep2016/L1TMuon/interface/EMTFHit.h"
+//#include "DataFormatsSep2016/L1TMuon/interface/EMTFHit.h"
 #include "DataFormatsSep2016/L1TMuon/interface/EMTFHitExtra.h"
-#include "DataFormatsSep2016/L1TMuon/interface/EMTFTrack.h"
+//#include "DataFormatsSep2016/L1TMuon/interface/EMTFTrack.h"
 #include "DataFormatsSep2016/L1TMuon/interface/EMTFTrackExtra.h"
 
 #include "DataFormats/HepMCCandidate/interface/GenParticle.h"
 #include "DataFormats/HepMCCandidate/interface/GenParticleFwd.h"
 
 
-#define SEP2016_VERSION
+// From L1TriggerSep2016/L1TMuonEndCap/interface/MuonTriggerPrimitive.h
+enum subsystem_type{kDT,kCSC,kRPC,kNSubsystems};
 
-#ifdef SEP2016_VERSION
-namespace l1t_std = l1t;
-namespace l1t_sep = L1TMuonEndCap;
-#else
-namespace l1t_std = l1t;
-namespace l1t_sep = l1t;
-#endif
+namespace l1t = L1TMuonEndCap;
 
 #include "helper.hh"
 
@@ -65,14 +61,9 @@ private:
   void bookHistograms();
   void writeHistograms();
 
-  // Member data
-  //const edm::InputTag unpHitTag_;
-  //const edm::InputTag emuHitTag_;
-  //const edm::InputTag unpTrackTag_;
-  //const edm::InputTag emuTrackTag_;
-
-  const edm::InputTag emuHitTag2_;
-  const edm::InputTag emuTrackTag2_;
+  // Options
+  const edm::InputTag emuHitTag_;
+  const edm::InputTag emuTrackTag_;
 
   const edm::InputTag genPartTag_;
 
@@ -80,23 +71,14 @@ private:
 
   int verbose_;
 
-  //edm::EDGetTokenT<l1t_std::EMTFHitCollection>   unpHitToken_;
-  //edm::EDGetTokenT<l1t_sep::EMTFHitCollection>   emuHitToken_;
-  //edm::EDGetTokenT<l1t_std::EMTFTrackCollection> unpTrackToken_;
-  //edm::EDGetTokenT<l1t_sep::EMTFTrackCollection> emuTrackToken_;
-
-  edm::EDGetTokenT<l1t_sep::EMTFHitExtraCollection>   emuHitToken2_;
-  edm::EDGetTokenT<l1t_sep::EMTFTrackExtraCollection> emuTrackToken2_;
+  // Member data
+  edm::EDGetTokenT<l1t::EMTFHitExtraCollection>   emuHitToken_;
+  edm::EDGetTokenT<l1t::EMTFTrackExtraCollection> emuTrackToken_;
 
   edm::EDGetTokenT<reco::GenParticleCollection> genPartToken_;
 
-  //l1t_std::EMTFHitCollection    unpHits_;
-  //l1t_sep::EMTFHitCollection    emuHits_;
-  //l1t_std::EMTFTrackCollection  unpTracks_;
-  //l1t_sep::EMTFTrackCollection  emuTracks_;
-
-  l1t_sep::EMTFHitExtraCollection    emuHits2_;
-  l1t_sep::EMTFTrackExtraCollection  emuTracks2_;
+  l1t::EMTFHitExtraCollection    emuHits_;
+  l1t::EMTFTrackExtraCollection  emuTracks_;
 
   reco::GenParticleCollection genParts_;
 
@@ -105,25 +87,14 @@ private:
 
 // _____________________________________________________________________________
 RPCIntegration::RPCIntegration(const edm::ParameterSet& iConfig) :
-    //unpHitTag_   (iConfig.getParameter<edm::InputTag>("unpHitTag")),
-    //emuHitTag_   (iConfig.getParameter<edm::InputTag>("emuHitTag")),
-    //unpTrackTag_ (iConfig.getParameter<edm::InputTag>("unpTrackTag")),
-    //emuTrackTag_ (iConfig.getParameter<edm::InputTag>("emuTrackTag")),
-
-    emuHitTag2_  (iConfig.getParameter<edm::InputTag>("emuHitTag2")),
-    emuTrackTag2_(iConfig.getParameter<edm::InputTag>("emuTrackTag2")),
-
+    emuHitTag_   (iConfig.getParameter<edm::InputTag>("emuHitTag")),
+    emuTrackTag_ (iConfig.getParameter<edm::InputTag>("emuTrackTag")),
     genPartTag_  (iConfig.getParameter<edm::InputTag>("genPartTag")),
     outFileName_ (iConfig.getParameter<std::string>  ("outFileName")),
     verbose_     (iConfig.getUntrackedParameter<int> ("verbosity"))
 {
-    //unpHitToken_   = consumes<l1t_std::EMTFHitCollection>  (unpHitTag_);
-    //emuHitToken_   = consumes<l1t_sep::EMTFHitCollection>  (emuHitTag_);
-    //unpTrackToken_ = consumes<l1t_std::EMTFTrackCollection>(unpTrackTag_);
-    //emuTrackToken_ = consumes<l1t_sep::EMTFTrackCollection>(emuTrackTag_);
-
-    emuHitToken2_    = consumes<l1t_sep::EMTFHitExtraCollection>  (emuHitTag2_);
-    emuTrackToken2_  = consumes<l1t_sep::EMTFTrackExtraCollection>(emuTrackTag2_);
+    emuHitToken_   = consumes<l1t::EMTFHitExtraCollection>  (emuHitTag_);
+    emuTrackToken_ = consumes<l1t::EMTFTrackExtraCollection>(emuTrackTag_);
 
     genPartToken_ = consumes<reco::GenParticleCollection>(genPartTag_);
 }
@@ -139,66 +110,26 @@ void RPCIntegration::analyze(const edm::Event& iEvent, const edm::EventSetup& iS
 
 // _____________________________________________________________________________
 void RPCIntegration::getHandles(const edm::Event& iEvent) {
+  edm::Handle<decltype(emuHits_)>   emuHits_handle;
+  edm::Handle<decltype(emuTracks_)> emuTracks_handle;
 
-  //edm::Handle<decltype(unpHits_)>    unpHits_handle;
-  //edm::Handle<decltype(emuHits_)>    emuHits_handle;
-  //edm::Handle<decltype(unpTracks_)>  unpTracks_handle;
-  //edm::Handle<decltype(emuTracks_)>  emuTracks_handle;
+  if (!emuHitToken_.isUninitialized()) {
+    iEvent.getByToken(emuHitToken_, emuHits_handle);
+  }
+  if (!emuHits_handle.isValid()) {
+    edm::LogError("RPCIntegration") << "Cannot get the product: " << emuHitTag_;
+    return;
+  }
 
-  edm::Handle<decltype(emuHits2_)>   emuHits2_handle;
-  edm::Handle<decltype(emuTracks2_)> emuTracks2_handle;
+  if (!emuTrackToken_.isUninitialized()) {
+    iEvent.getByToken(emuTrackToken_, emuTracks_handle);
+  }
+  if (!emuTracks_handle.isValid()) {
+    edm::LogError("RPCIntegration") << "Cannot get the product: " << emuTrackTag_;
+    return;
+  }
 
   edm::Handle<decltype(genParts_)> genParts_handle;
-
-  if (iEvent.isRealData()) {
-    //if (!unpHitToken_.isUninitialized()) {
-    //  iEvent.getByToken(unpHitToken_, unpHits_handle);
-    //}
-    //if (!unpHits_handle.isValid()) {
-    //  edm::LogError("RPCIntegration") << "Cannot get the product: " << unpHitTag_;
-    //  return;
-    //}
-    //
-    //if (!unpTrackToken_.isUninitialized()) {
-    //  iEvent.getByToken(unpTrackToken_, unpTracks_handle);
-    //}
-    //if (!unpTracks_handle.isValid()) {
-    //  edm::LogError("RPCIntegration") << "Cannot get the product: " << unpTrackTag_;
-    //  return;
-    //}
-  }
-
-  //if (!emuHitToken_.isUninitialized()) {
-  //  iEvent.getByToken(emuHitToken_, emuHits_handle);
-  //}
-  //if (!emuHits_handle.isValid()) {
-  //  edm::LogError("RPCIntegration") << "Cannot get the product: " << emuHitTag_;
-  //  return;
-  //}
-  //
-  //if (!emuTrackToken_.isUninitialized()) {
-  //  iEvent.getByToken(emuTrackToken_, emuTracks_handle);
-  //}
-  //if (!emuTracks_handle.isValid()) {
-  //  edm::LogError("RPCIntegration") << "Cannot get the product: " << emuTrackTag_;
-  //  return;
-  //}
-
-  if (!emuHitToken2_.isUninitialized()) {
-    iEvent.getByToken(emuHitToken2_, emuHits2_handle);
-  }
-  if (!emuHits2_handle.isValid()) {
-    edm::LogError("RPCIntegration") << "Cannot get the product: " << emuHitTag2_;
-    return;
-  }
-
-  if (!emuTrackToken2_.isUninitialized()) {
-    iEvent.getByToken(emuTrackToken2_, emuTracks2_handle);
-  }
-  if (!emuTracks2_handle.isValid()) {
-    edm::LogError("RPCIntegration") << "Cannot get the product: " << emuTrackTag2_;
-    return;
-  }
 
   if (!iEvent.isRealData()) {
     if (!genPartToken_.isUninitialized()) {
@@ -211,76 +142,26 @@ void RPCIntegration::getHandles(const edm::Event& iEvent) {
   }
 
   // Object filters
-
-  //// Exclude out-of-emu BX
-  //auto out_of_emu_bx = [](const auto& trk) {
-  //  bool out = (trk.BX() < -1) || (+1 < trk.BX());
-  //  //bool out = (trk.BX() != 0);
-  //  return out;
-  //};
-  //
-  //// Exclude sector -6
-  //auto out_of_emu_sector = [](const auto& trk) {
-  //  bool out = (trk.Endcap() == -1 && trk.Sector() == 6);
-  //  return out;
-  //};
-  //
-  //unpHits_.clear();
-  //for (const auto& hit : (*unpHits_handle)) {
-  //  unpHits_.push_back(hit);
-  //}
-  //
-  //emuHits_.clear();
-  //for (const auto& hit : (*emuHits_handle)) {
-  //  emuHits_.push_back(hit);
-  //}
-  //
-  //unpTracks_.clear();
-  //for (const auto& trk : reversed(*unpTracks_handle)) {
-  //  if (out_of_emu_bx(trk))      continue;
-  //  if (out_of_emu_sector(trk))  continue;
-  //  unpTracks_.push_back(trk);
-  //}
-  //
-  //emuTracks_.clear();
-  //for (const auto& trk : (*emuTracks_handle)) {
-  //  if (out_of_emu_bx(trk))      continue;
-  //  if (out_of_emu_sector(trk))  continue;
-  //  emuTracks_.push_back(trk);
-  //}
-
-  emuHits2_.clear();
-  for (const auto& hit : (*emuHits2_handle)) {
-    emuHits2_.push_back(hit);
+  emuHits_.clear();
+  for (const auto& hit : (*emuHits_handle)) {
+    emuHits_.push_back(hit);
   }
-  //assert(emuHits_.size() == emuHits2_.size());
 
-  emuTracks2_.clear();
-  for (const auto& trk : (*emuTracks2_handle)) {
-#ifdef SEP2016_VERSION
-    if (trk.bx < -1 || +1 < trk.bx)      continue;  //if (out_of_emu_bx(trk))      continue;
-    if (trk.endcap==2 && trk.sector==6)  continue;  //if (out_of_emu_sector(trk))  continue;
-
-    if (trk.endcap==2)                   continue;  // only positive endcap
-#else
-    if (out_of_emu_bx(trk))      continue;
-    if (out_of_emu_sector(trk))  continue;
-#endif
-    emuTracks2_.push_back(trk);
+  emuTracks_.clear();
+  for (const auto& trk : (*emuTracks_handle)) {
+    if (trk.bx != 0)      continue;  // only BX=0
+    if (trk.endcap != 1)  continue;  // only positive endcap
+    emuTracks_.push_back(trk);
   }
-  //assert(emuTracks_.size() == emuTracks2_.size());
-
-  auto not_muon = [](const auto& part) {
-    int absPdgId  = std::abs(part.pdgId());
-    double pt     = part.pt();
-    double eta    = part.eta();                     // only positive endcap
-    bool b = !((absPdgId == 13) && (pt >= 2.) && (1.24 <= eta && eta <= 2.4));
-    return b;
-  };
 
   genParts_.clear();
   for (const auto& part : (*genParts_handle)) {
-    if (not_muon(part))  continue;
+    int absPdgId  = std::abs(part.pdgId());
+    double pt     = part.pt();
+    double eta    = part.eta();
+    if (absPdgId != 13)  continue;                // only muons
+    if (!(pt >= 2.))     continue;                // only pT > 2
+    if (!(1.24 <= eta && eta <= 2.4))  continue;  // only positive endcap
     genParts_.push_back(part);
   }
 }
@@ -290,7 +171,7 @@ void RPCIntegration::makeEfficiency() {
   TString hname;
   TH1F* h;
 
-  auto get_l1t_mode_bin = [](const auto& trk) {
+  auto get_mode_bin = [](const auto& trk) {
     int mode      = trk.mode;
     if (mode == 15)                              return 3;
     if (mode == 11 || mode == 13 || mode == 14)  return 2;
@@ -299,7 +180,7 @@ void RPCIntegration::makeEfficiency() {
     return -1;
   };
 
-  auto get_l1t_pt_bin = [](const auto& trk) {
+  auto get_l1pt_bin = [](const auto& trk) {
     float pt      = trk.pt;
     if (pt >= 100.)  return 3;
     if (pt >=  22.)  return 2;
@@ -332,46 +213,66 @@ void RPCIntegration::makeEfficiency() {
     }
 
     int itrack = 0;
-    for (const auto& trk : emuTracks2_) {
+    for (const auto& trk : emuTracks_) {
       std::cout << "trk " << itrack++ << " " << trk.pt << " " << trk.gmt_eta << " " << trk.gmt_phi << " " << trk.mode << std::endl;
     }
   }
 
-  if (genParts_.empty())
+  if (genParts_.empty()) {
     keep_event = false;
+  }
 
   if (keep_event) {
     const auto& part = genParts_.front();
 
-    bool trigger = !emuTracks2_.empty();
+    bool trigger = !emuTracks_.empty();
 
     if (genParts_.size() != 1) {
       std::cout << "[WARNING] perche non uno? num of genParts: " << genParts_.size() << std::endl;
     }
 
-    if (trigger && emuTracks2_.size() != 1) {
-      std::cout << "[WARNING] perche non uno? num of emuTracks2: " << emuTracks2_.size() << std::endl;
+    if (trigger && emuTracks_.size() != 1) {
+      std::cout << "[WARNING] perche non uno? num of emuTracks: " << emuTracks_.size() << std::endl;
     }
 
-    int mode_bin    = trigger ? get_l1t_mode_bin(emuTracks2_.front()) : -1;
-    int pt_bin      = trigger ? get_l1t_pt_bin(emuTracks2_.front()) : -1;
+    int mode_bin    = trigger ? get_mode_bin(emuTracks_.front()) : -1;
+    int l1pt_bin    = trigger ? get_l1pt_bin(emuTracks_.front()) : -1;
     int eta_bin     = get_gen_eta_bin(part);
     int eta_any_bin = get_gen_eta_any_bin(part);
 
     double pt     = part.pt();
     double absEta = std::abs(part.eta());
 
+    int gen_mode = 0;
+    for (const auto& hit : emuHits_) {
+      if (hit.subsystem == kCSC) {
+        gen_mode |= (1<<hit.station);
+      }
+
+      //if (hit.subsystem == kRPC) {
+      //  gen_mode |= (1<<hit.station);
+      //}
+    }
+
+    l1t::EMTFTrackExtra fake_track;
+    fake_track.mode = gen_mode;
+    int gen_mode_bin = get_mode_bin(fake_track);
+
+    // _________________________________________________________________________
+    // Fill histograms
+
     // Efficiency vs pT
     for (int i=0; i<4; ++i) {  // mode
       for (int j=0; j<4; ++j) {  // eta
-        if (j != eta_bin || j != eta_any_bin) continue;
+        if (!(j == eta_bin || j == eta_any_bin)) continue;  // gen eta binning
 
         hname = Form("denom_vs_pt_mode%i_eta%i", i, j);
         h = histograms_.at(hname);
         h->Fill(pt);
 
         if (trigger) {
-          if (i < mode_bin) continue;
+          if (!(i <= mode_bin)) continue;
+          //if (!(2 <= l1pt_bin)) continue;  // trigger pT cut
 
           hname = Form("num_vs_pt_mode%i_eta%i", i, j);
           h = histograms_.at(hname);
@@ -382,16 +283,19 @@ void RPCIntegration::makeEfficiency() {
 
     // Efficiency vs eta
     for (int i=0; i<4; ++i) {  // mode
-      for (int j=0; j<4; ++j) {  // pt
-        hname = Form("denom_vs_eta_mode%i_pt%i", i, j);
+      for (int j=0; j<4; ++j) {  // pT
+        //if (!(pt >= 2.)) continue;  // gen pT requirement
+        if (!(pt >= 30.)) continue;  // gen pT requirement
+
+        hname = Form("denom_vs_eta_mode%i_l1pt%i", i, j);
         h = histograms_.at(hname);
         h->Fill(absEta);
 
         if (trigger) {
-          if (i < mode_bin) continue;
-          if (j < pt_bin) continue;
+          if (!(i <= mode_bin)) continue;
+          if (!(j <= l1pt_bin)) continue;
 
-          hname = Form("num_vs_eta_mode%i_pt%i", i, j);
+          hname = Form("num_vs_eta_mode%i_l1pt%i", i, j);
           h = histograms_.at(hname);
           h->Fill(absEta);
         }
@@ -420,7 +324,7 @@ void RPCIntegration::bookHistograms() {
   //   mode 0,1,2,3 = MuOpen, DoubleMu, SingleMu, Mode15
   //   eta  0,1,2,3 = 1.2-1.6, 1.6-2.0, 2.0-2.4, inclusive
 
-  const Double_t pt_bins[41] = {0.0, 0.5, 1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 8.0, 10.0, 12.0, 15.0, 20.0, 25.0, 30.0, 35.0, 40.0, 45.0, 50.0, 55.0, 60.0, 70.0, 80.0, 100.0, 125.0, 150.0, 200.0, 250.0, 300.0, 350.0, 400.0, 450.0, 500.0, 550.0, 600.0, 650.0, 700.0, 800.0, 1000.0, 2000.0, 7000.0};
+  const Double_t pt_bins[46] = {0., 1., 2., 3., 4., 5., 6., 7., 8., 9., 10., 12., 14., 16., 18., 20., 22., 24., 26., 28., 30., 35., 40., 45., 50., 55., 60., 70., 80., 100., 120., 140., 160., 180., 200., 250., 300., 350., 400., 450., 500., 550., 600., 700., 800., 1000.};
 
   for (int i=0; i<4; ++i) {  // mode
     for (int j=0; j<4; ++j) {  // eta
@@ -429,23 +333,23 @@ void RPCIntegration::bookHistograms() {
           hname = Form("denom_vs_pt_mode%i_eta%i", i, j);
         else
           hname = Form("num_vs_pt_mode%i_eta%i", i, j);
-        h = new TH1F(hname, "; p_{T} [GeV]; entries", 41-1, pt_bins);
+        h = new TH1F(hname, "; p_{T} [GeV]; entries", 46-1, pt_bins);
         histograms_[hname] = h;
       }
     }
   }
 
-  // Efficiency vs eta
+  // Efficiency vs eta (requiring gen pT >= 20)
   // Make [mode] x [pT] where
   //   mode 0,1,2,3 = MuOpen, DoubleMu, SingleMu, Mode15
-  //   pt   0,1,2,3 = >=0, >=12, >=22, >=100
+  //   pT   0,1,2,3 = >=0, >=12, >=22, >=100
   for (int i=0; i<4; ++i) {  // mode
-    for (int j=0; j<4; ++j) {  // pt
+    for (int j=0; j<4; ++j) {  // pT
       for (int k=0; k<2; ++k) {
         if (k == 0)
-          hname = Form("denom_vs_eta_mode%i_pt%i", i, j);
+          hname = Form("denom_vs_eta_mode%i_l1pt%i", i, j);
         else
-          hname = Form("num_vs_eta_mode%i_pt%i", i, j);
+          hname = Form("num_vs_eta_mode%i_l1pt%i", i, j);
         h = new TH1F(hname, "; |#eta|; entries", 48, 1.2, 2.4);
         histograms_[hname] = h;
       }
@@ -454,10 +358,30 @@ void RPCIntegration::bookHistograms() {
 }
 
 void RPCIntegration::writeHistograms() {
+  TString hname;
+  TH1F* denom;
+  TH1F* num;
+  TEfficiency* eff;
+
   TFile* f = TFile::Open(outFileName_.c_str(), "RECREATE");
   for (const auto& kv : histograms_) {
     kv.second->SetDirectory(gDirectory);
+
+    // Make TEfficiency
+    if (kv.first.BeginsWith("denom_")) {
+      hname = kv.first;
+      denom = kv.second;
+      hname.ReplaceAll("denom_", "num_");
+      num = histograms_.at(hname);
+      hname = kv.first;
+      hname.ReplaceAll("denom_", "eff_");
+      eff = new TEfficiency(*num, *denom);
+      eff->SetName(hname);
+      eff->SetStatisticOption(TEfficiency::kFCP);
+      eff->SetDirectory(gDirectory);
+    }
   }
+
   f->Write();
   f->Close();
 }

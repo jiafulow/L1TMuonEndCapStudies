@@ -14,7 +14,6 @@ process.maxEvents = cms.untracked.PSet(
 # Input source
 process.source = cms.Source("PoolSource",
     fileNames = cms.untracked.vstring('file:l1NtupleMC_RAW2DIGI_sep.root'),
-    #fileNames = cms.untracked.vstring('file:l1NtupleMC_RAW2DIGI.root'),
 )
 
 process.options = cms.untracked.PSet()

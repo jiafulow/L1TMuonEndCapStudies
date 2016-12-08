@@ -116,8 +116,8 @@ if True:
     process.simCscTriggerPrimitiveDigis.CSCWireDigiProducer = cms.InputTag("simMuonCSCDigis","MuonCSCWireDigi")
 
     process.simEmtfDigis.RPCEnable                   = True
-    #process.simEmtfDigis.spPCParams16.ZoneBoundaries = [0,36,54,96,127]
-    #process.simEmtfDigis.spPCParams16.UseNewZones    = True
+    process.simEmtfDigis.spPCParams16.ZoneBoundaries = [0,36,54,96,127]
+    process.simEmtfDigis.spPCParams16.UseNewZones    = True
     process.simEmtfDigis.spPCParams16.CoordLUTDir    = 'ph_lut_v2'
     process.simEmtfDigis.spPCParams16.FixME11Edges   = True
 process.step1 = cms.Path((process.simCscTriggerPrimitiveDigis) + process.simEmtfDigis)
