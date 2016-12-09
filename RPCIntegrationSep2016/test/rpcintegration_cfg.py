@@ -22,7 +22,7 @@ process.options = cms.untracked.PSet()
 # Plugin: EmuAccuracy
 process.load("L1TMuonEndCapStudies.RPCIntegrationSep2016.rpcintegration_cfi")
 process.rpcintegration.outFileName = "histos.root"
-process.rpcintegration.verbosity = 0
+process.rpcintegration.verbosity = 1
 
 
 # Paths

@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-from ROOT import TFile, TH1F, TH2F, TProfile, TGraphAsymmErrors, TEfficiency, TColor, TLine, gROOT, gStyle, gPad
+from ROOT import TFile, TH1F, TH2F, TProfile, TGraphAsymmErrors, TEfficiency, TColor, TLine, TLegend, TLatex, gROOT, gStyle, gPad
 
 
 # ______________________________________________________________________________
@@ -18,10 +18,30 @@ def main(histos, options):
     for k in sorted(histos.keys()):
       print "  %s" % k
 
+  # Legend
+  tlegend = TLegend(0.70,0.14,0.96,0.30)
+  tlegend.SetFillStyle(0)
+  tlegend.SetLineColor(0)
+  tlegend.SetShadowColor(0)
+  tlegend.SetBorderSize(0)
+
+  # Text
+  tlatex = TLatex()
+  tlatex.SetNDC()
+  tlatex.SetTextFont(42)
+  tlatex.SetTextSize(0.035)
+
+  # Lines
+  tline = TLine()
+  tline.SetLineColor(1)
+
   # Efficiency vs pT
   special_hname = "eff_vs_pt_mode%i_eta%i"
+  ilabels = ["MuOpen", "DoubleMu", "SingleMu", "Mode15"]
+  jlabels = ["gen 1.24<|#eta|<1.6", "gen 1.6<|#eta|<2.0", "gen 2.0<|#eta|<2.4", "gen 1.24<|#eta|<2.4"]
+
   for j in xrange(4):
-    frame, leg = None, None
+    frame = None
     for i in xrange(4):
       hname = special_hname % (i, j)
       h = histos[hname]
@@ -29,16 +49,21 @@ def main(histos, options):
       if not frame:
         frame = h.GetCopyTotalHisto().Clone(hname+"_frame"); frame.Reset()
         frame.SetMinimum(0); frame.SetMaximum(1.2)
+        frame.GetYaxis().SetTitle("efficiency")
         frame.SetStats(0); frame.Draw()
         xmin, xmax = frame.GetXaxis().GetXmin(), frame.GetXaxis().GetXmax()
-        tline = TLine(); tline.SetLineColor(1)
         tline.DrawLine(xmin, 1.0, xmax, 1.0)
+        tlegend.Clear()
+        tlatex.DrawLatex(0.2, 0.88, "%s" % jlabels[j])
+        tlegend.Clear()
 
       gr = h.CreateGraph()
       gr.SetMarkerColor(palette[i]); gr.SetLineColor(palette[i])
       gr.SetMarkerStyle(20); gr.SetMarkerSize(0.8)
       gr.Draw("p")
+      tlegend.AddEntry(gr, "#color[%i]{%s}" % (palette[i], ilabels[i]), "")
 
+    tlegend.Draw()
     imgname = special_hname % (99, j)
     gPad.SetLogx(True)
     gPad.Print("%s.png" % (options.outdir+imgname))
@@ -46,8 +71,11 @@ def main(histos, options):
 
   # Efficiency vs eta
   special_hname = "eff_vs_eta_mode%i_l1pt%i"
+  ilabels = ["MuOpen", "DoubleMu", "SingleMu", "Mode15"]
+  jlabels = ["L1T p_{T}>0", "L1T p_{T}>12", "L1T p_{T}>18", "L1T p_{T}>100"]
+
   for j in xrange(4):
-    frame, leg = None, None
+    frame = None
     for i in xrange(4):
       hname = special_hname % (i, j)
       h = histos[hname]
@@ -55,16 +83,21 @@ def main(histos, options):
       if not frame:
         frame = h.GetCopyTotalHisto().Clone(hname+"_frame"); frame.Reset()
         frame.SetMinimum(0); frame.SetMaximum(1.2)
+        frame.GetYaxis().SetTitle("efficiency")
         frame.SetStats(0); frame.Draw()
         xmin, xmax = frame.GetXaxis().GetXmin(), frame.GetXaxis().GetXmax()
         tline = TLine(); tline.SetLineColor(1)
         tline.DrawLine(xmin, 1.0, xmax, 1.0)
+        tlatex.DrawLatex(0.2, 0.88, "gen p_{T}>20, %s" % jlabels[j])
+        tlegend.Clear()
 
       gr = h.CreateGraph()
       gr.SetMarkerColor(palette[i]); gr.SetLineColor(palette[i])
       gr.SetMarkerStyle(20); gr.SetMarkerSize(0.8)
       gr.Draw("p")
+      tlegend.AddEntry(gr, "#color[%i]{%s}" % (palette[i], ilabels[i]), "")
 
+    tlegend.Draw()
     imgname = special_hname % (99, j)
     gPad.Print("%s.png" % (options.outdir+imgname))
 

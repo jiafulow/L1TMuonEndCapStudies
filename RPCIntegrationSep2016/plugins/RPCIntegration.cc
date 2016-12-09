@@ -4,6 +4,7 @@
 #include <vector>
 #include <iostream>
 #include <algorithm>
+#include <random>
 
 #include "TString.h"
 #include "TFile.h"
@@ -144,6 +145,8 @@ void RPCIntegration::getHandles(const edm::Event& iEvent) {
   // Object filters
   emuHits_.clear();
   for (const auto& hit : (*emuHits_handle)) {
+    if (!(-1 <= hit.bx && hit.bx <= 1))  continue;  // only BX=[-1,+1]
+    if (hit.endcap != 1)  continue;  // only positive endcap
     emuHits_.push_back(hit);
   }
 
@@ -156,10 +159,8 @@ void RPCIntegration::getHandles(const edm::Event& iEvent) {
 
   genParts_.clear();
   for (const auto& part : (*genParts_handle)) {
-    int absPdgId  = std::abs(part.pdgId());
     double pt     = part.pt();
     double eta    = part.eta();
-    if (absPdgId != 13)  continue;                // only muons
     if (!(pt >= 2.))     continue;                // only pT > 2
     if (!(1.24 <= eta && eta <= 2.4))  continue;  // only positive endcap
     genParts_.push_back(part);
@@ -170,6 +171,9 @@ void RPCIntegration::getHandles(const edm::Event& iEvent) {
 void RPCIntegration::makeEfficiency() {
   TString hname;
   TH1F* h;
+
+  std::random_device rd;
+  std::mt19937 genrd(rd());
 
   auto get_mode_bin = [](const auto& trk) {
     int mode      = trk.mode;
@@ -183,7 +187,7 @@ void RPCIntegration::makeEfficiency() {
   auto get_l1pt_bin = [](const auto& trk) {
     float pt      = trk.pt;
     if (pt >= 100.)  return 3;
-    if (pt >=  22.)  return 2;
+    if (pt >=  18.)  return 2;
     if (pt >=  12.)  return 1;
     if (pt >=   0.)  return 0;
     return -1;
@@ -216,6 +220,16 @@ void RPCIntegration::makeEfficiency() {
     for (const auto& trk : emuTracks_) {
       std::cout << "trk " << itrack++ << " " << trk.pt << " " << trk.gmt_eta << " " << trk.gmt_phi << " " << trk.mode << std::endl;
     }
+
+    int ihit = 0;
+    for (const auto& hit : emuHits_) {
+      if (hit.subsystem == kCSC) {
+        std::cout << "CSC hit " << ihit++ << " " << hit.sector << " " << hit.station << " " << hit.chamber << " " << hit.bx << std::endl;
+      }
+      if (hit.subsystem == kRPC) {
+        std::cout << "RPC hit " << ihit++ << " " << hit.sector << " " << hit.station << " " << hit.chamber << " " << hit.bx << std::endl;
+      }
+    }
   }
 
   if (genParts_.empty()) {
@@ -240,23 +254,42 @@ void RPCIntegration::makeEfficiency() {
     int eta_bin     = get_gen_eta_bin(part);
     int eta_any_bin = get_gen_eta_any_bin(part);
 
-    double pt     = part.pt();
-    double absEta = std::abs(part.eta());
+    const int    charge = part.charge();
+    const double pt     = part.pt();
+    const double absEta = std::abs(part.eta());
+    assert(charge == 1 || charge == -1);
 
-    int gen_mode = 0;
-    for (const auto& hit : emuHits_) {
-      if (hit.subsystem == kCSC) {
-        gen_mode |= (1<<hit.station);
+    bool overwrite_with_ideal = false;
+    if (overwrite_with_ideal) {
+      l1t::EMTFTrackExtra tmp_track;
+
+      tmp_track.mode = 0;
+      for (const auto& hit : emuHits_) {
+        assert(1 <= hit.station && hit.station <= 4);
+        if (hit.subsystem == kCSC) {
+          tmp_track.mode |= (1<<(4-hit.station));
+        }
+        //if (hit.subsystem == kRPC) {
+        //  tmp_track.mode |= (1<<(4-hit.station));
+        //}
+      }
+      assert(tmp_track.mode <= 15);
+
+      if (tmp_track.mode != 15 && pt > 20. && (1.34 <= absEta && absEta <= 1.36)) {  // debug
+        std::cout << "[WARNING] perche non quindici? mode: " << tmp_track.mode << std::endl;
+
+        hname = Form("debug_eta1p3");
+        h = histograms_[hname];
+        if      (tmp_track.mode ==  7)  h->Fill(1);
+        else if (tmp_track.mode == 11)  h->Fill(2);
+        else if (tmp_track.mode == 13)  h->Fill(3);
+        else if (tmp_track.mode == 14)  h->Fill(4);
       }
 
-      //if (hit.subsystem == kRPC) {
-      //  gen_mode |= (1<<hit.station);
-      //}
+      trigger = true;
+      l1pt_bin = 3;
+      mode_bin = get_mode_bin(tmp_track);
     }
-
-    l1t::EMTFTrackExtra fake_track;
-    fake_track.mode = gen_mode;
-    int gen_mode_bin = get_mode_bin(fake_track);
 
     // _________________________________________________________________________
     // Fill histograms
@@ -285,7 +318,7 @@ void RPCIntegration::makeEfficiency() {
     for (int i=0; i<4; ++i) {  // mode
       for (int j=0; j<4; ++j) {  // pT
         //if (!(pt >= 2.)) continue;  // gen pT requirement
-        if (!(pt >= 30.)) continue;  // gen pT requirement
+        if (!(pt >= 20.)) continue;  // gen pT requirement
 
         hname = Form("denom_vs_eta_mode%i_l1pt%i", i, j);
         h = histograms_.at(hname);
@@ -299,6 +332,34 @@ void RPCIntegration::makeEfficiency() {
           h = histograms_.at(hname);
           h->Fill(absEta);
         }
+      }
+    }
+
+    // Deflection angles
+    for (int i=0; i<4; i++) {
+      std::vector<int> csc_phis;
+      std::vector<int> rpc_phis;
+      for (const auto& hit : emuHits_) {
+        if (hit.station == i+1) {
+          if (hit.subsystem == kCSC) {
+            csc_phis.push_back(hit.phi_fp);
+          }
+          if (hit.subsystem == kRPC) {
+            rpc_phis.push_back(hit.phi_fp);
+          }
+        }
+      }
+
+      // Only 120 < pT < 250
+      if ((120. < pt && pt < 250.) && csc_phis.size() > 0 && rpc_phis.size() > 0) {
+        std::uniform_int_distribution<> index1(0, csc_phis.size()-1);
+        std::uniform_int_distribution<> index2(0, rpc_phis.size()-1);
+        int csc_phi = csc_phis.at(index1(genrd));
+        int rpc_phi = rpc_phis.at(index2(genrd));
+        hname = Form("deflection_rpc_csc_st%i", i+1);
+        h = histograms_.at(hname);
+        h->Fill((csc_phi - rpc_phi) * charge);
+        //h->Fill((((csc_phi + (1<<1))>>2) - ((rpc_phi + (1<<1))>>2)) * charge);
       }
     }
 
@@ -333,7 +394,7 @@ void RPCIntegration::bookHistograms() {
           hname = Form("denom_vs_pt_mode%i_eta%i", i, j);
         else
           hname = Form("num_vs_pt_mode%i_eta%i", i, j);
-        h = new TH1F(hname, "; p_{T} [GeV]; entries", 46-1, pt_bins);
+        h = new TH1F(hname, "; gen p_{T} [GeV]; entries", 46-1, pt_bins);
         histograms_[hname] = h;
       }
     }
@@ -342,7 +403,8 @@ void RPCIntegration::bookHistograms() {
   // Efficiency vs eta (requiring gen pT >= 20)
   // Make [mode] x [pT] where
   //   mode 0,1,2,3 = MuOpen, DoubleMu, SingleMu, Mode15
-  //   pT   0,1,2,3 = >=0, >=12, >=22, >=100
+  //   pT   0,1,2,3 = >=0, >=12, >=18, >=100
+
   for (int i=0; i<4; ++i) {  // mode
     for (int j=0; j<4; ++j) {  // pT
       for (int k=0; k<2; ++k) {
@@ -350,10 +412,26 @@ void RPCIntegration::bookHistograms() {
           hname = Form("denom_vs_eta_mode%i_l1pt%i", i, j);
         else
           hname = Form("num_vs_eta_mode%i_l1pt%i", i, j);
-        h = new TH1F(hname, "; |#eta|; entries", 48, 1.2, 2.4);
+        h = new TH1F(hname, "; gen |#eta|; entries", 70, 1.1, 2.5);
         histograms_[hname] = h;
       }
     }
+  }
+
+  // Deflection angles
+
+  for (int i=0; i<4; ++i) {
+    hname = Form("deflection_rpc_csc_st%i", i+1);
+    h = new TH1F(hname, "; RPC #phi - CSC #phi [integer unit]", 121, -60.5, 60.5);
+    histograms_[hname] = h;
+  }
+
+  // Debugging
+
+  if (1) {
+    hname = Form("debug_eta1p3");
+    h = new TH1F(hname, "; missing station", 10, 0, 10);
+    histograms_[hname] = h;
   }
 }
 

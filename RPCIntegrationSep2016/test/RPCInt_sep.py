@@ -28,8 +28,8 @@ process.maxEvents = cms.untracked.PSet(
 
 # Input source
 process.source = cms.Source("PoolSource",
-    #fileNames = cms.untracked.vstring('/store/mc/RunIISpring16DR80/SingleMu_Pt1To1000_FlatRandomOneOverPt/GEN-SIM-RAW/NoPURAW_NZS_withHLT_80X_mcRun2_asymptotic_v14-v1/60000/26CA310A-4164-E611-BE48-001E67248566.root'),
     fileNames = cms.untracked.vstring('/store/mc/RunIISpring16DR80/SingleMu_Pt1To1000_FlatRandomOneOverPt/GEN-SIM-RAW/NoPURAW_NZS_withHLT_80X_mcRun2_asymptotic_v14-v1/60000/EC6D71F4-2F64-E611-A229-001EC9ADC0B4.root'),
+    #fileNames = cms.untracked.vstring('/store/mc/RunIISpring16DR80/SingleMu_Pt1To1000_FlatRandomOneOverPt/GEN-SIM-RAW/NoPURAW_NZS_withHLT_80X_mcRun2_asymptotic_v14-v1/60000/26CA310A-4164-E611-BE48-001E67248566.root'),
     secondaryFileNames = cms.untracked.vstring()
 )
 
@@ -93,6 +93,8 @@ process.RAWSIMoutput.outputCommands = ['drop *', 'keep *_genParticles_*_*', 'kee
 
 # Modify source
 fileNames = [
+    "/store/mc/RunIISpring16DR80/SingleMu_Pt1To1000_FlatRandomOneOverPt/GEN-SIM-RAW/NoPURAW_NZS_withHLT_80X_mcRun2_asymptotic_v14-v1/60000/26CA310A-4164-E611-BE48-001E67248566.root",
+    "/store/mc/RunIISpring16DR80/SingleMu_Pt1To1000_FlatRandomOneOverPt/GEN-SIM-RAW/NoPURAW_NZS_withHLT_80X_mcRun2_asymptotic_v14-v1/60000/EC6D71F4-2F64-E611-A229-001EC9ADC0B4.root",
     "/store/mc/RunIISpring16DR80/SingleMu_Pt1To1000_FlatRandomOneOverPt/GEN-SIM-RAW/NoPURAW_NZS_withHLT_80X_mcRun2_asymptotic_v14-v1/40000/027C504B-8F64-E611-929A-0025904B21E2.root",
     "/store/mc/RunIISpring16DR80/SingleMu_Pt1To1000_FlatRandomOneOverPt/GEN-SIM-RAW/NoPURAW_NZS_withHLT_80X_mcRun2_asymptotic_v14-v1/40000/044809A8-5664-E611-8C2F-0025904B2A8E.root",
     "/store/mc/RunIISpring16DR80/SingleMu_Pt1To1000_FlatRandomOneOverPt/GEN-SIM-RAW/NoPURAW_NZS_withHLT_80X_mcRun2_asymptotic_v14-v1/40000/060F5CB0-8264-E611-8B9F-0025904E405A.root",
@@ -104,7 +106,7 @@ fileNames = [
     "/store/mc/RunIISpring16DR80/SingleMu_Pt1To1000_FlatRandomOneOverPt/GEN-SIM-RAW/NoPURAW_NZS_withHLT_80X_mcRun2_asymptotic_v14-v1/40000/1262865A-6364-E611-9A9E-003048C7BA3C.root",
     "/store/mc/RunIISpring16DR80/SingleMu_Pt1To1000_FlatRandomOneOverPt/GEN-SIM-RAW/NoPURAW_NZS_withHLT_80X_mcRun2_asymptotic_v14-v1/40000/129B9075-8264-E611-A6AD-00259081ED0A.root",
 ]
-#process.source.fileNames = cms.untracked.vstring(fileNames)
+process.source.fileNames = cms.untracked.vstring(fileNames)
 
 
 # My paths and schedule definitions
@@ -115,11 +117,11 @@ if True:
     process.simCscTriggerPrimitiveDigis.CSCComparatorDigiProducer = cms.InputTag("simMuonCSCDigis","MuonCSCComparatorDigi")
     process.simCscTriggerPrimitiveDigis.CSCWireDigiProducer = cms.InputTag("simMuonCSCDigis","MuonCSCWireDigi")
 
-    process.simEmtfDigis.RPCEnable                   = True
-    process.simEmtfDigis.spPCParams16.ZoneBoundaries = [0,36,54,96,127]
-    process.simEmtfDigis.spPCParams16.UseNewZones    = True
-    process.simEmtfDigis.spPCParams16.CoordLUTDir    = 'ph_lut_v2'
-    process.simEmtfDigis.spPCParams16.FixME11Edges   = True
+    #process.simEmtfDigis.RPCEnable                   = True
+    #process.simEmtfDigis.spPCParams16.ZoneBoundaries = [0,36,54,96,127]
+    #process.simEmtfDigis.spPCParams16.UseNewZones    = True
+    #process.simEmtfDigis.spPCParams16.CoordLUTDir    = 'ph_lut_v2'
+    #process.simEmtfDigis.spPCParams16.FixME11Edges   = True
 process.step1 = cms.Path((process.simCscTriggerPrimitiveDigis) + process.simEmtfDigis)
 process.schedule = cms.Schedule(process.step1, process.RAWSIMoutput_step)
 
