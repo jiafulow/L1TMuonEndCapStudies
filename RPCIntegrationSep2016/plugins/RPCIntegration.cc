@@ -159,10 +159,8 @@ void RPCIntegration::getHandles(const edm::Event& iEvent) {
 
   genParts_.clear();
   for (const auto& part : (*genParts_handle)) {
-    double pt     = part.pt();
-    double eta    = part.eta();
-    if (!(pt >= 2.))     continue;                // only pT > 2
-    if (!(1.24 <= eta && eta <= 2.4))  continue;  // only positive endcap
+    //if (!(part.pt() >= 2.))     continue;  // only pT > 2
+    if (!(1.24 <= part.eta() && part.eta() <= 2.4))  continue;  // only positive endcap
     genParts_.push_back(part);
   }
 }
@@ -264,14 +262,22 @@ void RPCIntegration::makeEfficiency() {
       l1t::EMTFTrackExtra tmp_track;
 
       tmp_track.mode = 0;
-      for (const auto& hit : emuHits_) {
-        assert(1 <= hit.station && hit.station <= 4);
-        if (hit.subsystem == kCSC) {
-          tmp_track.mode |= (1<<(4-hit.station));
+      for (int sector = 1; sector <= 6; ++sector) {
+        int nbsector = (sector == 1) ? 6 : sector - 1;
+        int mode = 0;
+        for (const auto& hit : emuHits_) {
+          assert(1 <= hit.sector && hit.sector <= 6);
+          assert(1 <= hit.station && hit.station <= 4);
+          if ((hit.sector == sector || hit.sector == nbsector) && hit.subsystem == kCSC) {
+            mode |= (1<<(4-hit.station));
+          }
+          //if ((hit.sector == sector || hit.sector == nbsector) && hit.subsystem == kRPC) {
+          //  mode |= (1<<(4-hit.station));
+          //}
         }
-        //if (hit.subsystem == kRPC) {
-        //  tmp_track.mode |= (1<<(4-hit.station));
-        //}
+        if (tmp_track.mode < mode) {
+          tmp_track.mode = mode;
+        }
       }
       assert(tmp_track.mode <= 15);
 
@@ -385,7 +391,7 @@ void RPCIntegration::bookHistograms() {
   //   mode 0,1,2,3 = MuOpen, DoubleMu, SingleMu, Mode15
   //   eta  0,1,2,3 = 1.2-1.6, 1.6-2.0, 2.0-2.4, inclusive
 
-  const Double_t pt_bins[46] = {0., 1., 2., 3., 4., 5., 6., 7., 8., 9., 10., 12., 14., 16., 18., 20., 22., 24., 26., 28., 30., 35., 40., 45., 50., 55., 60., 70., 80., 100., 120., 140., 160., 180., 200., 250., 300., 350., 400., 450., 500., 550., 600., 700., 800., 1000.};
+  const Double_t pt_bins[47] = {1., 1.5, 2., 2.5, 3., 4., 5., 6., 7., 8., 9., 10., 12., 14., 16., 18., 20., 22., 24., 26., 28., 30., 35., 40., 45., 50., 55., 60., 70., 80., 100., 120., 140., 160., 180., 200., 250., 300., 350., 400., 450., 500., 550., 600., 700., 800., 1000.};
 
   for (int i=0; i<4; ++i) {  // mode
     for (int j=0; j<4; ++j) {  // eta
@@ -394,7 +400,7 @@ void RPCIntegration::bookHistograms() {
           hname = Form("denom_vs_pt_mode%i_eta%i", i, j);
         else
           hname = Form("num_vs_pt_mode%i_eta%i", i, j);
-        h = new TH1F(hname, "; gen p_{T} [GeV]; entries", 46-1, pt_bins);
+        h = new TH1F(hname, "; gen p_{T} [GeV]; entries", 47-1, pt_bins);
         histograms_[hname] = h;
       }
     }

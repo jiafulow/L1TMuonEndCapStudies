@@ -30,22 +30,37 @@ tline.SetLineColor(1)
 # Main function
 def main(histos, options):
 
-  if options.verbose:
-    print "Found %i histograms:" % len(histos)
-    for k in sorted(histos.keys()):
-      print "  %s" % k
+  if options.infile == "histos.genmode0.root":
+    filenames = [
+      "histos.genmode0.root",
+      "histos.zone.root",
+    ]
+  elif options.infile == "histos.genmode1.root":
+    filenames = [
+      "histos.genmode1.root",
+      "histos.rpc.root",
+    ]
+  else:
+    raise Exception("Fail")
+
+  TH1.AddDirectory(False)
 
   # Efficiency vs pT
-  special_hname = "eff_vs_pt_mode%i_eta%i"
-  ilabels = ["MuOpen", "DoubleMu", "SingleMu", "Mode15"]
-  jlabels = ["gen 1.24<|#eta|<1.6", "gen 1.6<|#eta|<2.0", "gen 2.0<|#eta|<2.4", "gen 1.24<|#eta|<2.4"]
-  klabel = "%s, L1T p_{T}>0"
+  special_hname = "eff_vs_pt_mode%i_eta3"
+  ilabels = ["ideal", "EMTF", "", ""]
+  jlabels = ["MuOpen", "DoubleMu", "SingleMu", "Mode15"]
+  klabel = "gen 1.24<|#eta|<2.4, L1T p_{T}>0, %s"
 
   for j in xrange(4):
     frame = None
-    for i in xrange(4):
-      hname = special_hname % (i, j)
-      h = histos[hname]
+    for i, filename in enumerate(filenames):
+      tfile = TFile.Open(filename)
+      hname2 = (special_hname % j)
+      h = tfile.Get(hname2)
+      assert h != None, "Cannot get %s" % hname2
+      hname = (special_hname + "_file%i") % (j, i)
+      h = h.Clone(hname)
+      histos[hname] = h
 
       if not frame:
         frame = h.GetCopyTotalHisto().Clone(hname+"_frame"); frame.Reset()
@@ -64,22 +79,27 @@ def main(histos, options):
       tlegend.AddEntry(gr, "#color[%i]{%s}" % (palette[i], ilabels[i]), "")
 
     tlegend.Draw()
-    imgname = special_hname % (99, j)
+    imgname = (special_hname + "_file%i") % (j, 99)
     gPad.SetLogx(True)
     gPad.Print("%s.png" % (options.outdir+imgname))
     gPad.SetLogx(False)
 
   # Efficiency vs eta
-  special_hname = "eff_vs_eta_mode%i_l1pt%i"
-  ilabels = ["MuOpen", "DoubleMu", "SingleMu", "Mode15"]
-  jlabels = ["L1T p_{T}>0", "L1T p_{T}>12", "L1T p_{T}>18", "L1T p_{T}>100"]
-  klabel = "gen p_{T}>20, %s"
+  special_hname = "eff_vs_eta_mode%i_l1pt0"
+  ilabels = ["ideal", "EMTF", "", ""]
+  jlabels = ["MuOpen", "DoubleMu", "SingleMu", "Mode15"]
+  klabel = "gen p_{T}>20, L1T p_{T}>0, %s"
 
   for j in xrange(4):
     frame = None
-    for i in xrange(4):
-      hname = special_hname % (i, j)
-      h = histos[hname]
+    for i, filename in enumerate(filenames):
+      tfile = TFile.Open(filename)
+      hname2 = (special_hname % j)
+      h = tfile.Get(hname2)
+      assert h != None, "Cannot get %s" % hname2
+      hname = (special_hname + "_file%i") % (j, i)
+      h = h.Clone(hname)
+      histos[hname] = h
 
       if not frame:
         frame = h.GetCopyTotalHisto().Clone(hname+"_frame"); frame.Reset()
@@ -98,7 +118,7 @@ def main(histos, options):
       tlegend.AddEntry(gr, "#color[%i]{%s}" % (palette[i], ilabels[i]), "")
 
     tlegend.Draw()
-    imgname = special_hname % (99, j)
+    imgname = (special_hname + "_file%i") % (j, 99)
     gPad.Print("%s.png" % (options.outdir+imgname))
 
 
@@ -118,9 +138,9 @@ if __name__ == '__main__':
     options.outdir += "/"
   if not os.path.exists(options.outdir):
     os.makedirs(options.outdir)
-  if not os.path.isfile(options.infile):
-    raise Exception("File does not exist: %s" % options.infile)
-  options.tfile = TFile.Open(options.infile)
+  #if not os.path.isfile(options.infile):
+  #  raise Exception("File does not exist: %s" % options.infile)
+  #options.tfile = TFile.Open(options.infile)
 
   # Setup basic drawer
   gROOT.LoadMacro("tdrstyle.C")
@@ -133,11 +153,11 @@ if __name__ == '__main__':
   gStyle.SetPadGridY(True)
 
   histos = {}
-  for k in options.tfile.GetListOfKeys():
-    h = k.ReadObj()
-    if h.ClassName() in ["TH1F", "TH2F", "TProfile", "TEfficiency"]:
-      hname = h.GetName()
-      histos[hname] = h
+  #for k in options.tfile.GetListOfKeys():
+  #  h = k.ReadObj()
+  #  if h.ClassName() in ["TH1F", "TH2F", "TProfile", "TEfficiency"]:
+  #    hname = h.GetName()
+  #    histos[hname] = h
 
   # Call the main function
   main(histos, options)
