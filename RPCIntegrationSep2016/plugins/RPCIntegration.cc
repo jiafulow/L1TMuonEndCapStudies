@@ -10,6 +10,7 @@
 #include "TFile.h"
 #include "TH1F.h"
 #include "TEfficiency.h"
+#include "TTree.h"
 
 #include "FWCore/Framework/interface/Frameworkfwd.h"
 #include "FWCore/Framework/interface/EDAnalyzer.h"
@@ -18,6 +19,9 @@
 #include "FWCore/Framework/interface/MakerMacros.h"
 #include "FWCore/ParameterSet/interface/ParameterSet.h"
 #include "FWCore/MessageLogger/interface/MessageLogger.h"
+
+#include "DataFormats/HepMCCandidate/interface/GenParticle.h"
+#include "DataFormats/HepMCCandidate/interface/GenParticleFwd.h"
 
 //#include "DataFormats/L1TMuon/interface/EMTFHit.h"
 //#include "DataFormats/L1TMuon/interface/EMTFHitExtra.h"
@@ -29,12 +33,14 @@
 //#include "DataFormatsSep2016/L1TMuon/interface/EMTFTrack.h"
 #include "DataFormatsSep2016/L1TMuon/interface/EMTFTrackExtra.h"
 
-#include "DataFormats/HepMCCandidate/interface/GenParticle.h"
-#include "DataFormats/HepMCCandidate/interface/GenParticleFwd.h"
+#include "L1TriggerSep2016/L1TMuonEndCap/interface/EMTFTrackTools.hh"
 
 
 // From L1TriggerSep2016/L1TMuonEndCap/interface/MuonTriggerPrimitive.h
-enum subsystem_type{kDT,kCSC,kRPC,kNSubsystems};
+class TriggerPrimitive {
+public:
+  enum subsystem_type{kDT,kCSC,kRPC,kNSubsystems};
+};
 
 namespace l1t = L1TMuonEndCap;
 
@@ -58,9 +64,12 @@ private:
   void getHandles(const edm::Event& iEvent);
 
   void makeEfficiency();
+  void makeExtrapolation();
 
   void bookHistograms();
   void writeHistograms();
+
+  double angle_func(double part_pt, double part_eta, int hit_subsystem, int hit_station, int hit_ring, bool hit_fr, float hit_eta);
 
   // Options
   const edm::InputTag emuHitTag_;
@@ -69,6 +78,8 @@ private:
   const edm::InputTag genPartTag_;
 
   const std::string outFileName_;
+
+  const std::string angleFileName_;
 
   int verbose_;
 
@@ -88,11 +99,12 @@ private:
 
 // _____________________________________________________________________________
 RPCIntegration::RPCIntegration(const edm::ParameterSet& iConfig) :
-    emuHitTag_   (iConfig.getParameter<edm::InputTag>("emuHitTag")),
-    emuTrackTag_ (iConfig.getParameter<edm::InputTag>("emuTrackTag")),
-    genPartTag_  (iConfig.getParameter<edm::InputTag>("genPartTag")),
-    outFileName_ (iConfig.getParameter<std::string>  ("outFileName")),
-    verbose_     (iConfig.getUntrackedParameter<int> ("verbosity"))
+    emuHitTag_    (iConfig.getParameter<edm::InputTag>("emuHitTag")),
+    emuTrackTag_  (iConfig.getParameter<edm::InputTag>("emuTrackTag")),
+    genPartTag_   (iConfig.getParameter<edm::InputTag>("genPartTag")),
+    outFileName_  (iConfig.getParameter<std::string>  ("outFileName")),
+    angleFileName_(iConfig.getParameter<std::string>  ("angleFileName")),
+    verbose_      (iConfig.getUntrackedParameter<int> ("verbosity"))
 {
     emuHitToken_   = consumes<l1t::EMTFHitExtraCollection>  (emuHitTag_);
     emuTrackToken_ = consumes<l1t::EMTFTrackExtraCollection>(emuTrackTag_);
@@ -107,6 +119,7 @@ void RPCIntegration::analyze(const edm::Event& iEvent, const edm::EventSetup& iS
   getHandles(iEvent);
 
   makeEfficiency();
+  makeExtrapolation();
 }
 
 // _____________________________________________________________________________
@@ -221,10 +234,10 @@ void RPCIntegration::makeEfficiency() {
 
     int ihit = 0;
     for (const auto& hit : emuHits_) {
-      if (hit.subsystem == kCSC) {
+      if (hit.subsystem == TriggerPrimitive::kCSC) {
         std::cout << "CSC hit " << ihit++ << " " << hit.sector << " " << hit.station << " " << hit.chamber << " " << hit.bx << std::endl;
       }
-      if (hit.subsystem == kRPC) {
+      if (hit.subsystem == TriggerPrimitive::kRPC) {
         std::cout << "RPC hit " << ihit++ << " " << hit.sector << " " << hit.station << " " << hit.chamber << " " << hit.bx << std::endl;
       }
     }
@@ -268,10 +281,10 @@ void RPCIntegration::makeEfficiency() {
         for (const auto& hit : emuHits_) {
           assert(1 <= hit.sector && hit.sector <= 6);
           assert(1 <= hit.station && hit.station <= 4);
-          if ((hit.sector == sector || hit.sector == nbsector) && hit.subsystem == kCSC) {
+          if ((hit.sector == sector || hit.sector == nbsector) && hit.subsystem == TriggerPrimitive::kCSC) {
             mode |= (1<<(4-hit.station));
           }
-          //if ((hit.sector == sector || hit.sector == nbsector) && hit.subsystem == kRPC) {
+          //if ((hit.sector == sector || hit.sector == nbsector) && hit.subsystem == TriggerPrimitive::kRPC) {
           //  mode |= (1<<(4-hit.station));
           //}
         }
@@ -347,10 +360,10 @@ void RPCIntegration::makeEfficiency() {
       std::vector<int> rpc_phis;
       for (const auto& hit : emuHits_) {
         if (hit.station == i+1) {
-          if (hit.subsystem == kCSC) {
+          if (hit.subsystem == TriggerPrimitive::kCSC) {
             csc_phis.push_back(hit.phi_fp);
           }
-          if (hit.subsystem == kRPC) {
+          if (hit.subsystem == TriggerPrimitive::kRPC) {
             rpc_phis.push_back(hit.phi_fp);
           }
         }
@@ -369,7 +382,98 @@ void RPCIntegration::makeEfficiency() {
       }
     }
 
-  }  // if keep_event
+  }  // end if keep_event
+}
+
+// _____________________________________________________________________________
+void RPCIntegration::makeExtrapolation() {
+
+  bool keep_event = true;
+  std::vector<l1t::EMTFHitExtra> myhits;
+
+  // from RecoMuon/DetLayers/src/MuonCSCDetLayerGeometryBuilder.cc
+  // from RecoMuon/DetLayers/src/MuonRPCDetLayerGeometryBuilder.cc
+  auto isFront = [](int subsystem, int station, int ring, int chamber, int subsector) {
+    bool result = false;
+
+    if (subsystem == TriggerPrimitive::kCSC) {
+      bool isOverlapping = !(station == 1 && ring == 3);
+      // not overlapping means back
+      if(isOverlapping)
+      {
+        bool isEven = (chamber % 2 == 0);
+        // odd chambers are bolted to the iron, which faces
+        // forward in 1&2, backward in 3&4, so...
+        result = (station < 3) ? isEven : !isEven;
+      }
+    } else if (subsystem == TriggerPrimitive::kRPC) {
+      // 10 degree rings have odd subsectors in front
+      result = (subsector % 2 == 0);
+    }
+    return result;
+  };
+
+  if (genParts_.empty()) {
+    keep_event = false;
+  }
+
+  if (keep_event) {
+    const auto& part = genParts_.front();
+    //double cotTheta = std::sinh(part.eta());
+    double invPt = static_cast<double>(part.charge())/part.pt();
+    double invPz = static_cast<double>(part.charge())/part.pz();
+
+    for (int sector = 1; sector <= 6; ++sector) {
+      int nbsector = (sector == 1) ? 6 : sector - 1;
+      int mode = 0;
+      myhits.clear();
+      for (const auto& hit : emuHits_) {
+        assert(1 <= hit.sector && hit.sector <= 6);
+        assert(1 <= hit.station && hit.station <= 4);
+        if ((hit.sector == sector || hit.sector == nbsector) && hit.subsystem == TriggerPrimitive::kCSC) {
+          mode |= (1<<(4-hit.station));
+          myhits.push_back(hit);
+        }
+        //if ((hit.sector == sector || hit.sector == nbsector) && hit.subsystem == TriggerPrimitive::kRPC) {
+        //  mode |= (1<<(4-hit.station));
+        //  myhits.push_back(hit);
+        //}
+      }
+
+      if (mode == 15 && myhits.size() == 4) {
+        for (const auto& hit : myhits) {
+          int hit_fr = isFront(hit.subsystem, hit.station, hit.ring, hit.chamber, hit.subsector);
+          float hit_phi = hit.phi_glob_deg;
+          float hit_eta = hit.eta;
+          double dphi_tmp_2 = angle_func(part.pt(), part.eta(), hit.subsystem, hit.station, hit.ring, hit_fr, hit_eta);
+          double dphi_tmp_1 = dphi_tmp_2 * invPz;
+          double dphi_tmp   = l1t::rad_to_deg(dphi_tmp_1);
+          double new_hit_phi = hit_phi - dphi_tmp;
+
+          int phi_loc_int     = l1t::calc_phi_loc_int(hit_phi, sector);
+          int new_phi_loc_int = l1t::calc_phi_loc_int(new_hit_phi, sector);
+
+          std::string sr = "";
+          if (hit.subsystem == TriggerPrimitive::kCSC)
+            sr += "ME";
+          else if (hit.subsystem == TriggerPrimitive::kRPC)
+            sr += "RE";
+          sr += std::to_string(hit.station);
+          sr += "/";
+          sr += std::to_string(hit.ring);
+          if (hit_fr)
+            sr += "f";
+          else
+            sr += "r";
+
+          if (verbose_)  std::cout << sr << ": " << phi_loc_int << " --> " << new_phi_loc_int << " phi: " << hit_phi << " --> " << new_hit_phi << " dphi_tmp: " << dphi_tmp_2 << "," << dphi_tmp_1 << "," << dphi_tmp << std::endl;
+        }
+        break;  // break from loop over sector
+      }  // end if
+    }  // end loop over sector
+
+  }  // end if keep_event
+
 }
 
 // _____________________________________________________________________________
@@ -470,6 +574,68 @@ void RPCIntegration::writeHistograms() {
   f->Close();
 }
 
+// _____________________________________________________________________________
+double RPCIntegration::angle_func(double part_pt, double part_eta, int hit_subsystem, int hit_station, int hit_ring, bool hit_fr, float hit_eta) {
+  static std::vector<double> coefficients;
+
+  int num_z_bins = 20;
+  int num_eta_bins = 2048;
+
+  if (coefficients.size() == 0) {
+    TFile* tfile = TFile::Open(angleFileName_.c_str(), "READ");
+    assert(tfile != nullptr);
+    TTree* ttree = (TTree*) tfile->Get("tree");
+    assert(ttree != nullptr);
+    std::vector<double> * tmp_coefficients = 0;
+    ttree->SetBranchAddress("coefficients", &tmp_coefficients);
+    ttree->GetEntry(0);
+    coefficients = (*tmp_coefficients);  // copy
+    assert(coefficients.size() == (unsigned) (num_z_bins * num_eta_bins));
+  }
+
+  auto get_eta_bin = [](float x) {
+    // nbinsx, xlow, xup = 2048, 1.1, 2.5
+    int b = static_cast<int>(std::round((x - 1.1) * 2048./(2.5 - 1.1)));
+    return b;
+  };
+
+  auto get_z_bin = [](int subsystem, int station, int ring, bool fr) {
+    int b = -1;
+    if (subsystem == TriggerPrimitive::kCSC) {
+      if (station == 1 && (ring == 1 || ring == 4)) {
+        b = fr ? 0 : 1;
+      } else if (station == 1 && ring == 2) {
+        b = fr ? 2 : 3;
+      } else if (station == 1 && ring == 3) {
+        b = fr ? 4 : 5;
+      } else if (station == 2) {
+        b = fr ? 6 : 7;
+      } else if (station == 3) {
+        b = fr ? 8 : 9;
+      } else if (station == 4) {
+        b = fr ? 10 : 11;
+      }
+    } else if (subsystem == TriggerPrimitive::kRPC) {
+      if (station == 1) {
+        b = fr ? 12 : 13;
+      } else if (station == 2) {
+        b = fr ? 14 : 15;
+      } else if (station == 3) {
+        b = fr ? 16 : 17;
+      } else if (station == 4) {
+        b = fr ? 18 : 19;
+      }
+    }
+    assert(b != -1);
+    return b;
+  };
+
+  const int b = get_z_bin(hit_subsystem, hit_station, hit_ring, hit_fr) * num_eta_bins + get_eta_bin(part_eta);
+  assert(0 <= b && b < (num_z_bins * num_eta_bins));
+  return coefficients.at(b);
+}
+
+// _____________________________________________________________________________
 void RPCIntegration::fillDescriptions(edm::ConfigurationDescriptions& descriptions) {
     //The following says we do not know what parameters are allowed so do no validation
     // Please change this to state exactly what you do use, even if it is no parameters
