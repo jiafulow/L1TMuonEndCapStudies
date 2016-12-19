@@ -9,6 +9,7 @@
 #include "TString.h"
 #include "TFile.h"
 #include "TH1F.h"
+#include "TH2F.h"
 #include "TEfficiency.h"
 #include "TTree.h"
 
@@ -95,6 +96,7 @@ private:
   reco::GenParticleCollection genParts_;
 
   std::map<TString, TH1F*> histograms_;
+  std::map<TString, TH2F*> histogram2Ds_;
 };
 
 // _____________________________________________________________________________
@@ -235,10 +237,10 @@ void RPCIntegration::makeEfficiency() {
     int ihit = 0;
     for (const auto& hit : emuHits_) {
       if (hit.subsystem == TriggerPrimitive::kCSC) {
-        std::cout << "CSC hit " << ihit++ << " " << hit.sector << " " << hit.station << " " << hit.chamber << " " << hit.bx << std::endl;
+        std::cout << "CSC hit " << ihit++ << " " << hit.sector << " " << hit.station << " " << hit.ring << " " << hit.chamber << " " << hit.bx << std::endl;
       }
       if (hit.subsystem == TriggerPrimitive::kRPC) {
-        std::cout << "RPC hit " << ihit++ << " " << hit.sector << " " << hit.station << " " << hit.chamber << " " << hit.bx << std::endl;
+        std::cout << "RPC hit " << ihit++ << " " << hit.sector << " " << hit.station << " " << hit.ring << " " << hit.chamber << " " << hit.bx << std::endl;
       }
     }
   }
@@ -276,15 +278,14 @@ void RPCIntegration::makeEfficiency() {
 
       tmp_track.mode = 0;
       for (int sector = 1; sector <= 6; ++sector) {
-        int nbsector = (sector == 1) ? 6 : sector - 1;
         int mode = 0;
         for (const auto& hit : emuHits_) {
           assert(1 <= hit.sector && hit.sector <= 6);
           assert(1 <= hit.station && hit.station <= 4);
-          if ((hit.sector == sector || hit.sector == nbsector) && hit.subsystem == TriggerPrimitive::kCSC) {
+          if (hit.sector == sector && hit.subsystem == TriggerPrimitive::kCSC) {
             mode |= (1<<(4-hit.station));
           }
-          //if ((hit.sector == sector || hit.sector == nbsector) && hit.subsystem == TriggerPrimitive::kRPC) {
+          //if (hit.sector == sector && hit.subsystem == TriggerPrimitive::kRPC) {
           //  mode |= (1<<(4-hit.station));
           //}
         }
@@ -387,7 +388,13 @@ void RPCIntegration::makeEfficiency() {
 
 // _____________________________________________________________________________
 void RPCIntegration::makeExtrapolation() {
+  TString hname;
+  TH2F* h2;
 
+  std::random_device rd;
+  std::mt19937 genrd(rd());
+
+  // ___________________________________________________________________________
   bool keep_event = true;
   std::vector<l1t::EMTFHitExtra> myhits;
 
@@ -419,58 +426,140 @@ void RPCIntegration::makeExtrapolation() {
 
   if (keep_event) {
     const auto& part = genParts_.front();
-    //double cotTheta = std::sinh(part.eta());
-    double invPt = static_cast<double>(part.charge())/part.pt();
-    double invPz = static_cast<double>(part.charge())/part.pz();
+
+    const int    charge = part.charge();
+    const double pt     = part.pt();
+    const double absEta = std::abs(part.eta());
 
     for (int sector = 1; sector <= 6; ++sector) {
-      int nbsector = (sector == 1) ? 6 : sector - 1;
       int mode = 0;
       myhits.clear();
       for (const auto& hit : emuHits_) {
         assert(1 <= hit.sector && hit.sector <= 6);
         assert(1 <= hit.station && hit.station <= 4);
-        if ((hit.sector == sector || hit.sector == nbsector) && hit.subsystem == TriggerPrimitive::kCSC) {
+        if (hit.sector == sector && hit.subsystem == TriggerPrimitive::kCSC) {
           mode |= (1<<(4-hit.station));
           myhits.push_back(hit);
         }
-        //if ((hit.sector == sector || hit.sector == nbsector) && hit.subsystem == TriggerPrimitive::kRPC) {
+        //if (hit.sector == sector && hit.subsystem == TriggerPrimitive::kRPC) {
         //  mode |= (1<<(4-hit.station));
         //  myhits.push_back(hit);
         //}
       }
 
-      if (mode == 15 && myhits.size() == 4) {
-        for (const auto& hit : myhits) {
-          int hit_fr = isFront(hit.subsystem, hit.station, hit.ring, hit.chamber, hit.subsector);
-          float hit_phi = hit.phi_glob_deg;
-          float hit_eta = hit.eta;
-          double dphi_tmp_2 = angle_func(part.pt(), part.eta(), hit.subsystem, hit.station, hit.ring, hit_fr, hit_eta);
-          double dphi_tmp_1 = dphi_tmp_2 * invPz;
-          double dphi_tmp   = l1t::rad_to_deg(dphi_tmp_1);
-          double new_hit_phi = hit_phi - dphi_tmp;
+      //if (mode == 15 && myhits.size() == 4) {
+      //  for (const auto& hit : myhits) {
+      //    int hit_fr = isFront(hit.subsystem, hit.station, hit.ring, hit.chamber, hit.subsector);
+      //    float hit_phi = hit.phi_glob_deg;
+      //    float hit_eta = hit.eta;
+      //    double dphi_tmp_2 = angle_func(part.pt(), part.eta(), hit.subsystem, hit.station, hit.ring, hit_fr, hit_eta);
+      //    double dphi_tmp_1 = dphi_tmp_2 * (static_cast<double>(part.charge())/part.pz());
+      //    double dphi_tmp   = l1t::rad_to_deg(dphi_tmp_1);
+      //    double new_hit_phi = hit_phi - dphi_tmp;
+      //
+      //    int phi_loc_int     = l1t::calc_phi_loc_int(hit_phi, sector);
+      //    int new_phi_loc_int = l1t::calc_phi_loc_int(new_hit_phi, sector);
+      //
+      //    std::string sr = "";
+      //    if (hit.subsystem == TriggerPrimitive::kCSC)
+      //      sr += "ME";
+      //    else if (hit.subsystem == TriggerPrimitive::kRPC)
+      //      sr += "RE";
+      //    sr += std::to_string(hit.station);
+      //    sr += "/";
+      //    sr += std::to_string(hit.ring);
+      //    if (hit_fr)
+      //      sr += "f";
+      //    else
+      //      sr += "r";
+      //
+      //    if (verbose_)  std::cout << sr << ": " << phi_loc_int << " --> " << new_phi_loc_int << " phi: " << hit_phi << " --> " << new_hit_phi << " dphi_tmp: " << dphi_tmp_2 << "," << dphi_tmp_1 << "," << dphi_tmp << std::endl;
+      //  }
+      //  break;  // break from loop over sector
+      //}  // end if
 
-          int phi_loc_int     = l1t::calc_phi_loc_int(hit_phi, sector);
-          int new_phi_loc_int = l1t::calc_phi_loc_int(new_hit_phi, sector);
 
-          std::string sr = "";
-          if (hit.subsystem == TriggerPrimitive::kCSC)
-            sr += "ME";
-          else if (hit.subsystem == TriggerPrimitive::kRPC)
-            sr += "RE";
-          sr += std::to_string(hit.station);
-          sr += "/";
-          sr += std::to_string(hit.ring);
-          if (hit_fr)
-            sr += "f";
-          else
-            sr += "r";
-
-          if (verbose_)  std::cout << sr << ": " << phi_loc_int << " --> " << new_phi_loc_int << " phi: " << hit_phi << " --> " << new_hit_phi << " dphi_tmp: " << dphi_tmp_2 << "," << dphi_tmp_1 << "," << dphi_tmp << std::endl;
+      // Make deflection angles
+      for (int ipair = 0; ipair < 9; ++ipair) {
+        std::vector<l1t::EMTFHitExtra> myhits1;
+        std::vector<l1t::EMTFHitExtra> myhits2;
+        if (ipair == 0) {
+          std::copy_if(myhits.begin(), myhits.end(), std::back_inserter(myhits1), [](const l1t::EMTFHitExtra& hit) { return (hit.station == 1 && (hit.ring == 1 || hit.ring == 4)); });
+          std::copy_if(myhits.begin(), myhits.end(), std::back_inserter(myhits2), [](const l1t::EMTFHitExtra& hit) { return (hit.station == 2); });
+        } else if (ipair == 1) {
+          std::copy_if(myhits.begin(), myhits.end(), std::back_inserter(myhits1), [](const l1t::EMTFHitExtra& hit) { return (hit.station == 1 && (hit.ring == 1 || hit.ring == 4)); });
+          std::copy_if(myhits.begin(), myhits.end(), std::back_inserter(myhits2), [](const l1t::EMTFHitExtra& hit) { return (hit.station == 3); });
+        } else if (ipair == 2) {
+          std::copy_if(myhits.begin(), myhits.end(), std::back_inserter(myhits1), [](const l1t::EMTFHitExtra& hit) { return (hit.station == 1 && (hit.ring == 1 || hit.ring == 4)); });
+          std::copy_if(myhits.begin(), myhits.end(), std::back_inserter(myhits2), [](const l1t::EMTFHitExtra& hit) { return (hit.station == 4); });
+        } else if (ipair == 3) {
+          std::copy_if(myhits.begin(), myhits.end(), std::back_inserter(myhits1), [](const l1t::EMTFHitExtra& hit) { return (hit.station == 1 && hit.ring == 2); });
+          std::copy_if(myhits.begin(), myhits.end(), std::back_inserter(myhits2), [](const l1t::EMTFHitExtra& hit) { return (hit.station == 2); });
+        } else if (ipair == 4) {
+          std::copy_if(myhits.begin(), myhits.end(), std::back_inserter(myhits1), [](const l1t::EMTFHitExtra& hit) { return (hit.station == 1 && hit.ring == 2); });
+          std::copy_if(myhits.begin(), myhits.end(), std::back_inserter(myhits2), [](const l1t::EMTFHitExtra& hit) { return (hit.station == 3); });
+        } else if (ipair == 5) {
+          std::copy_if(myhits.begin(), myhits.end(), std::back_inserter(myhits1), [](const l1t::EMTFHitExtra& hit) { return (hit.station == 1 && hit.ring == 2); });
+          std::copy_if(myhits.begin(), myhits.end(), std::back_inserter(myhits2), [](const l1t::EMTFHitExtra& hit) { return (hit.station == 4); });
+        } else if (ipair == 6) {
+          std::copy_if(myhits.begin(), myhits.end(), std::back_inserter(myhits1), [](const l1t::EMTFHitExtra& hit) { return (hit.station == 2); });
+          std::copy_if(myhits.begin(), myhits.end(), std::back_inserter(myhits2), [](const l1t::EMTFHitExtra& hit) { return (hit.station == 3); });
+        } else if (ipair == 7) {
+          std::copy_if(myhits.begin(), myhits.end(), std::back_inserter(myhits1), [](const l1t::EMTFHitExtra& hit) { return (hit.station == 2); });
+          std::copy_if(myhits.begin(), myhits.end(), std::back_inserter(myhits2), [](const l1t::EMTFHitExtra& hit) { return (hit.station == 4); });
+        } else if (ipair == 8) {
+          std::copy_if(myhits.begin(), myhits.end(), std::back_inserter(myhits1), [](const l1t::EMTFHitExtra& hit) { return (hit.station == 3); });
+          std::copy_if(myhits.begin(), myhits.end(), std::back_inserter(myhits2), [](const l1t::EMTFHitExtra& hit) { return (hit.station == 4); });
+        } else {
+          assert(false && "invalid ipair");
         }
-        break;  // break from loop over sector
-      }  // end if
+
+        if (myhits1.size() > 0 && myhits2.size() > 0) {
+          std::uniform_int_distribution<> index1(0, myhits1.size()-1);
+          std::uniform_int_distribution<> index2(0, myhits2.size()-1);
+          l1t::EMTFHitExtra myhit1 = myhits1.at(index1(genrd));
+          l1t::EMTFHitExtra myhit2 = myhits2.at(index2(genrd));
+
+          //int dphi = myhit1.phi_fp - myhit2.phi_fp;
+          int dphi = l1t::calc_phi_loc_int(myhit1.phi_glob_deg, sector) - l1t::calc_phi_loc_int(myhit2.phi_glob_deg, sector);
+          if (charge > 0)  dphi = -dphi;
+
+          // dphi vs 1/pT
+          int ifr = (int(isFront(myhit1.subsystem, myhit1.station, myhit1.ring, myhit1.chamber, myhit1.subsector)) << 1) | int(isFront(myhit2.subsystem, myhit2.station, myhit2.ring, myhit2.chamber, myhit2.subsector));
+          int ieta = int((absEta - 1.2) / (2.4 - 1.2) * 12);
+          hname = Form("deflection_stp%i_frp%i_eta%i", ipair, ifr, ieta);
+          h2 = histogram2Ds_.at(hname);
+          h2->Fill(1.0/pt, dphi);
+
+          // dphi vs |eta|
+          int ipt = -1;
+          if ((1.0/2 - 0.01) < 1.0/pt && 1.0/pt <= (1.0/2)) {
+            ipt = 0;
+          } else if ((1.0/3 - 0.01) < 1.0/pt && 1.0/pt <= (1.0/3)) {
+            ipt = 1;
+          } else if ((1.0/5 - 0.01) < 1.0/pt && 1.0/pt <= (1.0/5)) {
+            ipt = 2;
+          } else if ((1.0/10 - 0.01) < 1.0/pt && 1.0/pt <= (1.0/10)) {
+            ipt = 3;
+          } else if ((1.0/20 - 0.01) < 1.0/pt && 1.0/pt <= (1.0/20)) {
+            ipt = 4;
+          } else if ((1.0/50 - 0.005) < 1.0/pt && 1.0/pt <= (1.0/50)) {
+            ipt = 5;
+          } else if ((1.0/100 - 0.002) < 1.0/pt && 1.0/pt <= (1.0/100)) {
+            ipt = 6;
+          } else if ((1.0/200 - 0.001) < 1.0/pt && 1.0/pt <= (1.0/200)) {
+            ipt = 7;
+          }
+          if (ipt != -1) {
+            hname = Form("deflection_stp%i_pt%i", ipair, ipt);
+            h2 = histogram2Ds_.at(hname);
+            h2->Fill(absEta, dphi);
+          }
+        }
+      }
+
     }  // end loop over sector
+
 
   }  // end if keep_event
 
@@ -489,6 +578,7 @@ void RPCIntegration::endJob() {
 void RPCIntegration::bookHistograms() {
   TString hname;
   TH1F* h;
+  TH2F* h2;
 
   // Efficiency vs pT
   // Make [mode] x [eta] where
@@ -530,10 +620,75 @@ void RPCIntegration::bookHistograms() {
 
   // Deflection angles
 
+  // RPC-CSC st 0-3
   for (int i=0; i<4; ++i) {
     hname = Form("deflection_rpc_csc_st%i", i+1);
     h = new TH1F(hname, "; RPC #phi - CSC #phi [integer unit]", 121, -60.5, 60.5);
     histograms_[hname] = h;
+  }
+
+  // CSC-CSC
+  // station pair 0-8: (1/1,2), (1/1,3), (1/1,4), (1/2,2), (1/2,3), (1/2,4), (2,3), (2,4), (3,4)
+  // f/r pair 0-3: (R,R), (R,F), (F,R), (F,F)
+  // eta 0-11: (1.2,1.3), (1.3,1.4), ... , (2.3, 2.4)
+  // pt 0-7: 2,3,5,10,20,50,100,200
+  TString deflection_labels1[] = {
+      "#phi(ME1/1) - #phi(ME2/n)",
+      "#phi(ME1/1) - #phi(ME3/n)",
+      "#phi(ME1/1) - #phi(ME4/n)",
+      "#phi(ME1/2) - #phi(ME2/n)",
+      "#phi(ME1/2) - #phi(ME3/n)",
+      "#phi(ME1/2) - #phi(ME4/n)",
+      "#phi(ME2/n) - #phi(ME3/n)",
+      "#phi(ME2/n) - #phi(ME4/n)",
+      "#phi(ME3/n) - #phi(ME4/n)"
+  };
+  TString deflection_labels2[] = {
+      "R+R",
+      "R+F",
+      "F+R",
+      "F+F"
+  };
+  TString deflection_labels3[] = {
+      "1.2#leq|#eta|<1.3",
+      "1.3#leq|#eta|<1.4",
+      "1.4#leq|#eta|<1.5",
+      "1.5#leq|#eta|<1.6",
+      "1.6#leq|#eta|<1.7",
+      "1.7#leq|#eta|<1.8",
+      "1.8#leq|#eta|<1.9",
+      "1.9#leq|#eta|<2.0",
+      "2.0#leq|#eta|<2.1",
+      "2.1#leq|#eta|<2.2",
+      "2.2#leq|#eta|<2.3",
+      "2.3#leq|#eta|<2.4"
+  };
+  TString deflection_labels4[] = {
+      "2#leqp_{T}<2.04",
+      "3#leqp_{T}<3.09",
+      "5#leqp_{T}<5.26",
+      "10#leqp_{T}<11.1",
+      "20#leqp_{T}<25.0",
+      "50#leqp_{T}<66.7",
+      "100#leqp_{T}<125",
+      "200#leqp_{T}<250"
+  };
+
+  for (int ipair=0; ipair<9; ++ipair) {
+    for (int ifr=0; ifr<4; ++ifr) {
+      for (int ieta=0; ieta<12; ++ieta) {
+        // dphi vs 1/pT
+        hname = Form("deflection_stp%i_frp%i_eta%i", ipair, ifr, ieta);
+        h2 = new TH2F(hname, TString("; 1/p_{T} [1/GeV]; ")+deflection_labels1[ipair]+" ("+deflection_labels2[ifr]+") {"+deflection_labels3[ieta]+"}", 50, 0., 0.5, 801, -801, 801);
+        histogram2Ds_[hname] = h2;
+      }
+    }
+    for (int ipt=0; ipt<8; ++ipt) {
+      // dphi vs |eta|
+      hname = Form("deflection_stp%i_pt%i", ipair, ipt);
+      h2 = new TH2F(hname, TString("; |#eta|; ")+deflection_labels1[ipair]+" {"+deflection_labels4[ipt]+"}", 48, 1.2, 2.4, 801, -801, 801);
+      histogram2Ds_[hname] = h2;
+    }
   }
 
   // Debugging
@@ -568,6 +723,10 @@ void RPCIntegration::writeHistograms() {
       eff->SetStatisticOption(TEfficiency::kFCP);
       eff->SetDirectory(gDirectory);
     }
+  }
+
+  for (const auto& kv : histogram2Ds_) {
+    kv.second->SetDirectory(gDirectory);
   }
 
   f->Write();
