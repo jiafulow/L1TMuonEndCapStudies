@@ -530,6 +530,9 @@ void RPCIntegration::makeExtrapolation() {
           hname = Form("deflection_stp%i_frp%i_eta%i", ipair, ifr, ieta);
           h2 = histogram2Ds_.at(hname);
           h2->Fill(1.0/pt, dphi);
+          hname = Form("deflection_stp%i_frp%i_eta%i", ipair, 4, ieta);  // inclusive
+          h2 = histogram2Ds_.at(hname);
+          h2->Fill(1.0/pt, dphi);
 
           // dphi vs |eta|
           int ipt = -1;
@@ -551,7 +554,10 @@ void RPCIntegration::makeExtrapolation() {
             ipt = 7;
           }
           if (ipt != -1) {
-            hname = Form("deflection_stp%i_pt%i", ipair, ipt);
+            hname = Form("deflection_stp%i_frp%i_pt%i", ipair, ifr, ipt);
+            h2 = histogram2Ds_.at(hname);
+            h2->Fill(absEta, dphi);
+            hname = Form("deflection_stp%i_frp%i_pt%i", ipair, 4, ipt);  // inclusive
             h2 = histogram2Ds_.at(hname);
             h2->Fill(absEta, dphi);
           }
@@ -647,7 +653,8 @@ void RPCIntegration::bookHistograms() {
       "R+R",
       "R+F",
       "F+R",
-      "F+F"
+      "F+F",
+      "all"
   };
   TString deflection_labels3[] = {
       "1.2#leq|#eta|<1.3",
@@ -675,19 +682,19 @@ void RPCIntegration::bookHistograms() {
   };
 
   for (int ipair=0; ipair<9; ++ipair) {
-    for (int ifr=0; ifr<4; ++ifr) {
+    for (int ifr=0; ifr<5; ++ifr) {
       for (int ieta=0; ieta<12; ++ieta) {
         // dphi vs 1/pT
         hname = Form("deflection_stp%i_frp%i_eta%i", ipair, ifr, ieta);
         h2 = new TH2F(hname, TString("; 1/p_{T} [1/GeV]; ")+deflection_labels1[ipair]+" ("+deflection_labels2[ifr]+") {"+deflection_labels3[ieta]+"}", 50, 0., 0.5, 801, -801, 801);
         histogram2Ds_[hname] = h2;
       }
-    }
-    for (int ipt=0; ipt<8; ++ipt) {
-      // dphi vs |eta|
-      hname = Form("deflection_stp%i_pt%i", ipair, ipt);
-      h2 = new TH2F(hname, TString("; |#eta|; ")+deflection_labels1[ipair]+" {"+deflection_labels4[ipt]+"}", 48, 1.2, 2.4, 801, -801, 801);
-      histogram2Ds_[hname] = h2;
+      for (int ipt=0; ipt<8; ++ipt) {
+        // dphi vs |eta|
+        hname = Form("deflection_stp%i_frp%i_pt%i", ipair, ifr, ipt);
+        h2 = new TH2F(hname, TString("; |#eta|; ")+deflection_labels1[ipair]+" ("+deflection_labels2[ifr]+") {"+deflection_labels4[ipt]+"}", 48, 1.2, 2.4, 801, -801, 801);
+        histogram2Ds_[hname] = h2;
+      }
     }
   }
 
