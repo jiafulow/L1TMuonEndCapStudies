@@ -18,8 +18,8 @@ class UserTarball(object):
         self.scriptExe = None
 
         self.directories = ['lib', 'biglib', 'module', 'bin']
-        if self.sendPythonFolder:
-            self.directories += ['python', 'cfipython']
+        #if self.sendPythonFolder:
+        #    self.directories += ['python', 'cfipython']
         if self.sendExternalFolder:
             self.directories += ['external']
 
@@ -27,6 +27,8 @@ class UserTarball(object):
         # /data/ subdirs contain data files needed by the code
         # /interface/ subdirs contain C++ header files needed e.g. by ROOT6
         self.dataDirs = ['data', 'interface']
+        if self.sendPythonFolder:
+            self.dataDirs += ['python', 'cfipython']
 
     def add_files(self, userFiles=None, excludeFiles=None):
         """

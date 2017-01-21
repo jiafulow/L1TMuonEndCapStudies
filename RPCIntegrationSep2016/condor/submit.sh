@@ -156,6 +156,9 @@ tar xzf \$RUNTIME_AREA/default.tgz
 EXIT_STATUS=\$?
 if [ \$EXIT_STATUS -ne 0 ]; then echo "unpack tarball exited with status=\$EXIT_STATUS"; exit \$EXIT_STATUS; fi
 
+# Compile
+scramv1 b -j4
+
 # Return to working directory
 cd \$RUNTIME_AREA
 echo ">>> Listing RUNTIME_AREA"
@@ -217,6 +220,7 @@ use_x509userproxy       = TRUE
 x509userproxy           = \$ENV(X509_USER_PROXY)
 should_transfer_files   = YES
 when_to_transfer_output = ON_EXIT
+on_exit_remove          = (ExitBySignal == False) && (ExitCode == 0)
 EOF
 
 for JOBID in `seq 1 ${NJOBS}`; do
