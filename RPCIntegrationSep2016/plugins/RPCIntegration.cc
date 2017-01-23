@@ -99,6 +99,56 @@ private:
   std::map<TString, TH2F*> histogram2Ds_;
 };
 
+
+static const float table_common_dphi[9][4][12] = {
+  {
+    {1,1,1,1,0.847055,0.851798,0.867724,0.873484,0.890607,0.89428,0.900251,0.89779},
+    {1,1,1,1,0.826285,0.829534,0.828238,0.835321,0.834014,0.83843,0.834773,0.832766},
+    {1,1,1,1,1.02223,1.02821,1.03386,1.0424,1.05184,1.06159,1.06514,1.07103},
+    {1,1,1,1,1,1,1,1,1,1,1,1}
+  }, {
+    {1,1,1,1,0.813651,0.794143,0.81319,0.835141,0.847146,0.861656,0.870529,0.875659},
+    {1,1,1,1,0.795195,0.833404,0.844693,0.848161,0.858468,0.861726,0.863025,0.865059},
+    {1,1,1,1,0.922495,0.952221,0.976469,0.985512,0.991361,1.00428,1.00879,1.01544},
+    {1,1,1,1,1,1,1,1,1,1,1,1}
+  }, {
+    {1,1,1,1,0.819814,0.832824,0.804891,0.828197,0.842089,0.851609,0.866014,0.872079},
+    {1,1,1,1,0.721377,0.76981,0.838595,0.841318,0.858166,0.857446,0.868781,0.870109},
+    {1,1,1,1,0.849989,0.884942,0.97273,0.982096,0.988326,0.990564,1.00461,1.0047},
+    {1,1,1,1,1,1,1,1,1,1,1,1}
+  }, {
+    {0.628063,0.665655,0.696298,0.722666,0.895705,1,1,1,1,1,1,1},
+    {0.707404,0.721596,0.698707,0.682802,0.670601,1,1,1,1,1,1,1},
+    {1.16011,1.15374,1.14478,1.12572,0.599394,1,1,1,1,1,1,1},
+    {1,1,1,1,1,1,1,1,1,1,1,1}
+  }, {
+    {0.666507,0.595106,0.645176,0.658875,0.765025,1,1,1,1,1,1,1},
+    {0.536868,0.500138,0.536273,0.572217,0.609343,1,1,1,1,1,1,1},
+    {0.792123,0.706319,0.734104,0.768999,0.779005,1,1,1,1,1,1,1},
+    {1,1,1,1,1,1,1,1,1,1,1,1}
+  }, {
+    {0.966154,0.828044,0.692964,0.718768,0.634298,1,1,1,1,1,1,1},
+    {0.554181,0.550328,0.503621,0.550115,0.500284,1,1,1,1,1,1,1},
+    {0.569335,0.738785,0.718388,0.748808,0.692227,1,1,1,1,1,1,1},
+    {1,1,1,1,1,1,1,1,1,1,1,1}
+  }, {
+    {1.1853,1.43276,1.30193,0.977249,0.979631,1.29025,0.721063,0.561994,0.544574,0.668174,0.706952,0.749158},
+    {1.11131,0.702795,0.678866,0.687513,0.715317,0.649837,0.569389,0.478009,0.503459,0.532343,0.53114,0.54882},
+    {1.45085,1.06859,1.09102,1.06216,1.14225,1.02508,0.907177,0.77563,0.791851,0.831536,0.829145,0.872704},
+    {1,1,1,1,1,1,1,1,1,1,1,1}
+  }, {
+    {0.621153,1.20181,1.21899,1.19137,1.08691,1.10758,1.15322,0.987933,0.624858,0.608186,0.76051,0.757587},
+    {0.698534,0.742009,0.756014,0.924622,0.974934,0.77011,0.650933,0.551366,0.54771,0.545968,0.529289,0.52503},
+    {0.774411,0.815504,0.899525,1.12944,1.10429,0.887432,0.768457,0.678359,0.752014,0.793921,0.743588,0.738053},
+    {1,1,1,1,1,1,1,1,1,1,1,1}
+  }, {
+    {0.993291,0.984977,1.00612,0.96264,0.963556,1.00775,1.03273,1.0435,1.04067,1.04157,0.81338,0.829585},
+    {0.567556,0.844276,0.893247,0.83106,0.840212,0.871883,0.897677,1.0066,1.02367,1.24549,0.516999,0.57741},
+    {1.31912,1.58252,1.60814,1.57632,1.30357,1.52155,1.74822,1.81297,2.01885,1.90998,0.86137,1.17987},
+    {1,1,1,1,1,1,1,1,1,1,1,1}
+  }
+};
+
 // _____________________________________________________________________________
 RPCIntegration::RPCIntegration(const edm::ParameterSet& iConfig) :
     emuHitTag_    (iConfig.getParameter<edm::InputTag>("emuHitTag")),
@@ -520,21 +570,10 @@ void RPCIntegration::makeExtrapolation() {
           l1t::EMTFHitExtra myhit1 = myhits1.at(index1(genrd));
           l1t::EMTFHitExtra myhit2 = myhits2.at(index2(genrd));
 
-          //int dphi = myhit1.phi_fp - myhit2.phi_fp;
-          int dphi = l1t::calc_phi_loc_int(myhit1.phi_glob_deg, sector) - l1t::calc_phi_loc_int(myhit2.phi_glob_deg, sector);
-          if (charge > 0)  dphi = -dphi;
-
-          // dphi vs 1/pT
+          // Histogramming
           int ifr = (int(isFront(myhit1.subsystem, myhit1.station, myhit1.ring, myhit1.chamber, myhit1.subsector)) << 1) | int(isFront(myhit2.subsystem, myhit2.station, myhit2.ring, myhit2.chamber, myhit2.subsector));
           int ieta = int((absEta - 1.2) / (2.4 - 1.2) * 12);
-          hname = Form("deflection_stp%i_frp%i_eta%i", ipair, ifr, ieta);
-          h2 = histogram2Ds_.at(hname);
-          h2->Fill(1.0/pt, dphi);
-          hname = Form("deflection_stp%i_frp%i_eta%i", ipair, 4, ieta);  // inclusive
-          h2 = histogram2Ds_.at(hname);
-          h2->Fill(1.0/pt, dphi);
 
-          // dphi vs |eta|
           int ipt = -1;
           if ((1.0/2 - 0.01) < 1.0/pt && 1.0/pt <= (1.0/2)) {
             ipt = 0;
@@ -553,6 +592,31 @@ void RPCIntegration::makeExtrapolation() {
           } else if ((1.0/200 - 0.001) < 1.0/pt && 1.0/pt <= (1.0/200)) {
             ipt = 7;
           }
+
+          // dphi
+          //int dphi = myhit1.phi_fp - myhit2.phi_fp;
+          int dphi = l1t::calc_phi_loc_int(myhit1.phi_glob_deg, sector) - l1t::calc_phi_loc_int(myhit2.phi_glob_deg, sector);
+          if (charge > 0)  dphi = -dphi;
+
+          const float common_dphi_ratio = table_common_dphi[ipair][ifr][ieta];
+          const int common_dphi = static_cast<int>(std::round(1.0 / common_dphi_ratio * dphi));
+
+          // dphi vs 1/pT
+          hname = Form("deflection_stp%i_frp%i_eta%i", ipair, ifr, ieta);
+          h2 = histogram2Ds_.at(hname);
+          h2->Fill(1.0/pt, dphi);
+          hname = Form("deflection_stp%i_frp%i_eta%i", ipair, 4, ieta);  // inclusive
+          h2 = histogram2Ds_.at(hname);
+          h2->Fill(1.0/pt, dphi);
+
+          hname = Form("common_deflection_stp%i_frp%i_eta%i", ipair, ifr, ieta);
+          h2 = histogram2Ds_.at(hname);
+          h2->Fill(1.0/pt, common_dphi);
+          hname = Form("common_deflection_stp%i_frp%i_eta%i", ipair, 4, ieta);  // inclusive
+          h2 = histogram2Ds_.at(hname);
+          h2->Fill(1.0/pt, common_dphi);
+
+          // dphi vs |eta|
           if (ipt != -1) {
             hname = Form("deflection_stp%i_frp%i_pt%i", ipair, ifr, ipt);
             h2 = histogram2Ds_.at(hname);
@@ -560,6 +624,13 @@ void RPCIntegration::makeExtrapolation() {
             hname = Form("deflection_stp%i_frp%i_pt%i", ipair, 4, ipt);  // inclusive
             h2 = histogram2Ds_.at(hname);
             h2->Fill(absEta, dphi);
+
+            hname = Form("common_deflection_stp%i_frp%i_pt%i", ipair, ifr, ipt);
+            h2 = histogram2Ds_.at(hname);
+            h2->Fill(absEta, common_dphi);
+            hname = Form("common_deflection_stp%i_frp%i_pt%i", ipair, 4, ipt);  // inclusive
+            h2 = histogram2Ds_.at(hname);
+            h2->Fill(absEta, common_dphi);
           }
         }
       }
@@ -688,12 +759,18 @@ void RPCIntegration::bookHistograms() {
         hname = Form("deflection_stp%i_frp%i_eta%i", ipair, ifr, ieta);
         h2 = new TH2F(hname, TString("; 1/p_{T} [1/GeV]; ")+deflection_labels1[ipair]+" ("+deflection_labels2[ifr]+") {"+deflection_labels3[ieta]+"}", 50, 0., 0.5, 801, -801, 801);
         histogram2Ds_[hname] = h2;
+
+        hname = Form("common_deflection_stp%i_frp%i_eta%i", ipair, ifr, ieta);
+        histogram2Ds_[hname] = (TH2F*) h2->Clone(hname);
       }
       for (int ipt=0; ipt<8; ++ipt) {
         // dphi vs |eta|
         hname = Form("deflection_stp%i_frp%i_pt%i", ipair, ifr, ipt);
         h2 = new TH2F(hname, TString("; |#eta|; ")+deflection_labels1[ipair]+" ("+deflection_labels2[ifr]+") {"+deflection_labels4[ipt]+"}", 48, 1.2, 2.4, 801, -801, 801);
         histogram2Ds_[hname] = h2;
+
+        hname = Form("common_deflection_stp%i_frp%i_pt%i", ipair, ifr, ipt);
+        histogram2Ds_[hname] = (TH2F*) h2->Clone(hname);
       }
     }
   }
