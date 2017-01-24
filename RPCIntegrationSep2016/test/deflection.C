@@ -1,6 +1,9 @@
 {
 
+float table_common_dphi[9][4][12];  // [ipair][ifr][ieta]
+
 TString hname;
+TString prefix;
 TH1* h1;
 TH2* h2;
 TProfile* pf;
@@ -10,17 +13,23 @@ TF1* f1;
 TGraphAsymmErrors* gr;
 
 //TFile *_file0 = TFile::Open("histos.root");
-TFile *_file0 = TFile::Open("histos_add.root");
+//TFile *_file0 = TFile::Open("histos_add.root");
+TFile *_file0 = TFile::Open("histos_add_20170123.root");
 TString outdir = "figures_deflection/";
 
 gStyle->SetPaintTextFormat(".3f");
 gStyle->SetPalette(kBird);
 
-int palette[4];
+int palette[5];
 palette[0] = TColor::GetColor("#00A1E1");
 palette[1] = TColor::GetColor("#E0006B");
 palette[2] = TColor::GetColor("#F78700");
 palette[3] = TColor::GetColor("#0E9F00");
+palette[4] = TColor::GetColor("#A800E0");
+
+int palette2[2];
+palette2[0] = TColor::GetColor("#808080");
+palette2[1] = TColor::GetColor("#A800E0");
 
 int palette8[8];
 palette8[0] = TColor::GetColor("#4DEEFF");  // lighten 30%
@@ -52,15 +61,17 @@ tlegend2->SetLineColor(0);
 tlegend2->SetShadowColor(0);
 tlegend2->SetBorderSize(0);
 
+static const int print_pt[8] = {2, 3, 5, 10, 20, 50, 100, 200};
+static const char* const print_fr[5] = {"R/R", "R/F", "F/R", "F/F", "all"};
+static const char* const print_corr[2] = {"uncorr", "corr"};
 
+
+// _____________________________________________________________________________
 // Deflection angles vs eta
-
 if (0) {
-  int print_pt[8] = {2, 3, 5, 10, 20, 50, 100, 200};
-
   for (int ipair=0; ipair<9; ++ipair) {
     for (int ipt=0; ipt<8; ++ipt) {
-      hname = Form("deflection_stp%i_pt%i", ipair, ipt);
+      hname = Form("deflection_stp%i_frp4_pt%i", ipair, ipt);
       h2 = (TH2*) _file0->Get(hname);
       h2 = (TH2*) h2->Clone(hname + "_tmp1");
       if (ipair == 0 || ipair == 1 || ipair == 2) {
@@ -78,7 +89,7 @@ if (0) {
 
     for (int ieta=0; ieta<12; ++ieta) {
       for (int ipt=0; ipt<8-3; ++ipt) {
-        hname = Form("deflection_stp%i_pt%i", ipair, ipt);
+        hname = Form("deflection_stp%i_frp4_pt%i", ipair, ipt);
         h2 = (TH2*) _file0->Get(hname);
         h2 = (TH2*) h2->Clone(hname + "_tmp2");
         if (ipair == 0 || ipair == 1 || ipair == 2) {
@@ -89,7 +100,9 @@ if (0) {
           h2->RebinY(4);
         }
         h2->RebinX(4);
-        h1 = h2->ProjectionY(hname + "_px", ieta+1, ieta+1, "");
+        h1 = h2->ProjectionY(hname + "_tmp2_px", ieta+1, ieta+1, "");
+        h1->SetMarkerStyle(20); h1->SetMarkerSize(0.1);
+        h1->SetMarkerColor(palette8[ipt]); h1->SetLineColor(palette8[ipt]);
 
         if (ipt == 0) {
           h1->SetMinimum(0.5); h1->SetMaximum(5e5);
@@ -103,8 +116,6 @@ if (0) {
         }
 
         // Fit
-        h1->SetMarkerStyle(20); h1->SetMarkerSize(0.1);
-        h1->SetMarkerColor(palette8[ipt]); h1->SetLineColor(palette8[ipt]);
         int status = h1->Fit("gaus", "Q0", "", h1->GetMean()-3.0*h1->GetRMS(), h1->GetMean()+3.0*h1->GetRMS());
         if (h1->Integral() > 100. && status == 0) {
           f1 = h1->GetFunction("gaus");
@@ -123,14 +134,14 @@ if (0) {
       tlegend->Draw(); tlegend2->Draw();
       gPad->SetLogy(true);
 
-      hname = Form("deflection_stp%i_pt%i_eta%i", ipair, 99, ieta);
+      hname = Form("deflection_stp%i_frp4_pt%i_eta%i", ipair, 99, ieta);
       gPad->Print(outdir + hname + ".png");
       gPad->SetLogy(false);
     }
   }
 }
 
-
+// _____________________________________________________________________________
 // Deflection angles vs pT
 if (0) {
   for (int ipair=0; ipair<9; ++ipair) {
@@ -154,15 +165,16 @@ if (0) {
   }
 }
 
+// _____________________________________________________________________________
 // Ratios of deflection angles vs pT
-if (1) {
+if (0) {
   for (int ipair=0; ipair<9; ++ipair) {
     hname = Form("sitrep_stp%i", ipair);
     sitrep = new TH2F(hname, "; #eta bin; FR bin", 12, 0, 12, 4, 0, 4);
 
     for (int ifr=0; ifr<4; ++ifr) {
       for (int ieta=0; ieta<12; ++ieta) {
-        hname = Form("deflection_stp%i_frp%i_eta%i", ipair, 3, ieta);  // F+F
+        hname = Form("deflection_stp%i_frp%i_eta%i", ipair, 3, ieta);  // F/F
         h2 = (TH2*) _file0->Get(hname);
         h2->GetYaxis()->SetTitleOffset(1.4);
         h2->SetMarkerStyle(6); h2->SetMarkerColor(kGray+3);
@@ -251,30 +263,196 @@ if (1) {
       if (ipair == 0 || ipair == 1 || ipair == 2) {
         for (int ifr=0; ifr<4; ++ifr) {
           for (int ieta=0; ieta<4; ++ieta) {
-            sitrep->SetBinContent(ieta+1, ifr+1, 0.);
+            sitrep->SetBinContent(ieta+1, ifr+1, 1.);
           }
         }
       } else if (ipair == 3 || ipair == 4 || ipair == 5) {
         for (int ifr=0; ifr<4; ++ifr) {
           for (int ieta=5; ieta<12; ++ieta) {
-            sitrep->SetBinContent(ieta+1, ifr+1, 0.);
+            sitrep->SetBinContent(ieta+1, ifr+1, 1.);
           }
         }
       }
 
-      //sitrep->SetMinimum(0.2); sitrep->SetMaximum(1.8);
+      for (int ifr=0; ifr<4; ++ifr) {
+        for (int ieta=0; ieta<12; ++ieta) {
+          table_common_dphi[ipair][ifr][ieta] = sitrep->GetBinContent(ieta+1, ifr+1);
+        }
+      }
+
+      sitrep->SetMinimum(0.2); sitrep->SetMaximum(1.4);
       sitrep->SetNdivisions(512, "X");
       sitrep->SetNdivisions(504, "Y");
-      sitrep->GetYaxis()->SetBinLabel(1, "R+R");
-      sitrep->GetYaxis()->SetBinLabel(2, "R+F");
-      sitrep->GetYaxis()->SetBinLabel(3, "F+R");
-      sitrep->GetYaxis()->SetBinLabel(4, "F+F");
+      sitrep->GetYaxis()->SetBinLabel(1, print_fr[0]);
+      sitrep->GetYaxis()->SetBinLabel(2, print_fr[1]);
+      sitrep->GetYaxis()->SetBinLabel(3, print_fr[2]);
+      sitrep->GetYaxis()->SetBinLabel(4, print_fr[3]);
       sitrep->SetStats(0);
       sitrep->Draw("COLZ TEXT");
       hname = Form("sitrep_stp%i", ipair);
       gPad->Print(outdir + hname + ".png");
     }
   }
+
+  if (1) {
+    std::cout << "Dumping the table ..." << std::endl;
+    std::cout << "\nconst float table_common_dphi[9][4][12] = {\n  ";
+    for (int ipair=0; ipair<9; ++ipair) {
+      std::cout << "{\n    ";
+      for (int ifr=0; ifr<4; ++ifr) {
+        std::cout << "{";
+        for (int ieta=0; ieta<12; ++ieta) {
+          std::cout << table_common_dphi[ipair][ifr][ieta] << (ieta+1<12 ? "," : "");
+        }
+        std::cout << (ifr+1<4 ? "},\n    " : "}\n  ");
+      }
+      std::cout << (ipair+1<9 ? "}, " : "}\n");
+    }
+    std::cout << "};";
+    std::cout << std::endl;
+  }
+
+}
+
+// _____________________________________________________________________________
+// Apply
+if (1) {
+  for (int j=0; j<2; ++j) {
+    if      (j == 0) prefix = "";
+    else if (j == 1) prefix = "common_";
+
+    for (int ipair=0; ipair<9; ++ipair) {
+      //IETA//for (int ieta=8; ieta<9; ++ieta) {
+        for (int ipt=0; ipt<8; ++ipt) {
+          for (int ifr=0; ifr<5; ++ifr) {
+            hname = Form("deflection_stp%i_frp%i_pt%i", ipair, ifr, ipt); hname = prefix + hname;
+            h2 = (TH2*) _file0->Get(hname);
+            h2 = (TH2*) h2->Clone(hname + "_tmp3");
+            //if (ipair == 0 || ipair == 1 || ipair == 2) {
+            //  // pass
+            //} else if (ipair == 3 || ipair == 4 || ipair == 5) {
+            //  h2->RebinY(2);
+            //} else if (ipair == 6 || ipair == 7 || ipair == 8) {
+            //  h2->RebinY(4);
+            //}
+            h2->RebinY(4);
+            h2->RebinX(4);
+            //IETA//h1 = h2->ProjectionY(hname + "_tmp3_px", ieta+1, ieta+1, "");
+            h1 = h2->ProjectionY(hname + "_tmp3_px");
+            h1->SetMarkerStyle(20); h1->SetMarkerSize(0.1);
+            h1->SetMarkerColor(palette[ifr]); h1->SetLineColor(palette[ifr]);
+
+            if (ifr == 0) {
+              h1->SetMinimum(0.5); h1->SetMaximum(5e5);
+              //IETA//TString xtitle = h1->GetXaxis()->GetTitle(); xtitle = xtitle(0,27); xtitle = xtitle + Form("{%.1f#leq|#eta|<%.1f}",1.2+0.1*ieta, 1.2+0.1*(ieta+1));
+              TString xtitle = h1->GetXaxis()->GetTitle(); xtitle = xtitle(0,27);
+              h1->GetXaxis()->SetTitle(xtitle);
+              h1->SetStats(0); h1->Draw("e");
+              h1->GetXaxis()->SetRangeUser(-600,600);
+              tlegend->Clear(); tlegend2->Clear();
+            } else {
+              h1->Draw("e same");
+            }
+
+            // Fit
+            int status = h1->Fit("gaus", "Q0", "", h1->GetMean()-3.0*h1->GetRMS(), h1->GetMean()+3.0*h1->GetRMS());
+            if (h1->Integral() > 100. && status == 0) {
+              f1 = h1->GetFunction("gaus");
+              f1->SetLineWidth(2); f1->SetLineColor(palette[ifr]);
+              f1->Draw("same");
+              tlegend->AddEntry(h1, Form("#color[%i]{#mu(p_{T} = %i GeV, %s) = %.1f}", f1->GetLineColor(), print_pt[ipt], print_fr[ifr], f1->GetParameter(1)), "");
+              tlegend2->AddEntry(h1, Form("#color[%i]{#sigma(p_{T} = %i GeV, %s) = %.1f}", f1->GetLineColor(), print_pt[ipt], print_fr[ifr], f1->GetParameter(2)), "");
+            } else {
+              f1 = new TF1();
+              f1->SetLineWidth(2); f1->SetLineColor(palette[ifr]);
+              tlegend->AddEntry(h1, Form("#color[%i]{#mu(p_{T} = %i GeV, %s) = NaN}", f1->GetLineColor(), print_pt[ipt], print_fr[ifr]), "");
+              tlegend2->AddEntry(h1, Form("#color[%i]{#sigma(p_{T} = %i GeV, %s) = NaN}", f1->GetLineColor(), print_pt[ipt], print_fr[ifr]), "");
+            }
+
+            //if (ifr+1==4) {
+            //  tlegend->AddEntry(h1, "", ""); // add padding
+            //  tlegend2->AddEntry(h1, "", ""); // add padding
+            //}
+          }
+
+          tlegend->Draw(); tlegend2->Draw();
+          gPad->SetLogy(true);
+
+          //IETA//hname = Form("deflection_stp%i_frp%i_pt%i_eta%i", ipair, 99, ipt, ieta); hname = prefix + hname;
+          hname = Form("deflection_stp%i_frp%i_pt%i", ipair, 99, ipt); hname = prefix + hname;
+          gPad->Print(outdir + hname + ".png");
+          gPad->SetLogy(false);
+        }
+      //IETA//}
+    }
+  }
+
+  // ___________________________________________________________________________
+  // Convoluted
+  for (int ipair=0; ipair<9; ++ipair) {
+    //IETA//for (int ieta=8; ieta<9; ++ieta) {
+      for (int ipt=0; ipt<8; ++ipt) {
+        for (int j=0; j<2; ++j) {
+          if      (j == 0) prefix = "";
+          else if (j == 1) prefix = "common_";
+
+          hname = Form("deflection_stp%i_frp%i_pt%i", ipair, 4, ipt); hname = prefix + hname;
+          h2 = (TH2*) _file0->Get(hname);
+          h2 = (TH2*) h2->Clone(hname + "_tmp4");
+          //if (ipair == 0 || ipair == 1 || ipair == 2) {
+          //  // pass
+          //} else if (ipair == 3 || ipair == 4 || ipair == 5) {
+          //  h2->RebinY(2);
+          //} else if (ipair == 6 || ipair == 7 || ipair == 8) {
+          //  h2->RebinY(4);
+          //}
+          h2->RebinY(4);
+          h2->RebinX(4);
+          //IETA//h1 = h2->ProjectionY(hname + "_tmp4_px", ieta+1, ieta+1, "");
+          h1 = h2->ProjectionY(hname + "_tmp4_px");
+          h1->SetMarkerStyle(20); h1->SetMarkerSize(0.1);
+          h1->SetMarkerColor(palette2[j]); h1->SetLineColor(palette2[j]);
+
+          if (j == 0) {
+            h1->SetMinimum(0.5); h1->SetMaximum(5e5);
+            //IETA//TString xtitle = h1->GetXaxis()->GetTitle(); xtitle = xtitle(0,27); xtitle = xtitle + Form("{%.1f#leq|#eta|<%.1f}",1.2+0.1*ieta, 1.2+0.1*(ieta+1));
+            TString xtitle = h1->GetXaxis()->GetTitle(); xtitle = xtitle(0,27);
+            h1->GetXaxis()->SetTitle(xtitle);
+            h1->SetStats(0); h1->Draw("e");
+            h1->GetXaxis()->SetRangeUser(-600,600);
+            tlegend->Clear(); tlegend2->Clear();
+          } else {
+            h1->Draw("e same");
+          }
+
+          // Fit
+          int status = h1->Fit("gaus", "Q0", "", h1->GetMean()-3.0*h1->GetRMS(), h1->GetMean()+3.0*h1->GetRMS());
+          if (h1->Integral() > 100. && status == 0) {
+            f1 = h1->GetFunction("gaus");
+            f1->SetLineWidth(2); f1->SetLineColor(palette2[j]);
+            f1->Draw("same");
+            tlegend->AddEntry(h1, Form("#color[%i]{#mu(p_{T} = %i GeV, %s) = %.1f}", f1->GetLineColor(), print_pt[ipt], print_corr[j], f1->GetParameter(1)), "");
+            tlegend2->AddEntry(h1, Form("#color[%i]{#sigma(p_{T} = %i GeV, %s) = %.1f}", f1->GetLineColor(), print_pt[ipt], print_corr[j], f1->GetParameter(2)), "");
+          } else {
+            f1 = new TF1();
+            f1->SetLineWidth(2); f1->SetLineColor(palette2[j]);
+            tlegend->AddEntry(h1, Form("#color[%i]{#mu(p_{T} = %i GeV, %s) = NaN}", f1->GetLineColor(), print_pt[ipt], print_corr[j]), "");
+            tlegend2->AddEntry(h1, Form("#color[%i]{#sigma(p_{T} = %i GeV, %s) = NaN}", f1->GetLineColor(), print_pt[ipt], print_corr[j]), "");
+          }
+        }
+
+        tlegend->Draw(); tlegend2->Draw();
+        gPad->SetLogy(true);
+
+        //IETA//hname = Form("deflection_stp%i_frp%i_pt%i_eta%i", ipair, 99, ipt, ieta); hname = prefix + hname;
+        hname = Form("deflection_stp%i_frp%i_pt%i_convoluted", ipair, 99, ipt); hname = prefix + hname;
+        gPad->Print(outdir + hname + ".png");
+        gPad->SetLogy(false);
+      }
+    //IETA//}
+  }
+
+
 }
 
 
