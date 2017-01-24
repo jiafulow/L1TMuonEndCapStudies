@@ -207,7 +207,7 @@ Universe                = vanilla
 #Universe                = grid
 #grid_resource           = condor cms.rc.ufl.edu cms.rc.ufl.edu:9619
 #grid_resource           = condor red-gw1.unl.edu red-gw1.unl.edu:9619
-Notification            = Error
+Notification            = Never
 Executable              = job/blt.sh
 Transfer_Input_Files    = job/input.txt
 Output                  = res/job_\$(Cluster)_\$(Process).stdout
@@ -220,7 +220,7 @@ use_x509userproxy       = TRUE
 x509userproxy           = \$ENV(X509_USER_PROXY)
 should_transfer_files   = YES
 when_to_transfer_output = ON_EXIT
-on_exit_remove          = (ExitBySignal == False) && (ExitCode == 0)
+#on_exit_remove          = (ExitBySignal == False) && (ExitCode == 0 || NumJobStarts>3)
 EOF
 
 for JOBID in `seq 1 ${NJOBS}`; do
