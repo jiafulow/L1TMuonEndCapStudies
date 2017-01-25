@@ -62,6 +62,7 @@ tlegend2->SetShadowColor(0);
 tlegend2->SetBorderSize(0);
 
 static const int print_pt[8] = {2, 3, 5, 10, 20, 50, 100, 200};
+static const char* const print_angle[9] = {"#Delta#phi(1/1,2)", "#Delta#phi(1/1,3)", "#Delta#phi(1/1,4)", "#Delta#phi(1/2,2)", "#Delta#phi(1/2,3)", "#Delta#phi(1/2,4)", "#Delta#phi(2,3)", "#Delta#phi(2,4)", "#Delta#phi(3,4)"};
 static const char* const print_fr[5] = {"R/R", "R/F", "F/R", "F/F", "all"};
 static const char* const print_corr[2] = {"uncorr", "corr"};
 
@@ -283,10 +284,9 @@ if (0) {
       sitrep->SetMinimum(0.2); sitrep->SetMaximum(1.4);
       sitrep->SetNdivisions(512, "X");
       sitrep->SetNdivisions(504, "Y");
-      sitrep->GetYaxis()->SetBinLabel(1, print_fr[0]);
-      sitrep->GetYaxis()->SetBinLabel(2, print_fr[1]);
-      sitrep->GetYaxis()->SetBinLabel(3, print_fr[2]);
-      sitrep->GetYaxis()->SetBinLabel(4, print_fr[3]);
+      for (int ifr=0; ifr<4; ++ifr) {
+        sitrep->GetYaxis()->SetBinLabel(ifr+1, print_fr[ifr]);
+      }
       sitrep->SetStats(0);
       sitrep->Draw("COLZ TEXT");
       hname = Form("sitrep_stp%i", ipair);
@@ -335,7 +335,10 @@ if (1) {
             //} else if (ipair == 6 || ipair == 7 || ipair == 8) {
             //  h2->RebinY(4);
             //}
-            h2->RebinY(4);
+            if (ipt < 5 || ipair >= 3)
+              h2->RebinY(4);
+            else
+              h2->RebinY(1);
             h2->RebinX(4);
             //IETA//h1 = h2->ProjectionY(hname + "_tmp3_px", ieta+1, ieta+1, "");
             h1 = h2->ProjectionY(hname + "_tmp3_px");
@@ -348,7 +351,10 @@ if (1) {
               TString xtitle = h1->GetXaxis()->GetTitle(); xtitle = xtitle(0,27);
               h1->GetXaxis()->SetTitle(xtitle);
               h1->SetStats(0); h1->Draw("e");
-              h1->GetXaxis()->SetRangeUser(-600,600);
+              if (ipt < 5)
+                h1->GetXaxis()->SetRangeUser(-600,600);
+              else
+                h1->GetXaxis()->SetRangeUser(-60,60);
               tlegend->Clear(); tlegend2->Clear();
             } else {
               h1->Draw("e same");
@@ -368,11 +374,6 @@ if (1) {
               tlegend->AddEntry(h1, Form("#color[%i]{#mu(p_{T} = %i GeV, %s) = NaN}", f1->GetLineColor(), print_pt[ipt], print_fr[ifr]), "");
               tlegend2->AddEntry(h1, Form("#color[%i]{#sigma(p_{T} = %i GeV, %s) = NaN}", f1->GetLineColor(), print_pt[ipt], print_fr[ifr]), "");
             }
-
-            //if (ifr+1==4) {
-            //  tlegend->AddEntry(h1, "", ""); // add padding
-            //  tlegend2->AddEntry(h1, "", ""); // add padding
-            //}
           }
 
           tlegend->Draw(); tlegend2->Draw();
@@ -406,7 +407,10 @@ if (1) {
           //} else if (ipair == 6 || ipair == 7 || ipair == 8) {
           //  h2->RebinY(4);
           //}
-          h2->RebinY(4);
+          if (ipt < 5 || ipair >= 3)
+            h2->RebinY(4);
+          else
+            h2->RebinY(1);
           h2->RebinX(4);
           //IETA//h1 = h2->ProjectionY(hname + "_tmp4_px", ieta+1, ieta+1, "");
           h1 = h2->ProjectionY(hname + "_tmp4_px");
@@ -419,7 +423,10 @@ if (1) {
             TString xtitle = h1->GetXaxis()->GetTitle(); xtitle = xtitle(0,27);
             h1->GetXaxis()->SetTitle(xtitle);
             h1->SetStats(0); h1->Draw("e");
-            h1->GetXaxis()->SetRangeUser(-600,600);
+            if (ipt < 5)
+              h1->GetXaxis()->SetRangeUser(-600,600);
+            else
+              h1->GetXaxis()->SetRangeUser(-60,60);
             tlegend->Clear(); tlegend2->Clear();
           } else {
             h1->Draw("e same");
@@ -451,8 +458,55 @@ if (1) {
       }
     //IETA//}
   }
+}
 
+// _____________________________________________________________________________
+// Fraction of F/F, F/R, R/F, R/R
+if (0) {
+  TH1* fraction_histos[5];
 
+  for (int ifr=0; ifr<5; ++ifr) {
+    hname = Form("fraction_frp%i", ifr);
+    h1 = new TH1F(hname, "; ", 9, 0, 9);
+    fraction_histos[ifr] = h1;
+  }
+
+  for (int ipair=0; ipair<9; ++ipair) {
+    for (int ifr=0; ifr<5; ++ifr) {
+      for (int ieta=0; ieta<12; ++ieta) {
+        hname = Form("deflection_stp%i_frp%i_eta%i", ipair, ifr, ieta);
+        h2 = (TH2*) _file0->Get(hname);
+        h1 = fraction_histos[ifr];
+        h1->SetBinContent(ipair+1, h1->GetBinContent(ipair+1) + h2->GetEntries());
+      }
+    }
+  }
+
+  // To stack the fraction histos
+  for (int ifr=0; ifr<4; ++ifr) {
+    for (int jfr=ifr+1; jfr<4; ++jfr) {
+      fraction_histos[ifr]->Add(fraction_histos[jfr]);
+    }
+    fraction_histos[ifr]->Divide(fraction_histos[4]);
+  }
+
+  for (int ifr=0; ifr<4; ++ifr) {
+    h1 = fraction_histos[ifr];
+    h1->SetLineColor(palette[ifr]);
+    h1->SetFillColor(palette[ifr]);
+    if (ifr == 0) {
+      h1->SetMinimum(0); h1->SetMaximum(1.3);
+      for (int ipair=0; ipair<9; ++ipair) {
+        h1->GetXaxis()->SetBinLabel(ipair+1, print_angle[ipair]);
+      }
+      h1->GetXaxis()->LabelsOption("u");
+      h1->SetStats(0); h1->Draw("hist");
+    } else {
+      h1->Draw("same hist");
+    }
+  }
+  gPad->RedrawAxis();
+  gPad->Print(outdir + "fraction_frp.png");
 }
 
 
