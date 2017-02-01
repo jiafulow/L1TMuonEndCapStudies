@@ -102,52 +102,53 @@ private:
 
 static const float table_common_dphi[9][4][12] = {
   {
-    {1,1,1,1,0.84666,0.853464,0.867617,0.873055,0.891733,0.895144,0.899437,0.901102},
-    {1,1,1,1,0.824506,0.830128,0.827465,0.833594,0.8342,0.837148,0.835547,0.833259},
-    {1,1,1,1,1.02119,1.02803,1.03408,1.04254,1.05516,1.06089,1.06734,1.072},
+    {1,1,1,1,0.846323,0.852672,0.867885,0.875119,0.892154,0.893014,0.897351,0.900686},
+    {1,1,1,1,0.824808,0.829518,0.829463,0.833866,0.833403,0.836744,0.834175,0.831884},
+    {1,1,1,1,1.02036,1.02665,1.03454,1.04139,1.05281,1.06052,1.06375,1.07253},
     {1,1,1,1,1,1,1,1,1,1,1,1}
   }, {
-    {1,1,1,1,0.815518,0.794248,0.811911,0.834043,0.846266,0.861189,0.870185,0.875999},
-    {1,1,1,1,0.797369,0.835246,0.845331,0.849306,0.858728,0.859638,0.860124,0.864665},
-    {1,1,1,1,0.924963,0.953833,0.975241,0.986756,0.990523,1.00145,1.00868,1.01503},
+    {1,1,1,1,0.811959,0.794714,0.813745,0.835994,0.847929,0.861594,0.87255,0.875903},
+    {1,1,1,1,0.793768,0.835972,0.845788,0.850213,0.862102,0.859298,0.862829,0.864425},
+    {1,1,1,1,0.920532,0.954955,0.975204,0.987141,0.993699,1.00395,1.01339,1.01479},
     {1,1,1,1,1,1,1,1,1,1,1,1}
   }, {
-    {1,1,1,1,0.818443,0.834547,0.803042,0.825854,0.841015,0.851987,0.86675,0.873194},
-    {1,1,1,1,0.722867,0.773742,0.836682,0.841727,0.858967,0.857886,0.866257,0.868019},
-    {1,1,1,1,0.850137,0.889076,0.971381,0.981557,0.987687,0.990899,1.00386,1.00315},
+    {1,1,1,1,0.817627,0.836039,0.804238,0.827455,0.841192,0.851749,0.867615,0.874569},
+    {1,1,1,1,0.721606,0.772805,0.836832,0.842935,0.858716,0.856335,0.868038,0.86981},
+    {1,1,1,1,0.85171,0.887388,0.970499,0.983848,0.988485,0.990061,1.00743,1.00489},
     {1,1,1,1,1,1,1,1,1,1,1,1}
   }, {
-    {0.63038,0.667363,0.69958,0.725422,0.771336,1,1,1,1,1,1,1},
-    {0.703956,0.715577,0.698035,0.681031,0.675162,1,1,1,1,1,1,1},
-    {1.15616,1.14609,1.14795,1.12045,0.577519,1,1,1,1,1,1,1},
+    {0.621467,0.65959,0.69841,0.72374,1,1,1,1,1,1,1,1},
+    {0.715207,0.722377,0.694042,0.679957,1,1,1,1,1,1,1,1},
+    {1.16572,1.15656,1.14647,1.12091,1,1,1,1,1,1,1,1},
     {1,1,1,1,1,1,1,1,1,1,1,1}
   }, {
-    {0.939943,0.876313,0.873834,0.866203,0.920202,1,1,1,1,1,1,1},
-    {0.855573,0.715455,0.729931,0.745724,0.741166,1,1,1,1,1,1,1},
+    {0.980397,0.857843,0.871264,0.866576,1,1,1,1,1,1,1,1},
+    {0.876505,0.708824,0.727835,0.743702,1,1,1,1,1,1,1,1},
     {1,1,1,1,1,1,1,1,1,1,1,1},
-    {0.296704,1.17925,1.24827,1.19046,1.21726,1,1,1,1,1,1,1}
+    {0.885017,1.19218,1.25679,1.1821,1,1,1,1,1,1,1,1}
   }, {
-    {1.30612,1.0013,0.933209,0.932063,0.860496,1,1,1,1,1,1,1},
-    {0.818715,0.733709,0.713075,0.739424,0.708431,1,1,1,1,1,1,1},
+    {1.29828,1.00485,0.942082,0.924435,1,1,1,1,1,1,1,1},
+    {0.773278,0.731348,0.706409,0.736268,1,1,1,1,1,1,1,1},
     {1,1,1,1,1,1,1,1,1,1,1,1},
-    {1.3812,1.26763,1.29899,1.24171,1.33557,1,1,1,1,1,1,1}
+    {1.41102,1.25659,1.2919,1.24193,1,1,1,1,1,1,1,1}
   }, {
-    {0.710205,1.23066,1.07329,0.937422,0.944576,1.23562,0.995471,0.73616,0.736419,0.846077,0.837642,0.850825},
-    {0.617322,0.624397,0.607213,0.657476,0.596371,0.623193,0.6065,0.631478,0.638557,0.642369,0.638006,0.63419},
+    {0.724366,1.21378,1.06392,0.923372,0.952012,1.24746,0.976344,0.73218,0.634689,0.858273,0.820337,0.868109},
+    {0.666422,0.62379,0.603248,0.652976,0.600217,0.616858,0.596928,0.610453,0.62334,0.630044,0.628413,0.625042},
     {1,1,1,1,1,1,1,1,1,1,1,1},
-    {0.326154,0.865316,0.731991,0.648373,0.741352,0.893415,0.964539,1.04719,1.08863,1.12308,1.12227,1.10385}
+    {0.590317,0.865265,0.724441,0.62982,0.729087,0.881415,0.976484,1.05575,1.11075,1.06125,1.09558,1.0914}
   }, {
-    {1.12786,1.25566,1.19662,1.04014,1.04503,1.23896,1.42962,1.17385,0.794457,0.790477,1.00387,1.0101},
-    {0.965046,0.876151,0.846881,0.830578,0.894659,0.868373,0.81295,0.762267,0.693277,0.7008,0.710171,0.720975},
+    {1.12475,1.22047,1.18725,1.04438,1.03964,1.23569,1.46359,1.12307,0.822121,0.735986,0.984462,1.03996},
+    {0.901263,0.88121,0.846819,0.834914,0.900472,0.867615,0.813411,0.750137,0.67895,0.687514,0.699622,0.716093},
     {1,1,1,1,1,1,1,1,1,1,1,1},
-    {1.26593,1.05604,0.965916,0.830185,0.873131,1.12788,1.24738,1.29535,1.18649,1.1627,1.20282,1.21041}
+    {1.27643,1.0456,0.953896,0.826806,0.87114,1.12494,1.26233,1.31073,1.15908,1.16063,1.21068,1.28293}
   }, {
-    {0.983456,0.995348,0.996956,0.956463,0.96291,1.00854,1.03451,1.04552,1.05104,1.05786,0.802445,0.836741},
-    {0.784907,0.865083,0.897923,0.848196,0.840051,0.845405,0.910135,1.01395,1.04911,1.3011,0.33401,0.694493},
-    {1.30986,1.61264,1.6152,1.50259,1.30524,1.50893,1.76375,1.80443,1.94766,1.76301,1.16413,1.00962},
+    {0.972322,0.993049,0.999165,0.954587,0.971144,1.00816,1.03605,1.04082,1.05927,1.07764,0.753684,0.791347},
+    {0.769051,0.864449,0.899895,0.857426,0.853095,0.862031,0.918589,1.01252,1.10444,1.28828,0.601397,0.449829},
+    {1.26031,1.59854,1.61259,1.54695,1.31621,1.49841,1.73039,1.8196,1.94749,1.94946,1.05409,0.958127},
     {1,1,1,1,1,1,1,1,1,1,1,1}
   }
 };
+
 
 // _____________________________________________________________________________
 RPCIntegration::RPCIntegration(const edm::ParameterSet& iConfig) :
@@ -649,19 +650,20 @@ void RPCIntegration::makeExtrapolation() {
       // ipair  9: dphi(RE1/2,ME2)
       // ipair 10: dphi(RE1/2,ME3)
       // ipair 11: dphi(RE1/2,ME4)
-      // ipair 12: dphi(ME1/1,RE2)
-      // ipair 13: dphi(ME1/2,RE2)
-      // ipair 14: dphi(RE2,ME3)
-      // ipair 15: dphi(RE2,ME4)
-      // ipair 16: dphi(ME1/1,RE3)
-      // ipair 17: dphi(ME1/2,RE3)
-      // ipair 18: dphi(ME2,RE3)
-      // ipair 19: dphi(RE3,ME4)
-      // ipair 20: dphi(ME1/1,RE4)
-      // ipair 21: dphi(ME1/2,RE4)
-      // ipair 22: dphi(ME2,RE4)
-      // ipair 23: dphi(ME3,RE4)
-      for (int ipair = 9; ipair < (9+15); ++ipair) {
+      // ipair 12: reserved
+      // ipair 13: dphi(ME1/1,RE2)
+      // ipair 14: dphi(ME1/2,RE2)
+      // ipair 15: dphi(RE2,ME3)
+      // ipair 16: dphi(RE2,ME4)
+      // ipair 17: dphi(ME1/1,RE3)
+      // ipair 18: dphi(ME1/2,RE3)
+      // ipair 19: dphi(ME2,RE3)
+      // ipair 20: dphi(RE3,ME4)
+      // ipair 21: dphi(ME1/1,RE4)
+      // ipair 22: dphi(ME1/2,RE4)
+      // ipair 23: dphi(ME2,RE4)
+      // ipair 24: dphi(ME3,RE4)
+      for (int ipair = 9; ipair < (9+16); ++ipair) {
         std::vector<l1t::EMTFHitExtra> myhits1;
         std::vector<l1t::EMTFHitExtra> myhits2;
         if (ipair == 9) {
@@ -674,39 +676,41 @@ void RPCIntegration::makeExtrapolation() {
           std::copy_if(myhits_rpc.begin(), myhits_rpc.end(), std::back_inserter(myhits1), [](const l1t::EMTFHitExtra& hit) { return (hit.station == 1 && hit.ring == 2); });
           std::copy_if(myhits_csc.begin(), myhits_csc.end(), std::back_inserter(myhits2), [](const l1t::EMTFHitExtra& hit) { return (hit.station == 4); });
         } else if (ipair == 12) {
-          std::copy_if(myhits_csc.begin(), myhits_csc.end(), std::back_inserter(myhits1), [](const l1t::EMTFHitExtra& hit) { return (hit.station == 1 && (hit.ring == 1 || hit.ring == 4)); });
-          std::copy_if(myhits_rpc.begin(), myhits_rpc.end(), std::back_inserter(myhits2), [](const l1t::EMTFHitExtra& hit) { return (hit.station == 2); });
+          // pass
         } else if (ipair == 13) {
-          std::copy_if(myhits_csc.begin(), myhits_csc.end(), std::back_inserter(myhits1), [](const l1t::EMTFHitExtra& hit) { return (hit.station == 1 && hit.ring == 2); });
+          std::copy_if(myhits_csc.begin(), myhits_csc.end(), std::back_inserter(myhits1), [](const l1t::EMTFHitExtra& hit) { return (hit.station == 1 && (hit.ring == 1 || hit.ring == 4)); });
           std::copy_if(myhits_rpc.begin(), myhits_rpc.end(), std::back_inserter(myhits2), [](const l1t::EMTFHitExtra& hit) { return (hit.station == 2); });
         } else if (ipair == 14) {
-          std::copy_if(myhits_rpc.begin(), myhits_rpc.end(), std::back_inserter(myhits1), [](const l1t::EMTFHitExtra& hit) { return (hit.station == 2); });
-          std::copy_if(myhits_csc.begin(), myhits_csc.end(), std::back_inserter(myhits2), [](const l1t::EMTFHitExtra& hit) { return (hit.station == 3); });
+          std::copy_if(myhits_csc.begin(), myhits_csc.end(), std::back_inserter(myhits1), [](const l1t::EMTFHitExtra& hit) { return (hit.station == 1 && hit.ring == 2); });
+          std::copy_if(myhits_rpc.begin(), myhits_rpc.end(), std::back_inserter(myhits2), [](const l1t::EMTFHitExtra& hit) { return (hit.station == 2); });
         } else if (ipair == 15) {
           std::copy_if(myhits_rpc.begin(), myhits_rpc.end(), std::back_inserter(myhits1), [](const l1t::EMTFHitExtra& hit) { return (hit.station == 2); });
-          std::copy_if(myhits_csc.begin(), myhits_csc.end(), std::back_inserter(myhits2), [](const l1t::EMTFHitExtra& hit) { return (hit.station == 4); });
+          std::copy_if(myhits_csc.begin(), myhits_csc.end(), std::back_inserter(myhits2), [](const l1t::EMTFHitExtra& hit) { return (hit.station == 3); });
         } else if (ipair == 16) {
-          std::copy_if(myhits_csc.begin(), myhits_csc.end(), std::back_inserter(myhits1), [](const l1t::EMTFHitExtra& hit) { return (hit.station == 1 && (hit.ring == 1 || hit.ring == 4)); });
-          std::copy_if(myhits_rpc.begin(), myhits_rpc.end(), std::back_inserter(myhits2), [](const l1t::EMTFHitExtra& hit) { return (hit.station == 3); });
+          std::copy_if(myhits_rpc.begin(), myhits_rpc.end(), std::back_inserter(myhits1), [](const l1t::EMTFHitExtra& hit) { return (hit.station == 2); });
+          std::copy_if(myhits_csc.begin(), myhits_csc.end(), std::back_inserter(myhits2), [](const l1t::EMTFHitExtra& hit) { return (hit.station == 4); });
         } else if (ipair == 17) {
-          std::copy_if(myhits_csc.begin(), myhits_csc.end(), std::back_inserter(myhits1), [](const l1t::EMTFHitExtra& hit) { return (hit.station == 1 && hit.ring == 2); });
+          std::copy_if(myhits_csc.begin(), myhits_csc.end(), std::back_inserter(myhits1), [](const l1t::EMTFHitExtra& hit) { return (hit.station == 1 && (hit.ring == 1 || hit.ring == 4)); });
           std::copy_if(myhits_rpc.begin(), myhits_rpc.end(), std::back_inserter(myhits2), [](const l1t::EMTFHitExtra& hit) { return (hit.station == 3); });
         } else if (ipair == 18) {
-          std::copy_if(myhits_csc.begin(), myhits_csc.end(), std::back_inserter(myhits1), [](const l1t::EMTFHitExtra& hit) { return (hit.station == 2); });
+          std::copy_if(myhits_csc.begin(), myhits_csc.end(), std::back_inserter(myhits1), [](const l1t::EMTFHitExtra& hit) { return (hit.station == 1 && hit.ring == 2); });
           std::copy_if(myhits_rpc.begin(), myhits_rpc.end(), std::back_inserter(myhits2), [](const l1t::EMTFHitExtra& hit) { return (hit.station == 3); });
         } else if (ipair == 19) {
+          std::copy_if(myhits_csc.begin(), myhits_csc.end(), std::back_inserter(myhits1), [](const l1t::EMTFHitExtra& hit) { return (hit.station == 2); });
+          std::copy_if(myhits_rpc.begin(), myhits_rpc.end(), std::back_inserter(myhits2), [](const l1t::EMTFHitExtra& hit) { return (hit.station == 3); });
+        } else if (ipair == 20) {
           std::copy_if(myhits_rpc.begin(), myhits_rpc.end(), std::back_inserter(myhits1), [](const l1t::EMTFHitExtra& hit) { return (hit.station == 3); });
           std::copy_if(myhits_csc.begin(), myhits_csc.end(), std::back_inserter(myhits2), [](const l1t::EMTFHitExtra& hit) { return (hit.station == 4); });
-        } else if (ipair == 20) {
+        } else if (ipair == 21) {
           std::copy_if(myhits_csc.begin(), myhits_csc.end(), std::back_inserter(myhits1), [](const l1t::EMTFHitExtra& hit) { return (hit.station == 1 && (hit.ring == 1 || hit.ring == 4)); });
           std::copy_if(myhits_rpc.begin(), myhits_rpc.end(), std::back_inserter(myhits2), [](const l1t::EMTFHitExtra& hit) { return (hit.station == 4); });
-        } else if (ipair == 21) {
+        } else if (ipair == 22) {
           std::copy_if(myhits_csc.begin(), myhits_csc.end(), std::back_inserter(myhits1), [](const l1t::EMTFHitExtra& hit) { return (hit.station == 1 && hit.ring == 2); });
           std::copy_if(myhits_rpc.begin(), myhits_rpc.end(), std::back_inserter(myhits2), [](const l1t::EMTFHitExtra& hit) { return (hit.station == 4); });
-        } else if (ipair == 22) {
+        } else if (ipair == 23) {
           std::copy_if(myhits_csc.begin(), myhits_csc.end(), std::back_inserter(myhits1), [](const l1t::EMTFHitExtra& hit) { return (hit.station == 2); });
           std::copy_if(myhits_rpc.begin(), myhits_rpc.end(), std::back_inserter(myhits2), [](const l1t::EMTFHitExtra& hit) { return (hit.station == 4); });
-        } else if (ipair == 23) {
+        } else if (ipair == 24) {
           std::copy_if(myhits_csc.begin(), myhits_csc.end(), std::back_inserter(myhits1), [](const l1t::EMTFHitExtra& hit) { return (hit.station == 3); });
           std::copy_if(myhits_rpc.begin(), myhits_rpc.end(), std::back_inserter(myhits2), [](const l1t::EMTFHitExtra& hit) { return (hit.station == 4); });
         } else {
@@ -921,12 +925,12 @@ void RPCIntegration::bookHistograms() {
       "200#leqp_{T}<250"
   };
 
-  for (int ipair=0; ipair<(9+15); ++ipair) {
+  for (int ipair=0; ipair<(9+16); ++ipair) {
     for (int ifr=0; ifr<5; ++ifr) {
       for (int ieta=0; ieta<12; ++ieta) {
         // dphi vs 1/pT
         hname = Form("deflection_stp%i_frp%i_eta%i", ipair, ifr, ieta);
-        h2 = new TH2F(hname, TString("; 1/p_{T} [1/GeV]; ")+deflection_labels1[ipair]+" ("+deflection_labels2[ifr]+") {"+deflection_labels3[ieta]+"}", 50, 0., 0.5, 801, -801, 801);
+        h2 = new TH2F(hname, TString("; 1/p_{T} [1/GeV]; ")+deflection_labels1[ipair]+" ("+deflection_labels2[ifr]+") {"+deflection_labels3[ieta]+"}", 50, 0., 0.5, 808, -808, 808);
         histogram2Ds_[hname] = h2;
 
         hname = Form("common_deflection_stp%i_frp%i_eta%i", ipair, ifr, ieta);
@@ -935,7 +939,7 @@ void RPCIntegration::bookHistograms() {
       for (int ipt=0; ipt<8; ++ipt) {
         // dphi vs |eta|
         hname = Form("deflection_stp%i_frp%i_pt%i", ipair, ifr, ipt);
-        h2 = new TH2F(hname, TString("; |#eta|; ")+deflection_labels1[ipair]+" ("+deflection_labels2[ifr]+") {"+deflection_labels4[ipt]+"}", 48, 1.2, 2.4, 801, -801, 801);
+        h2 = new TH2F(hname, TString("; |#eta|; ")+deflection_labels1[ipair]+" ("+deflection_labels2[ifr]+") {"+deflection_labels4[ipt]+"}", 48, 1.2, 2.4, 808, -808, 808);
         histogram2Ds_[hname] = h2;
 
         hname = Form("common_deflection_stp%i_frp%i_pt%i", ipair, ifr, ipt);
