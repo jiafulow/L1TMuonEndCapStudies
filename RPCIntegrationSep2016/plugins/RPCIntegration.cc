@@ -102,49 +102,49 @@ private:
 
 static const float table_common_dphi[9][4][12] = {
   {
-    {1,1,1,1,0.847055,0.851798,0.867724,0.873484,0.890607,0.89428,0.900251,0.89779},
-    {1,1,1,1,0.826285,0.829534,0.828238,0.835321,0.834014,0.83843,0.834773,0.832766},
-    {1,1,1,1,1.02223,1.02821,1.03386,1.0424,1.05184,1.06159,1.06514,1.07103},
+    {1,1,1,1,0.84666,0.853464,0.867617,0.873055,0.891733,0.895144,0.899437,0.901102},
+    {1,1,1,1,0.824506,0.830128,0.827465,0.833594,0.8342,0.837148,0.835547,0.833259},
+    {1,1,1,1,1.02119,1.02803,1.03408,1.04254,1.05516,1.06089,1.06734,1.072},
     {1,1,1,1,1,1,1,1,1,1,1,1}
   }, {
-    {1,1,1,1,0.813651,0.794143,0.81319,0.835141,0.847146,0.861656,0.870529,0.875659},
-    {1,1,1,1,0.795195,0.833404,0.844693,0.848161,0.858468,0.861726,0.863025,0.865059},
-    {1,1,1,1,0.922495,0.952221,0.976469,0.985512,0.991361,1.00428,1.00879,1.01544},
+    {1,1,1,1,0.815518,0.794248,0.811911,0.834043,0.846266,0.861189,0.870185,0.875999},
+    {1,1,1,1,0.797369,0.835246,0.845331,0.849306,0.858728,0.859638,0.860124,0.864665},
+    {1,1,1,1,0.924963,0.953833,0.975241,0.986756,0.990523,1.00145,1.00868,1.01503},
     {1,1,1,1,1,1,1,1,1,1,1,1}
   }, {
-    {1,1,1,1,0.819814,0.832824,0.804891,0.828197,0.842089,0.851609,0.866014,0.872079},
-    {1,1,1,1,0.721377,0.76981,0.838595,0.841318,0.858166,0.857446,0.868781,0.870109},
-    {1,1,1,1,0.849989,0.884942,0.97273,0.982096,0.988326,0.990564,1.00461,1.0047},
+    {1,1,1,1,0.818443,0.834547,0.803042,0.825854,0.841015,0.851987,0.86675,0.873194},
+    {1,1,1,1,0.722867,0.773742,0.836682,0.841727,0.858967,0.857886,0.866257,0.868019},
+    {1,1,1,1,0.850137,0.889076,0.971381,0.981557,0.987687,0.990899,1.00386,1.00315},
     {1,1,1,1,1,1,1,1,1,1,1,1}
   }, {
-    {0.628063,0.665655,0.696298,0.722666,0.895705,1,1,1,1,1,1,1},
-    {0.707404,0.721596,0.698707,0.682802,0.670601,1,1,1,1,1,1,1},
-    {1.16011,1.15374,1.14478,1.12572,0.599394,1,1,1,1,1,1,1},
+    {0.63038,0.667363,0.69958,0.725422,0.771336,1,1,1,1,1,1,1},
+    {0.703956,0.715577,0.698035,0.681031,0.675162,1,1,1,1,1,1,1},
+    {1.15616,1.14609,1.14795,1.12045,0.577519,1,1,1,1,1,1,1},
     {1,1,1,1,1,1,1,1,1,1,1,1}
   }, {
-    {0.666507,0.595106,0.645176,0.658875,0.765025,1,1,1,1,1,1,1},
-    {0.536868,0.500138,0.536273,0.572217,0.609343,1,1,1,1,1,1,1},
-    {0.792123,0.706319,0.734104,0.768999,0.779005,1,1,1,1,1,1,1},
-    {1,1,1,1,1,1,1,1,1,1,1,1}
+    {0.939943,0.876313,0.873834,0.866203,0.920202,1,1,1,1,1,1,1},
+    {0.855573,0.715455,0.729931,0.745724,0.741166,1,1,1,1,1,1,1},
+    {1,1,1,1,1,1,1,1,1,1,1,1},
+    {0.296704,1.17925,1.24827,1.19046,1.21726,1,1,1,1,1,1,1}
   }, {
-    {0.966154,0.828044,0.692964,0.718768,0.634298,1,1,1,1,1,1,1},
-    {0.554181,0.550328,0.503621,0.550115,0.500284,1,1,1,1,1,1,1},
-    {0.569335,0.738785,0.718388,0.748808,0.692227,1,1,1,1,1,1,1},
-    {1,1,1,1,1,1,1,1,1,1,1,1}
+    {1.30612,1.0013,0.933209,0.932063,0.860496,1,1,1,1,1,1,1},
+    {0.818715,0.733709,0.713075,0.739424,0.708431,1,1,1,1,1,1,1},
+    {1,1,1,1,1,1,1,1,1,1,1,1},
+    {1.3812,1.26763,1.29899,1.24171,1.33557,1,1,1,1,1,1,1}
   }, {
-    {1.1853,1.43276,1.30193,0.977249,0.979631,1.29025,0.721063,0.561994,0.544574,0.668174,0.706952,0.749158},
-    {1.11131,0.702795,0.678866,0.687513,0.715317,0.649837,0.569389,0.478009,0.503459,0.532343,0.53114,0.54882},
-    {1.45085,1.06859,1.09102,1.06216,1.14225,1.02508,0.907177,0.77563,0.791851,0.831536,0.829145,0.872704},
-    {1,1,1,1,1,1,1,1,1,1,1,1}
+    {0.710205,1.23066,1.07329,0.937422,0.944576,1.23562,0.995471,0.73616,0.736419,0.846077,0.837642,0.850825},
+    {0.617322,0.624397,0.607213,0.657476,0.596371,0.623193,0.6065,0.631478,0.638557,0.642369,0.638006,0.63419},
+    {1,1,1,1,1,1,1,1,1,1,1,1},
+    {0.326154,0.865316,0.731991,0.648373,0.741352,0.893415,0.964539,1.04719,1.08863,1.12308,1.12227,1.10385}
   }, {
-    {0.621153,1.20181,1.21899,1.19137,1.08691,1.10758,1.15322,0.987933,0.624858,0.608186,0.76051,0.757587},
-    {0.698534,0.742009,0.756014,0.924622,0.974934,0.77011,0.650933,0.551366,0.54771,0.545968,0.529289,0.52503},
-    {0.774411,0.815504,0.899525,1.12944,1.10429,0.887432,0.768457,0.678359,0.752014,0.793921,0.743588,0.738053},
-    {1,1,1,1,1,1,1,1,1,1,1,1}
+    {1.12786,1.25566,1.19662,1.04014,1.04503,1.23896,1.42962,1.17385,0.794457,0.790477,1.00387,1.0101},
+    {0.965046,0.876151,0.846881,0.830578,0.894659,0.868373,0.81295,0.762267,0.693277,0.7008,0.710171,0.720975},
+    {1,1,1,1,1,1,1,1,1,1,1,1},
+    {1.26593,1.05604,0.965916,0.830185,0.873131,1.12788,1.24738,1.29535,1.18649,1.1627,1.20282,1.21041}
   }, {
-    {0.993291,0.984977,1.00612,0.96264,0.963556,1.00775,1.03273,1.0435,1.04067,1.04157,0.81338,0.829585},
-    {0.567556,0.844276,0.893247,0.83106,0.840212,0.871883,0.897677,1.0066,1.02367,1.24549,0.516999,0.57741},
-    {1.31912,1.58252,1.60814,1.57632,1.30357,1.52155,1.74822,1.81297,2.01885,1.90998,0.86137,1.17987},
+    {0.983456,0.995348,0.996956,0.956463,0.96291,1.00854,1.03451,1.04552,1.05104,1.05786,0.802445,0.836741},
+    {0.784907,0.865083,0.897923,0.848196,0.840051,0.845405,0.910135,1.01395,1.04911,1.3011,0.33401,0.694493},
+    {1.30986,1.61264,1.6152,1.50259,1.30524,1.50893,1.76375,1.80443,1.94766,1.76301,1.16413,1.00962},
     {1,1,1,1,1,1,1,1,1,1,1,1}
   }
 };
@@ -446,7 +446,8 @@ void RPCIntegration::makeExtrapolation() {
 
   // ___________________________________________________________________________
   bool keep_event = true;
-  std::vector<l1t::EMTFHitExtra> myhits;
+  std::vector<l1t::EMTFHitExtra> myhits_csc;
+  std::vector<l1t::EMTFHitExtra> myhits_rpc;
 
   // from RecoMuon/DetLayers/src/MuonCSCDetLayerGeometryBuilder.cc
   // from RecoMuon/DetLayers/src/MuonRPCDetLayerGeometryBuilder.cc
@@ -483,22 +484,22 @@ void RPCIntegration::makeExtrapolation() {
 
     for (int sector = 1; sector <= 6; ++sector) {
       int mode = 0;
-      myhits.clear();
+      myhits_csc.clear();
+      myhits_rpc.clear();
       for (const auto& hit : emuHits_) {
         assert(1 <= hit.sector && hit.sector <= 6);
         assert(1 <= hit.station && hit.station <= 4);
         if (hit.sector == sector && hit.subsystem == TriggerPrimitive::kCSC) {
           mode |= (1<<(4-hit.station));
-          myhits.push_back(hit);
+          myhits_csc.push_back(hit);
+        } else if (hit.sector == sector && hit.subsystem == TriggerPrimitive::kRPC) {
+          mode |= (1<<(4-hit.station));
+          myhits_rpc.push_back(hit);
         }
-        //if (hit.sector == sector && hit.subsystem == TriggerPrimitive::kRPC) {
-        //  mode |= (1<<(4-hit.station));
-        //  myhits.push_back(hit);
-        //}
       }
 
-      //if (mode == 15 && myhits.size() == 4) {
-      //  for (const auto& hit : myhits) {
+      //if (mode == 15 && myhits_csc.size() == 4) {
+      //  for (const auto& hit : myhits_csc) {
       //    int hit_fr = isFront(hit.subsystem, hit.station, hit.ring, hit.chamber, hit.subsector);
       //    float hit_phi = hit.phi_glob_deg;
       //    float hit_eta = hit.eta;
@@ -530,36 +531,45 @@ void RPCIntegration::makeExtrapolation() {
 
 
       // Make deflection angles
+      // ipair 0: dphi(1/1,2)
+      // ipair 1: dphi(1/1,3)
+      // ipair 2: dphi(1/1,4)
+      // ipair 3: dphi(1/2,2)
+      // ipair 4: dphi(1/2,3)
+      // ipair 5: dphi(1/2,4)
+      // ipair 6: dphi(2,3)
+      // ipair 7: dphi(2,4)
+      // ipair 8: dphi(3,4)
       for (int ipair = 0; ipair < 9; ++ipair) {
         std::vector<l1t::EMTFHitExtra> myhits1;
         std::vector<l1t::EMTFHitExtra> myhits2;
         if (ipair == 0) {
-          std::copy_if(myhits.begin(), myhits.end(), std::back_inserter(myhits1), [](const l1t::EMTFHitExtra& hit) { return (hit.station == 1 && (hit.ring == 1 || hit.ring == 4)); });
-          std::copy_if(myhits.begin(), myhits.end(), std::back_inserter(myhits2), [](const l1t::EMTFHitExtra& hit) { return (hit.station == 2); });
+          std::copy_if(myhits_csc.begin(), myhits_csc.end(), std::back_inserter(myhits1), [](const l1t::EMTFHitExtra& hit) { return (hit.station == 1 && (hit.ring == 1 || hit.ring == 4)); });
+          std::copy_if(myhits_csc.begin(), myhits_csc.end(), std::back_inserter(myhits2), [](const l1t::EMTFHitExtra& hit) { return (hit.station == 2); });
         } else if (ipair == 1) {
-          std::copy_if(myhits.begin(), myhits.end(), std::back_inserter(myhits1), [](const l1t::EMTFHitExtra& hit) { return (hit.station == 1 && (hit.ring == 1 || hit.ring == 4)); });
-          std::copy_if(myhits.begin(), myhits.end(), std::back_inserter(myhits2), [](const l1t::EMTFHitExtra& hit) { return (hit.station == 3); });
+          std::copy_if(myhits_csc.begin(), myhits_csc.end(), std::back_inserter(myhits1), [](const l1t::EMTFHitExtra& hit) { return (hit.station == 1 && (hit.ring == 1 || hit.ring == 4)); });
+          std::copy_if(myhits_csc.begin(), myhits_csc.end(), std::back_inserter(myhits2), [](const l1t::EMTFHitExtra& hit) { return (hit.station == 3); });
         } else if (ipair == 2) {
-          std::copy_if(myhits.begin(), myhits.end(), std::back_inserter(myhits1), [](const l1t::EMTFHitExtra& hit) { return (hit.station == 1 && (hit.ring == 1 || hit.ring == 4)); });
-          std::copy_if(myhits.begin(), myhits.end(), std::back_inserter(myhits2), [](const l1t::EMTFHitExtra& hit) { return (hit.station == 4); });
+          std::copy_if(myhits_csc.begin(), myhits_csc.end(), std::back_inserter(myhits1), [](const l1t::EMTFHitExtra& hit) { return (hit.station == 1 && (hit.ring == 1 || hit.ring == 4)); });
+          std::copy_if(myhits_csc.begin(), myhits_csc.end(), std::back_inserter(myhits2), [](const l1t::EMTFHitExtra& hit) { return (hit.station == 4); });
         } else if (ipair == 3) {
-          std::copy_if(myhits.begin(), myhits.end(), std::back_inserter(myhits1), [](const l1t::EMTFHitExtra& hit) { return (hit.station == 1 && hit.ring == 2); });
-          std::copy_if(myhits.begin(), myhits.end(), std::back_inserter(myhits2), [](const l1t::EMTFHitExtra& hit) { return (hit.station == 2); });
+          std::copy_if(myhits_csc.begin(), myhits_csc.end(), std::back_inserter(myhits1), [](const l1t::EMTFHitExtra& hit) { return (hit.station == 1 && hit.ring == 2); });
+          std::copy_if(myhits_csc.begin(), myhits_csc.end(), std::back_inserter(myhits2), [](const l1t::EMTFHitExtra& hit) { return (hit.station == 2); });
         } else if (ipair == 4) {
-          std::copy_if(myhits.begin(), myhits.end(), std::back_inserter(myhits1), [](const l1t::EMTFHitExtra& hit) { return (hit.station == 1 && hit.ring == 2); });
-          std::copy_if(myhits.begin(), myhits.end(), std::back_inserter(myhits2), [](const l1t::EMTFHitExtra& hit) { return (hit.station == 3); });
+          std::copy_if(myhits_csc.begin(), myhits_csc.end(), std::back_inserter(myhits1), [](const l1t::EMTFHitExtra& hit) { return (hit.station == 1 && hit.ring == 2); });
+          std::copy_if(myhits_csc.begin(), myhits_csc.end(), std::back_inserter(myhits2), [](const l1t::EMTFHitExtra& hit) { return (hit.station == 3); });
         } else if (ipair == 5) {
-          std::copy_if(myhits.begin(), myhits.end(), std::back_inserter(myhits1), [](const l1t::EMTFHitExtra& hit) { return (hit.station == 1 && hit.ring == 2); });
-          std::copy_if(myhits.begin(), myhits.end(), std::back_inserter(myhits2), [](const l1t::EMTFHitExtra& hit) { return (hit.station == 4); });
+          std::copy_if(myhits_csc.begin(), myhits_csc.end(), std::back_inserter(myhits1), [](const l1t::EMTFHitExtra& hit) { return (hit.station == 1 && hit.ring == 2); });
+          std::copy_if(myhits_csc.begin(), myhits_csc.end(), std::back_inserter(myhits2), [](const l1t::EMTFHitExtra& hit) { return (hit.station == 4); });
         } else if (ipair == 6) {
-          std::copy_if(myhits.begin(), myhits.end(), std::back_inserter(myhits1), [](const l1t::EMTFHitExtra& hit) { return (hit.station == 2); });
-          std::copy_if(myhits.begin(), myhits.end(), std::back_inserter(myhits2), [](const l1t::EMTFHitExtra& hit) { return (hit.station == 3); });
+          std::copy_if(myhits_csc.begin(), myhits_csc.end(), std::back_inserter(myhits1), [](const l1t::EMTFHitExtra& hit) { return (hit.station == 2); });
+          std::copy_if(myhits_csc.begin(), myhits_csc.end(), std::back_inserter(myhits2), [](const l1t::EMTFHitExtra& hit) { return (hit.station == 3); });
         } else if (ipair == 7) {
-          std::copy_if(myhits.begin(), myhits.end(), std::back_inserter(myhits1), [](const l1t::EMTFHitExtra& hit) { return (hit.station == 2); });
-          std::copy_if(myhits.begin(), myhits.end(), std::back_inserter(myhits2), [](const l1t::EMTFHitExtra& hit) { return (hit.station == 4); });
+          std::copy_if(myhits_csc.begin(), myhits_csc.end(), std::back_inserter(myhits1), [](const l1t::EMTFHitExtra& hit) { return (hit.station == 2); });
+          std::copy_if(myhits_csc.begin(), myhits_csc.end(), std::back_inserter(myhits2), [](const l1t::EMTFHitExtra& hit) { return (hit.station == 4); });
         } else if (ipair == 8) {
-          std::copy_if(myhits.begin(), myhits.end(), std::back_inserter(myhits1), [](const l1t::EMTFHitExtra& hit) { return (hit.station == 3); });
-          std::copy_if(myhits.begin(), myhits.end(), std::back_inserter(myhits2), [](const l1t::EMTFHitExtra& hit) { return (hit.station == 4); });
+          std::copy_if(myhits_csc.begin(), myhits_csc.end(), std::back_inserter(myhits1), [](const l1t::EMTFHitExtra& hit) { return (hit.station == 3); });
+          std::copy_if(myhits_csc.begin(), myhits_csc.end(), std::back_inserter(myhits2), [](const l1t::EMTFHitExtra& hit) { return (hit.station == 4); });
         } else {
           assert(false && "invalid ipair");
         }
@@ -633,7 +643,147 @@ void RPCIntegration::makeExtrapolation() {
             h2->Fill(absEta, common_dphi);
           }
         }
-      }
+      }  // end make deflection angles
+
+      // Make deflection angles (with RPC)
+      // ipair  9: dphi(RE1/2,ME2)
+      // ipair 10: dphi(RE1/2,ME3)
+      // ipair 11: dphi(RE1/2,ME4)
+      // ipair 12: dphi(ME1/1,RE2)
+      // ipair 13: dphi(ME1/2,RE2)
+      // ipair 14: dphi(RE2,ME3)
+      // ipair 15: dphi(RE2,ME4)
+      // ipair 16: dphi(ME1/1,RE3)
+      // ipair 17: dphi(ME1/2,RE3)
+      // ipair 18: dphi(ME2,RE3)
+      // ipair 19: dphi(RE3,ME4)
+      // ipair 20: dphi(ME1/1,RE4)
+      // ipair 21: dphi(ME1/2,RE4)
+      // ipair 22: dphi(ME2,RE4)
+      // ipair 23: dphi(ME3,RE4)
+      for (int ipair = 9; ipair < (9+15); ++ipair) {
+        std::vector<l1t::EMTFHitExtra> myhits1;
+        std::vector<l1t::EMTFHitExtra> myhits2;
+        if (ipair == 9) {
+          std::copy_if(myhits_rpc.begin(), myhits_rpc.end(), std::back_inserter(myhits1), [](const l1t::EMTFHitExtra& hit) { return (hit.station == 1 && hit.ring == 2); });
+          std::copy_if(myhits_csc.begin(), myhits_csc.end(), std::back_inserter(myhits2), [](const l1t::EMTFHitExtra& hit) { return (hit.station == 2); });
+        } else if (ipair == 10) {
+          std::copy_if(myhits_rpc.begin(), myhits_rpc.end(), std::back_inserter(myhits1), [](const l1t::EMTFHitExtra& hit) { return (hit.station == 1 && hit.ring == 2); });
+          std::copy_if(myhits_csc.begin(), myhits_csc.end(), std::back_inserter(myhits2), [](const l1t::EMTFHitExtra& hit) { return (hit.station == 3); });
+        } else if (ipair == 11) {
+          std::copy_if(myhits_rpc.begin(), myhits_rpc.end(), std::back_inserter(myhits1), [](const l1t::EMTFHitExtra& hit) { return (hit.station == 1 && hit.ring == 2); });
+          std::copy_if(myhits_csc.begin(), myhits_csc.end(), std::back_inserter(myhits2), [](const l1t::EMTFHitExtra& hit) { return (hit.station == 4); });
+        } else if (ipair == 12) {
+          std::copy_if(myhits_csc.begin(), myhits_csc.end(), std::back_inserter(myhits1), [](const l1t::EMTFHitExtra& hit) { return (hit.station == 1 && (hit.ring == 1 || hit.ring == 4)); });
+          std::copy_if(myhits_rpc.begin(), myhits_rpc.end(), std::back_inserter(myhits2), [](const l1t::EMTFHitExtra& hit) { return (hit.station == 2); });
+        } else if (ipair == 13) {
+          std::copy_if(myhits_csc.begin(), myhits_csc.end(), std::back_inserter(myhits1), [](const l1t::EMTFHitExtra& hit) { return (hit.station == 1 && hit.ring == 2); });
+          std::copy_if(myhits_rpc.begin(), myhits_rpc.end(), std::back_inserter(myhits2), [](const l1t::EMTFHitExtra& hit) { return (hit.station == 2); });
+        } else if (ipair == 14) {
+          std::copy_if(myhits_rpc.begin(), myhits_rpc.end(), std::back_inserter(myhits1), [](const l1t::EMTFHitExtra& hit) { return (hit.station == 2); });
+          std::copy_if(myhits_csc.begin(), myhits_csc.end(), std::back_inserter(myhits2), [](const l1t::EMTFHitExtra& hit) { return (hit.station == 3); });
+        } else if (ipair == 15) {
+          std::copy_if(myhits_rpc.begin(), myhits_rpc.end(), std::back_inserter(myhits1), [](const l1t::EMTFHitExtra& hit) { return (hit.station == 2); });
+          std::copy_if(myhits_csc.begin(), myhits_csc.end(), std::back_inserter(myhits2), [](const l1t::EMTFHitExtra& hit) { return (hit.station == 4); });
+        } else if (ipair == 16) {
+          std::copy_if(myhits_csc.begin(), myhits_csc.end(), std::back_inserter(myhits1), [](const l1t::EMTFHitExtra& hit) { return (hit.station == 1 && (hit.ring == 1 || hit.ring == 4)); });
+          std::copy_if(myhits_rpc.begin(), myhits_rpc.end(), std::back_inserter(myhits2), [](const l1t::EMTFHitExtra& hit) { return (hit.station == 3); });
+        } else if (ipair == 17) {
+          std::copy_if(myhits_csc.begin(), myhits_csc.end(), std::back_inserter(myhits1), [](const l1t::EMTFHitExtra& hit) { return (hit.station == 1 && hit.ring == 2); });
+          std::copy_if(myhits_rpc.begin(), myhits_rpc.end(), std::back_inserter(myhits2), [](const l1t::EMTFHitExtra& hit) { return (hit.station == 3); });
+        } else if (ipair == 18) {
+          std::copy_if(myhits_csc.begin(), myhits_csc.end(), std::back_inserter(myhits1), [](const l1t::EMTFHitExtra& hit) { return (hit.station == 2); });
+          std::copy_if(myhits_rpc.begin(), myhits_rpc.end(), std::back_inserter(myhits2), [](const l1t::EMTFHitExtra& hit) { return (hit.station == 3); });
+        } else if (ipair == 19) {
+          std::copy_if(myhits_rpc.begin(), myhits_rpc.end(), std::back_inserter(myhits1), [](const l1t::EMTFHitExtra& hit) { return (hit.station == 3); });
+          std::copy_if(myhits_csc.begin(), myhits_csc.end(), std::back_inserter(myhits2), [](const l1t::EMTFHitExtra& hit) { return (hit.station == 4); });
+        } else if (ipair == 20) {
+          std::copy_if(myhits_csc.begin(), myhits_csc.end(), std::back_inserter(myhits1), [](const l1t::EMTFHitExtra& hit) { return (hit.station == 1 && (hit.ring == 1 || hit.ring == 4)); });
+          std::copy_if(myhits_rpc.begin(), myhits_rpc.end(), std::back_inserter(myhits2), [](const l1t::EMTFHitExtra& hit) { return (hit.station == 4); });
+        } else if (ipair == 21) {
+          std::copy_if(myhits_csc.begin(), myhits_csc.end(), std::back_inserter(myhits1), [](const l1t::EMTFHitExtra& hit) { return (hit.station == 1 && hit.ring == 2); });
+          std::copy_if(myhits_rpc.begin(), myhits_rpc.end(), std::back_inserter(myhits2), [](const l1t::EMTFHitExtra& hit) { return (hit.station == 4); });
+        } else if (ipair == 22) {
+          std::copy_if(myhits_csc.begin(), myhits_csc.end(), std::back_inserter(myhits1), [](const l1t::EMTFHitExtra& hit) { return (hit.station == 2); });
+          std::copy_if(myhits_rpc.begin(), myhits_rpc.end(), std::back_inserter(myhits2), [](const l1t::EMTFHitExtra& hit) { return (hit.station == 4); });
+        } else if (ipair == 23) {
+          std::copy_if(myhits_csc.begin(), myhits_csc.end(), std::back_inserter(myhits1), [](const l1t::EMTFHitExtra& hit) { return (hit.station == 3); });
+          std::copy_if(myhits_rpc.begin(), myhits_rpc.end(), std::back_inserter(myhits2), [](const l1t::EMTFHitExtra& hit) { return (hit.station == 4); });
+        } else {
+          assert(false && "invalid ipair");
+        }
+
+        if (myhits1.size() > 0 && myhits2.size() > 0) {
+          std::uniform_int_distribution<> index1(0, myhits1.size()-1);
+          std::uniform_int_distribution<> index2(0, myhits2.size()-1);
+          l1t::EMTFHitExtra myhit1 = myhits1.at(index1(genrd));
+          l1t::EMTFHitExtra myhit2 = myhits2.at(index2(genrd));
+
+          // Histogramming
+          int ifr = (int(isFront(myhit1.subsystem, myhit1.station, myhit1.ring, myhit1.chamber, myhit1.subsector)) << 1) | int(isFront(myhit2.subsystem, myhit2.station, myhit2.ring, myhit2.chamber, myhit2.subsector));
+          int ieta = int((absEta - 1.2) / (2.4 - 1.2) * 12);
+
+          int ipt = -1;
+          if ((1.0/2 - 0.01) < 1.0/pt && 1.0/pt <= (1.0/2)) {
+            ipt = 0;
+          } else if ((1.0/3 - 0.01) < 1.0/pt && 1.0/pt <= (1.0/3)) {
+            ipt = 1;
+          } else if ((1.0/5 - 0.01) < 1.0/pt && 1.0/pt <= (1.0/5)) {
+            ipt = 2;
+          } else if ((1.0/10 - 0.01) < 1.0/pt && 1.0/pt <= (1.0/10)) {
+            ipt = 3;
+          } else if ((1.0/20 - 0.01) < 1.0/pt && 1.0/pt <= (1.0/20)) {
+            ipt = 4;
+          } else if ((1.0/50 - 0.005) < 1.0/pt && 1.0/pt <= (1.0/50)) {
+            ipt = 5;
+          } else if ((1.0/100 - 0.002) < 1.0/pt && 1.0/pt <= (1.0/100)) {
+            ipt = 6;
+          } else if ((1.0/200 - 0.001) < 1.0/pt && 1.0/pt <= (1.0/200)) {
+            ipt = 7;
+          }
+
+          // dphi
+          //int dphi = myhit1.phi_fp - myhit2.phi_fp;
+          int dphi = l1t::calc_phi_loc_int(myhit1.phi_glob_deg, sector) - l1t::calc_phi_loc_int(myhit2.phi_glob_deg, sector);
+          if (charge > 0)  dphi = -dphi;
+
+          const float common_dphi_ratio = 1.0;  //FIXME
+          //const float common_dphi_ratio = table_common_dphi[ipair][ifr][ieta];
+          const int common_dphi = static_cast<int>(std::round(1.0 / common_dphi_ratio * dphi));
+
+          // dphi vs 1/pT
+          hname = Form("deflection_stp%i_frp%i_eta%i", ipair, ifr, ieta);
+          h2 = histogram2Ds_.at(hname);
+          h2->Fill(1.0/pt, dphi);
+          hname = Form("deflection_stp%i_frp%i_eta%i", ipair, 4, ieta);  // inclusive
+          h2 = histogram2Ds_.at(hname);
+          h2->Fill(1.0/pt, dphi);
+
+          hname = Form("common_deflection_stp%i_frp%i_eta%i", ipair, ifr, ieta);
+          h2 = histogram2Ds_.at(hname);
+          h2->Fill(1.0/pt, common_dphi);
+          hname = Form("common_deflection_stp%i_frp%i_eta%i", ipair, 4, ieta);  // inclusive
+          h2 = histogram2Ds_.at(hname);
+          h2->Fill(1.0/pt, common_dphi);
+
+          // dphi vs |eta|
+          if (ipt != -1) {
+            hname = Form("deflection_stp%i_frp%i_pt%i", ipair, ifr, ipt);
+            h2 = histogram2Ds_.at(hname);
+            h2->Fill(absEta, dphi);
+            hname = Form("deflection_stp%i_frp%i_pt%i", ipair, 4, ipt);  // inclusive
+            h2 = histogram2Ds_.at(hname);
+            h2->Fill(absEta, dphi);
+
+            hname = Form("common_deflection_stp%i_frp%i_pt%i", ipair, ifr, ipt);
+            h2 = histogram2Ds_.at(hname);
+            h2->Fill(absEta, common_dphi);
+            hname = Form("common_deflection_stp%i_frp%i_pt%i", ipair, 4, ipt);  // inclusive
+            h2 = histogram2Ds_.at(hname);
+            h2->Fill(absEta, common_dphi);
+          }
+        }
+      }  // end make deflection angles (with RPC)
 
     }  // end loop over sector
 
@@ -704,8 +854,12 @@ void RPCIntegration::bookHistograms() {
     histograms_[hname] = h;
   }
 
-  // CSC-CSC
+  // Deflection angles
   // station pair 0-8: (1/1,2), (1/1,3), (1/1,4), (1/2,2), (1/2,3), (1/2,4), (2,3), (2,4), (3,4)
+  // station pair 9-24: (RE1/2,ME2), (RE1/2,ME3), (RE1/2,ME4),
+  //                    (ME1/1,RE2), (ME1/2,RE2), (RE2,ME3), (RE2,ME4),
+  //                    (ME1/1,RE3), (ME1/2,RE3), (ME2,RE3), (RE3,ME4),
+  //                    (ME1/1,RE4), (ME1/2,RE4), (ME2,RE4), (ME3,RE4)
   // f/r pair 0-3: (R,R), (R,F), (F,R), (F,F)
   // eta 0-11: (1.2,1.3), (1.3,1.4), ... , (2.3, 2.4)
   // pt 0-7: 2,3,5,10,20,50,100,200
@@ -718,7 +872,22 @@ void RPCIntegration::bookHistograms() {
       "#phi(ME1/2) - #phi(ME4/n)",
       "#phi(ME2/n) - #phi(ME3/n)",
       "#phi(ME2/n) - #phi(ME4/n)",
-      "#phi(ME3/n) - #phi(ME4/n)"
+      "#phi(ME3/n) - #phi(ME4/n)",
+      "#phi(RE1/2) - #phi(ME2/n)",
+      "#phi(RE1/2) - #phi(ME3/n)",
+      "#phi(RE1/2) - #phi(ME4/n)",
+      "#phi(ME1/1) - #phi(RE2/n)",
+      "#phi(ME1/2) - #phi(RE2/n)",
+      "#phi(RE2/n) - #phi(ME3/n)",
+      "#phi(RE2/n) - #phi(ME4/n)",
+      "#phi(ME1/1) - #phi(RE3/n)",
+      "#phi(ME1/2) - #phi(RE3/n)",
+      "#phi(ME2/n) - #phi(RE3/n)",
+      "#phi(RE3/n) - #phi(ME4/n)",
+      "#phi(ME1/1) - #phi(RE4/n)",
+      "#phi(ME1/2) - #phi(RE4/n)",
+      "#phi(ME2/n) - #phi(RE4/n)",
+      "#phi(ME3/n) - #phi(RE4/n)"
   };
   TString deflection_labels2[] = {
       "R+R",
@@ -752,7 +921,7 @@ void RPCIntegration::bookHistograms() {
       "200#leqp_{T}<250"
   };
 
-  for (int ipair=0; ipair<9; ++ipair) {
+  for (int ipair=0; ipair<(9+15); ++ipair) {
     for (int ifr=0; ifr<5; ++ifr) {
       for (int ieta=0; ieta<12; ++ieta) {
         // dphi vs 1/pT
