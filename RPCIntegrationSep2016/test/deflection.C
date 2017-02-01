@@ -14,7 +14,8 @@ TGraphAsymmErrors* gr;
 
 //TFile *_file0 = TFile::Open("histos.root");
 //TFile *_file0 = TFile::Open("histos_add.root");
-TFile *_file0 = TFile::Open("histos_add_20170123.root");
+//TFile *_file0 = TFile::Open("histos_add_20170123.root");
+TFile *_file0 = TFile::Open("histos_add_20170201.root");
 TString outdir = "figures_deflection/";
 
 gStyle->SetPaintTextFormat(".3f");
@@ -62,7 +63,9 @@ tlegend2->SetShadowColor(0);
 tlegend2->SetBorderSize(0);
 
 static const int print_pt[8] = {2, 3, 5, 10, 20, 50, 100, 200};
-static const char* const print_angle[9] = {"#Delta#phi(1/1,2)", "#Delta#phi(1/1,3)", "#Delta#phi(1/1,4)", "#Delta#phi(1/2,2)", "#Delta#phi(1/2,3)", "#Delta#phi(1/2,4)", "#Delta#phi(2,3)", "#Delta#phi(2,4)", "#Delta#phi(3,4)"};
+//static const char* const print_angle[9] = {"#Delta#phi(1/1,2)", "#Delta#phi(1/1,3)", "#Delta#phi(1/1,4)", "#Delta#phi(1/2,2)", "#Delta#phi(1/2,3)", "#Delta#phi(1/2,4)", "#Delta#phi(2,3)", "#Delta#phi(2,4)", "#Delta#phi(3,4)"};
+static const char* const print_angle[9+16] = {"#Delta#phi(1/1,2)", "#Delta#phi(1/1,3)", "#Delta#phi(1/1,4)", "#Delta#phi(1/2,2)", "#Delta#phi(1/2,3)", "#Delta#phi(1/2,4)", "#Delta#phi(2,3)", "#Delta#phi(2,4)", "#Delta#phi(3,4)",
+    "#Delta#phi(RE1/2,ME2)", "#Delta#phi(RE1/2,ME3)", "#Delta#phi(RE1/2,ME4)", "reserved", "#Delta#phi(ME1/1,RE2)", "#Delta#phi(ME1/2,RE2)", "#Delta#phi(RE2,ME3)", "#Delta#phi(RE2,ME4)", "#Delta#phi(ME1/1,RE3)", "#Delta#phi(ME1/2,RE3)", "#Delta#phi(ME2,RE3)", "#Delta#phi(RE3,ME4)", "#Delta#phi(ME1/1,RE4)", "#Delta#phi(ME1/2,RE4)", "#Delta#phi(ME2,RE4)", "#Delta#phi(ME3,RE4)"};
 static const char* const print_fr[5] = {"R/R", "R/F", "F/R", "F/F", "all"};
 static const char* const print_corr[2] = {"uncorr", "corr"};
 
@@ -168,14 +171,18 @@ if (0) {
 
 // _____________________________________________________________________________
 // Ratios of deflection angles vs pT
-if (0) {
+if (1) {
   for (int ipair=0; ipair<9; ++ipair) {
     hname = Form("sitrep_stp%i", ipair);
     sitrep = new TH2F(hname, "; #eta bin; FR bin", 12, 0, 12, 4, 0, 4);
 
     for (int ifr=0; ifr<4; ++ifr) {
       for (int ieta=0; ieta<12; ++ieta) {
-        hname = Form("deflection_stp%i_frp%i_eta%i", ipair, 3, ieta);  // F/F
+        if (ipair == 4 || ipair == 5 || ipair == 6 || ipair == 7) {
+          hname = Form("deflection_stp%i_frp%i_eta%i", ipair, 2, ieta);  // F/R
+        } else {
+          hname = Form("deflection_stp%i_frp%i_eta%i", ipair, 3, ieta);  // F/F
+        }
         h2 = (TH2*) _file0->Get(hname);
         h2->GetYaxis()->SetTitleOffset(1.4);
         h2->SetMarkerStyle(6); h2->SetMarkerColor(kGray+3);
@@ -269,7 +276,7 @@ if (0) {
         }
       } else if (ipair == 3 || ipair == 4 || ipair == 5) {
         for (int ifr=0; ifr<4; ++ifr) {
-          for (int ieta=5; ieta<12; ++ieta) {
+          for (int ieta=4; ieta<12; ++ieta) {
             sitrep->SetBinContent(ieta+1, ifr+1, 1.);
           }
         }
@@ -296,7 +303,7 @@ if (0) {
 
   if (1) {
     std::cout << "Dumping the table ..." << std::endl;
-    std::cout << "\nconst float table_common_dphi[9][4][12] = {\n  ";
+    std::cout << "\nstatic const float table_common_dphi[9][4][12] = {\n  ";
     for (int ipair=0; ipair<9; ++ipair) {
       std::cout << "{\n    ";
       for (int ifr=0; ifr<4; ++ifr) {
@@ -316,10 +323,10 @@ if (0) {
 
 // _____________________________________________________________________________
 // Apply
-if (1) {
+if (0) {
   for (int j=0; j<2; ++j) {
-    if      (j == 0) prefix = "";
-    else if (j == 1) prefix = "common_";
+    if      (j == 0) prefix = "";         // uncorr
+    else if (j == 1) prefix = "common_";  // corr
 
     for (int ipair=0; ipair<9; ++ipair) {
       //IETA//for (int ieta=8; ieta<9; ++ieta) {
@@ -328,17 +335,16 @@ if (1) {
             hname = Form("deflection_stp%i_frp%i_pt%i", ipair, ifr, ipt); hname = prefix + hname;
             h2 = (TH2*) _file0->Get(hname);
             h2 = (TH2*) h2->Clone(hname + "_tmp3");
-            //if (ipair == 0 || ipair == 1 || ipair == 2) {
-            //  // pass
-            //} else if (ipair == 3 || ipair == 4 || ipair == 5) {
-            //  h2->RebinY(2);
-            //} else if (ipair == 6 || ipair == 7 || ipair == 8) {
-            //  h2->RebinY(4);
-            //}
-            if (ipt < 5 || ipair >= 3)
+            if (ipair == 0 || ipair == 1 || ipair == 2) {
+              // pass
+            } else if (ipair == 3 || ipair == 4 || ipair == 5) {
+              h2->RebinY(2);
+            } else if (ipair == 6 || ipair == 7 || ipair == 8) {
               h2->RebinY(4);
-            else
-              h2->RebinY(1);
+            }
+            if (ipt < 5) {
+              h2->RebinY(2);
+            }
             h2->RebinX(4);
             //IETA//h1 = h2->ProjectionY(hname + "_tmp3_px", ieta+1, ieta+1, "");
             h1 = h2->ProjectionY(hname + "_tmp3_px");
@@ -394,23 +400,22 @@ if (1) {
     //IETA//for (int ieta=8; ieta<9; ++ieta) {
       for (int ipt=0; ipt<8; ++ipt) {
         for (int j=0; j<2; ++j) {
-          if      (j == 0) prefix = "";
-          else if (j == 1) prefix = "common_";
+          if      (j == 0) prefix = "";         // uncorr
+          else if (j == 1) prefix = "common_";  // corr
 
           hname = Form("deflection_stp%i_frp%i_pt%i", ipair, 4, ipt); hname = prefix + hname;
           h2 = (TH2*) _file0->Get(hname);
           h2 = (TH2*) h2->Clone(hname + "_tmp4");
-          //if (ipair == 0 || ipair == 1 || ipair == 2) {
-          //  // pass
-          //} else if (ipair == 3 || ipair == 4 || ipair == 5) {
-          //  h2->RebinY(2);
-          //} else if (ipair == 6 || ipair == 7 || ipair == 8) {
-          //  h2->RebinY(4);
-          //}
-          if (ipt < 5 || ipair >= 3)
+          if (ipair == 0 || ipair == 1 || ipair == 2) {
+            // pass
+          } else if (ipair == 3 || ipair == 4 || ipair == 5) {
+            h2->RebinY(2);
+          } else if (ipair == 6 || ipair == 7 || ipair == 8) {
             h2->RebinY(4);
-          else
-            h2->RebinY(1);
+          }
+          if (ipt < 5) {
+            h2->RebinY(2);
+          }
           h2->RebinX(4);
           //IETA//h1 = h2->ProjectionY(hname + "_tmp4_px", ieta+1, ieta+1, "");
           h1 = h2->ProjectionY(hname + "_tmp4_px");
@@ -506,7 +511,58 @@ if (0) {
     }
   }
   gPad->RedrawAxis();
-  gPad->Print(outdir + "fraction_frp.png");
+  gPad->Print(outdir + "fraction_frp_1.png");
+}
+
+// _____________________________________________________________________________
+// Fraction of F/F, F/R, R/F, R/R [2]
+if (0) {
+  TH1* fraction_histos[5];
+
+  for (int ifr=0; ifr<5; ++ifr) {
+    hname = Form("fraction_frp%i", ifr);
+    h1 = new TH1F(hname, "; ", 9+16, 0, 9+16);
+    fraction_histos[ifr] = h1;
+  }
+
+  for (int ipair=9; ipair<(9+16); ++ipair) {
+    for (int ifr=0; ifr<5; ++ifr) {
+      for (int ieta=0; ieta<12; ++ieta) {
+        hname = Form("deflection_stp%i_frp%i_eta%i", ipair, ifr, ieta);
+        h2 = (TH2*) _file0->Get(hname);
+        h1 = fraction_histos[ifr];
+        h1->SetBinContent(ipair+1, h1->GetBinContent(ipair+1) + h2->GetEntries());
+      }
+    }
+  }
+
+  // To stack the fraction histos
+  for (int ifr=0; ifr<4; ++ifr) {
+    for (int jfr=ifr+1; jfr<4; ++jfr) {
+      fraction_histos[ifr]->Add(fraction_histos[jfr]);
+    }
+    fraction_histos[ifr]->Divide(fraction_histos[4]);
+  }
+
+  for (int ifr=0; ifr<4; ++ifr) {
+    h1 = fraction_histos[ifr];
+    h1->SetLineColor(palette[ifr]);
+    h1->SetFillColor(palette[ifr]);
+    if (ifr == 0) {
+      h1->SetMinimum(0); h1->SetMaximum(1.3);
+      for (int ipair=9; ipair<(9+16); ++ipair) {
+        h1->GetXaxis()->SetBinLabel(ipair+1, print_angle[ipair]);
+      }
+      h1->GetXaxis()->LabelsOption("u");
+      h1->SetStats(0); h1->Draw("hist");
+      h1->GetXaxis()->SetRangeUser(9, 9+16);
+      h1->GetXaxis()->SetLabelSize(0.035);  // default: 0.05
+    } else {
+      h1->Draw("same hist");
+    }
+  }
+  gPad->RedrawAxis();
+  gPad->Print(outdir + "fraction_frp_2.png");
 }
 
 
