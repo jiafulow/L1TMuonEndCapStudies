@@ -207,6 +207,7 @@ Universe                = vanilla
 #Universe                = grid
 #grid_resource           = condor cms.rc.ufl.edu cms.rc.ufl.edu:9619
 #grid_resource           = condor red-gw1.unl.edu red-gw1.unl.edu:9619
+#grid_resource           = condor cmsgrid03.hep.wisc.edu cmsgrid03.hep.wisc.edu:9619
 Notification            = Never
 Executable              = job/blt.sh
 Transfer_Input_Files    = job/input.txt
