@@ -25,7 +25,9 @@ TGraphAsymmErrors* gr;
 //TFile *_file0 = TFile::Open("histos.root");
 //TFile *_file0 = TFile::Open("histos_add.root");
 //TFile *_file0 = TFile::Open("histos_add_20170123.root");
-TFile *_file0 = TFile::Open("histos_add_20170201.root");
+//TFile *_file0 = TFile::Open("histos_add_20170201.root");
+//TFile *_file0 = TFile::Open("histos_add_20170203.root");
+TFile *_file0 = TFile::Open("histos_add_20170206.root");
 TString outdir = "figures_deflection/";
 
 gStyle->SetPaintTextFormat(".3f");
@@ -266,88 +268,155 @@ if (0) {
   for (int ipair=0; ipair<(9+16); ++ipair) {
     for (int ifr=0; ifr<4; ++ifr) {
       for (int ieta=0; ieta<12; ++ieta) {
-        if (ipair == 9+3)  continue;
+        if (ipair == 9+3)  continue;  // null
+
+        int denom_ipair = -1, denom_ifr = -1;
+        int denom_csc_ipair = -1, denom_csc_ifr = -1;
 
         if (ipair < 9) {
           if (ipair == 4 || ipair == 5 || ipair == 6 || ipair == 7) {
-            hname = Form("deflection_stp%i_frp%i_eta%i", ipair, 2, ieta);  // F/R
+            denom_ipair = ipair; denom_ifr = 2;  // F/R
           } else {
-            hname = Form("deflection_stp%i_frp%i_eta%i", ipair, 3, ieta);  // F/F
+            denom_ipair = ipair; denom_ifr = 3;  // F/F
           }
+          denom_csc_ipair = denom_ipair; denom_csc_ifr = denom_ifr;
+
         } else if (ipair < (9+16)) {
+          if (ipair == 9+0 || ipair == 9+3 || ipair == 9+4 || ipair == 9+5 || ipair == 9+8 || ipair == 9+9 || ipair == 9+10 || ipair == 9+12 || ipair == 9+13 || ipair == 9+14) {
+            denom_ipair = ipair; denom_ifr = 3;  // F/F
+          } else if (ipair == 9+1 || ipair == 9+2 || ipair == 9+6 || ipair == 9+7 || ipair == 9+11 || ipair == 9+15) {
+            denom_ipair = ipair; denom_ifr = 2;  // F/R
+          }
+
           if (ipair == 9+0) {
-            hname = Form("deflection_stp%i_frp%i_eta%i", 3, 3, ieta);  // (1/2,2) F/F
+            denom_csc_ipair = 3; denom_csc_ifr = 3;  // (1/2,2) F/F
           } else if (ipair == 9+1) {
-            hname = Form("deflection_stp%i_frp%i_eta%i", 4, 2, ieta);  // (1/2,3) F/R
+            denom_csc_ipair = 4; denom_csc_ifr = 2;  // (1/2,3) F/R
           } else if (ipair == 9+2) {
-            hname = Form("deflection_stp%i_frp%i_eta%i", 5, 2, ieta);  // (1/2,4) F/R
+            denom_csc_ipair = 5; denom_csc_ifr = 2;  // (1/2,4) F/R
           } else if (ipair == 9+3) {
             // pass
           } else if (ipair == 9+4) {
-            hname = Form("deflection_stp%i_frp%i_eta%i", 0, 3, ieta);  // (1/1,2) F/F
+            denom_csc_ipair = 0; denom_csc_ifr = 3;  // (1/1,2) F/F
           } else if (ipair == 9+5) {
-            hname = Form("deflection_stp%i_frp%i_eta%i", 3, 3, ieta);  // (1/2,2) F/F
+            denom_csc_ipair = 3; denom_csc_ifr = 3;  // (1/2,2) F/F
           } else if (ipair == 9+6) {
-            hname = Form("deflection_stp%i_frp%i_eta%i", 6, 2, ieta);  // (2,3) F/R
+            denom_csc_ipair = 6; denom_csc_ifr = 2;  // (2,3) F/R
           } else if (ipair == 9+7) {
-            hname = Form("deflection_stp%i_frp%i_eta%i", 7, 2, ieta);  // (2,4) F/R
+            denom_csc_ipair = 7; denom_csc_ifr = 2;  // (2,4) F/R
           } else if (ipair == 9+8) {
-            hname = Form("deflection_stp%i_frp%i_eta%i", 1, 3, ieta);  // (1/1,3) F/F
+            denom_csc_ipair = 1; denom_csc_ifr = 3;  // (1/1,3) F/F
           } else if (ipair == 9+9) {
-            hname = Form("deflection_stp%i_frp%i_eta%i", 4, 2, ieta);  // (1/2,3) F/R
+            denom_csc_ipair = 4; denom_csc_ifr = 2;  // (1/2,3) F/R
           } else if (ipair == 9+10) {
-            hname = Form("deflection_stp%i_frp%i_eta%i", 6, 2, ieta);  // (2,3) F/R
+            denom_csc_ipair = 6; denom_csc_ifr = 2;  // (2,3) F/R
           } else if (ipair == 9+11) {
-            hname = Form("deflection_stp%i_frp%i_eta%i", 8, 3, ieta);  // (3,4) F/F
+            denom_csc_ipair = 8; denom_csc_ifr = 3;  // (3,4) F/F
           } else if (ipair == 9+12) {
-            hname = Form("deflection_stp%i_frp%i_eta%i", 2, 3, ieta);  // (1/1,4) F/F
+            denom_csc_ipair = 2; denom_csc_ifr = 3;  // (1/1,4) F/F
           } else if (ipair == 9+13) {
-            hname = Form("deflection_stp%i_frp%i_eta%i", 5, 2, ieta);  // (1/2,4) F/R
+            denom_csc_ipair = 5; denom_csc_ifr = 2;  // (1/2,4) F/R
           } else if (ipair == 9+14) {
-            hname = Form("deflection_stp%i_frp%i_eta%i", 7, 2, ieta);  // (2,4) F/R
+            denom_csc_ipair = 7; denom_csc_ifr = 2;  // (2,4) F/R
           } else if (ipair == 9+15) {
-            hname = Form("deflection_stp%i_frp%i_eta%i", 8, 3, ieta);  // (3,4) F/F
+            denom_csc_ipair = 8; denom_csc_ifr = 3;  // (3,4) F/F
           }
         }
 
+        bool good_stats = false;  // FIXME
+        //bool good_stats = true;
+        //if (ipair == 0 || ipair == 1 || ipair == 2) {
+        //  // pass
+        //} else if (ipair < 9) {
+        //  if (denom_ifr == 2 && (ifr == 0 || ifr == 3))
+        //    good_stats = false;
+        //  else if (denom_ifr == 3 && (ifr == 1 || ifr == 2))
+        //    good_stats = false;
+        //} else if (ipair < (9+16)) {
+        //  if (denom_ifr == 2 && (ifr == 0 || ifr == 3))
+        //    good_stats = false;
+        //  else if (denom_ifr == 3 && (ifr == 1 || ifr == 2))
+        //    good_stats = false;
+        //}
+
+        hname = Form("deflection_stp%i_frp%i_eta%i", denom_csc_ipair, denom_csc_ifr, ieta);
         h2 = (TH2*) _file0->Get(hname);
         h2 = (TH2*) h2->Clone(hname + "_tmp3");
-        if (ipair == 0 || ipair == 1 || ipair == 2) {
-          // pass
-        } else if (ipair == 3 || ipair == 4 || ipair == 5) {
-          h2->RebinX(2);
-        } else if (ipair == 6 || ipair == 7 || ipair == 8) {
-          h2->RebinX(2);
-        } else if (9+0 <= ipair && ipair < 9+16) {
-          if (ipair == 9+4 && ieta>0) {  // stp13 hack
-            h2->Add((TH2*) _file0->Get(hname.ReplaceAll(Form("_eta%i", ieta), Form("_eta%i", ieta-1)))); h2->RebinX(2);
+        if (1) {  // do not distinguish F/F from F/R, R/R from R/F
+          if ((denom_csc_ifr%2) == 0) {
+            h2->Add((TH2*) _file0->Get(hname.ReplaceAll(Form("_frp%i", denom_csc_ifr), Form("_frp%i", denom_csc_ifr+1))));
+          } else {
+            h2->Add((TH2*) _file0->Get(hname.ReplaceAll(Form("_frp%i", denom_csc_ifr), Form("_frp%i", denom_csc_ifr-1))));
           }
-          h2->RebinX(2);
+        }
+        if (ipair == 0 || ipair == 1 || ipair == 2) {
+          if (good_stats)  h2->RebinX(2);  else  h2->RebinX(4);
+        } else if (ipair == 3 || ipair == 4 || ipair == 5) {
+          if (good_stats)  h2->RebinX(4);  else  h2->RebinX(8);
+        } else if (ipair == 6 || ipair == 7 || ipair == 8) {
+          if (good_stats)  h2->RebinX(8);  else  h2->RebinX(12);
+        } else if (ipair  == 9+0 || ipair == 9+1 || ipair == 9+2 || ipair == 9+3) {
+          if (good_stats)  h2->RebinX(4);  else  h2->RebinX(8);
+        } else if (ipair  == 9+4 || ipair == 9+5 || ipair == 9+8 || ipair == 9+9 || ipair == 9+12 || ipair == 9+13) {
+          if (good_stats)  h2->RebinX(4);  else  h2->RebinX(8);
+        } else if (ipair < (9+16)) {
+          if (good_stats)  h2->RebinX(8);  else  h2->RebinX(12);
         }
         pf = h2->ProfileX(hname + "_tmp3_pfx", 1, -1, "s");
-        pf->SetMarkerStyle(1); pf->SetMarkerColor(palette[ifr]);
-        pf->SetLineWidth(2); pf->SetLineColor(palette[ifr]);
+        //pf->SetMarkerStyle(1); pf->SetMarkerColor(palette[ifr]);
+        //pf->SetLineWidth(2); pf->SetLineColor(palette[ifr]);
         //pf->Draw("same");
         denom = pf->ProjectionX(hname + "_tmp3_px", "e");  // denom 1D histo
 
         hname = Form("deflection_stp%i_frp%i_eta%i", ipair, ifr, ieta);
         h2 = (TH2*) _file0->Get(hname);
         h2 = (TH2*) h2->Clone(hname + "_tmp4");
-        if (ipair == 0 || ipair == 1 || ipair == 2) {
-          // pass
-        } else if (ipair == 3 || ipair == 4 || ipair == 5) {
-          h2->RebinX(2);
-        } else if (ipair == 6 || ipair == 7 || ipair == 8) {
-          h2->RebinX(2);
-        } else if (9+0 <= ipair && ipair < 9+16) {
-          if (ipair == 9+4 && ieta>0) {  // stp13 hack
-            h2->Add((TH2*) _file0->Get(hname.ReplaceAll(Form("_eta%i", ieta), Form("_eta%i", ieta-1)))); h2->RebinX(2);
+        if (1) {  // do not distinguish F/F from F/R, R/R from R/F
+          if ((ifr%2) == 0) {
+            h2->Add((TH2*) _file0->Get(hname.ReplaceAll(Form("_frp%i", ifr), Form("_frp%i", ifr+1))));
+          } else {
+            h2->Add((TH2*) _file0->Get(hname.ReplaceAll(Form("_frp%i", ifr), Form("_frp%i", ifr-1))));
           }
-          h2->RebinX(2);
+        }
+        if (ipair == 9+4) {  // stp13 hack
+          hname = Form("deflection_stp%i_frp%i_eta%i", ipair, ifr, ieta);
+          if (ieta == 3) {
+            h2->Add((TH2*) _file0->Get(hname.ReplaceAll(Form("_eta%i", ieta), Form("_eta%i", ieta+1))));
+            if (1) {  // do not distinguish F/F from F/R, R/R from R/F
+              if ((ifr%2) == 0) {
+                h2->Add((TH2*) _file0->Get(hname.ReplaceAll(Form("_frp%i", ifr), Form("_frp%i", ifr+1))));
+              } else {
+                h2->Add((TH2*) _file0->Get(hname.ReplaceAll(Form("_frp%i", ifr), Form("_frp%i", ifr-1))));
+              }
+            }
+          } else if (ieta == 4) {
+            h2->Add((TH2*) _file0->Get(hname.ReplaceAll(Form("_eta%i", ieta), Form("_eta%i", ieta-1))));
+            if (1) {  // do not distinguish F/F from F/R, R/R from R/F
+              if ((ifr%2) == 0) {
+                h2->Add((TH2*) _file0->Get(hname.ReplaceAll(Form("_frp%i", ifr), Form("_frp%i", ifr+1))));
+              } else {
+                h2->Add((TH2*) _file0->Get(hname.ReplaceAll(Form("_frp%i", ifr), Form("_frp%i", ifr-1))));
+              }
+            }
+          }
+        }
+
+        if (ipair == 0 || ipair == 1 || ipair == 2) {
+          if (good_stats)  h2->RebinX(2);  else  h2->RebinX(4);
+        } else if (ipair == 3 || ipair == 4 || ipair == 5) {
+          if (good_stats)  h2->RebinX(4);  else  h2->RebinX(8);
+        } else if (ipair == 6 || ipair == 7 || ipair == 8) {
+          if (good_stats)  h2->RebinX(8);  else  h2->RebinX(12);
+        } else if (ipair  == 9+0 || ipair == 9+1 || ipair == 9+2 || ipair == 9+3) {
+          if (good_stats)  h2->RebinX(4);  else  h2->RebinX(8);
+        } else if (ipair  == 9+4 || ipair == 9+5 || ipair == 9+8 || ipair == 9+9 || ipair == 9+12 || ipair == 9+13) {
+          if (good_stats)  h2->RebinX(4);  else  h2->RebinX(8);
+        } else if (ipair < (9+16)) {
+          if (good_stats)  h2->RebinX(8);  else  h2->RebinX(12);
         }
         pf = h2->ProfileX(hname + "_tmp4_pfx", 1, -1, "s");
-        pf->SetMarkerStyle(1); pf->SetMarkerColor(palette[ifr]);
-        pf->SetLineWidth(2); pf->SetLineColor(palette[ifr]);
+        //pf->SetMarkerStyle(1); pf->SetMarkerColor(palette[ifr]);
+        //pf->SetLineWidth(2); pf->SetLineColor(palette[ifr]);
         //pf->Draw("same");
         num = pf->ProjectionX(hname + "_tmp4_px", "e");  // num 1D histo
 
@@ -376,15 +445,32 @@ if (0) {
         num->Draw();
 
         // Debug
-        if (hname == "deflection_stp14_frp3_eta4") {
-          for (int b=0; b<num->GetNbinsX()+2; ++b) {
-            std::cout << "DEBUG: " << b << " " << pf->GetBinContent(b) << " " << pf->GetBinError(b) << " " << pf->GetBinEntries(b) << " " << num->GetBinContent(b) << " " << num->GetBinError(b) << std::endl;
+        //if (hname == "deflection_stp9_frp0_eta3") {
+        //  for (int b=0; b<num->GetNbinsX()+2; ++b) {
+        //    std::cout << "DEBUG: " << b << " " << pf->GetBinContent(b) << " " << pf->GetBinError(b) << " " << pf->GetBinEntries(b) << " " << num->GetBinContent(b) << " " << num->GetBinError(b) << std::endl;
+        //  }
+        //}
+
+        // Debug
+        if (1) {
+          int discontinuous = -1;
+          for (int b=1; b<num->GetNbinsX()+1; ++b) {
+            if (num->GetBinCenter(b) > 0.4+0.04)
+              continue;
+            if (pf->GetBinEntries(b) < 12) {
+              discontinuous = b;
+              break;
+            }
+          }
+          if (discontinuous != -1) {
+            int b = discontinuous;
+            std::cout << "DEBUG: NOT CONTINUOUS " << hname << " " << b << " " << num->GetBinCenter(b) << " " << pf->GetBinEntries(b) << std::endl;
           }
         }
 
         TF1* f1 = new TF1("f1", "pol0");
         //TF1* f1 = new TF1("f1", "pol2");
-        int status = num->Fit(f1, "Q0", "", 0.01, 0.4+0.01);
+        int status = num->Fit(f1, "Q0", "", 0.04, 0.4+0.04);
         if (status == 0) {
           f1->SetLineWidth(2); f1->SetLineColor(palette[ifr]);
           f1->Draw("same");
@@ -422,27 +508,6 @@ if (0) {
 
         hname = Form("deflection_ratio_stp%i_frp%i_eta%i", ipair, ifr, ieta);
         gPad->Print(outdir + hname + ".png");
-      }
-    }
-
-    // Fix corrections
-    for (int ieta=0; ieta<12; ++ieta) {
-      if (ipair < 9) {
-        if (ipair == 3 || ipair == 8) {
-          table_common_dphi_2[ipair][2][ieta] = table_common_dphi_2[ipair][3][ieta];  // replace F/R with F/F
-          table_common_dphi_2[ipair][1][ieta] = table_common_dphi_2[ipair][0][ieta];  // replace R/F with R/R
-        } else if (ipair == 4 || ipair == 5 || ipair == 6 || ipair == 7) {
-          table_common_dphi_2[ipair][3][ieta] = table_common_dphi_2[ipair][2][ieta];  // replace F/F with F/R
-          table_common_dphi_2[ipair][0][ieta] = table_common_dphi_2[ipair][1][ieta];  // replace R/R with R/F
-        }
-      } else if (ipair < (9+16)) {
-        if (ipair == 9+0 || ipair == 9+3 || ipair == 9+4 || ipair == 9+5 || ipair == 9+8 || ipair == 9+9 || ipair == 9+10 || ipair == 9+12 || ipair == 9+13 || ipair == 9+14) {
-          table_common_dphi_2[ipair][2][ieta] = table_common_dphi_2[ipair][3][ieta];  // replace F/R with F/F
-          table_common_dphi_2[ipair][1][ieta] = table_common_dphi_2[ipair][0][ieta];  // replace R/F with R/R
-        } else if (ipair == 9+1 || ipair == 9+2 || ipair == 9+6 || ipair == 9+7 || ipair == 9+11 || ipair == 9+15) {
-          table_common_dphi_2[ipair][3][ieta] = table_common_dphi_2[ipair][2][ieta];  // replace F/F with F/R
-          table_common_dphi_2[ipair][0][ieta] = table_common_dphi_2[ipair][1][ieta];  // replace R/R with R/F
-        }
       }
     }
   }
@@ -491,6 +556,9 @@ if (0) {
 // _____________________________________________________________________________
 // Apply [2]
 if (1) {
+  int bgcolor1 = TColor::GetColor("#FFFFFF");
+  int bgcolor2 = TColor::GetColor("#FFF0F0");
+
   for (int j=0; j<2; ++j) {
     if      (j == 0) prefix = "";         // uncorr
     else if (j == 1) prefix = "common_";  // corr
@@ -510,15 +578,18 @@ if (1) {
               h2->RebinY(4);
             } else if (ipair == 9+0 || ipair == 9+1 || ipair == 9+2 || ipair == 9+3) {
               h2->RebinY(2);
-            } else if (ipair == 9+4 || ipair == 9+5 || ipair == 9+6 || ipair == 9+7 || ipair == 9+8 || ipair == 9+9 || ipair == 9+10 || ipair == 9+11 || ipair == 9+12 || ipair == 9+13 || ipair == 9+14 || ipair == 9+15) {
+            } else if (ipair  == 9+4 || ipair == 9+5 || ipair == 9+8 || ipair == 9+9 || ipair == 9+12 || ipair == 9+13) {
+              h2->RebinY(2);
+            } else if (ipair < (9+16)) {
               h2->RebinY(4);
             }
-            if (ipt < 5) {
+            if (ipt < 4) {
               h2->RebinY(2);
             }
             h2->RebinX(4);
             //IETA//h1 = h2->ProjectionY(hname + "_tmp5_py", ieta+1, ieta+1, "");
-            h1 = h2->ProjectionY(hname + "_tmp5_py");
+            h1 = h2->ProjectionY(hname + "_tmp5_py", 0+1, 5+1, "");
+            //h1 = h2->ProjectionY(hname + "_tmp5_py");
             h1->SetMarkerStyle(20); h1->SetMarkerSize(0.1);
             h1->SetMarkerColor(palette[ifr]); h1->SetLineColor(palette[ifr]);
 
@@ -528,7 +599,7 @@ if (1) {
               TString xtitle = h1->GetXaxis()->GetTitle(); xtitle = xtitle(0,27);
               h1->GetXaxis()->SetTitle(xtitle);
               h1->SetStats(0); h1->Draw("e");
-              if (ipt < 5)
+              if (ipt < 4)
                 h1->GetXaxis()->SetRangeUser(-600,600);
               else
                 h1->GetXaxis()->SetRangeUser(-60,60);
@@ -555,11 +626,13 @@ if (1) {
 
           tlegend->Draw(); tlegend2->Draw();
           gPad->SetLogy(true);
+          //if (ipair < 9)  gPad->SetFillColor(bgcolor1);  else  gPad->SetFillColor(bgcolor2);
 
           //IETA//hname = Form("deflection_stp%i_frp%i_pt%i_eta%i", ipair, 99, ipt, ieta); hname = prefix + hname;
           hname = Form("deflection_stp%i_frp%i_pt%i", ipair, 99, ipt); hname = prefix + hname;
           gPad->Print(outdir + hname + ".png");
           gPad->SetLogy(false);
+          //gPad->SetFillColor(0);
         }
       //IETA//}
     }
@@ -585,15 +658,18 @@ if (1) {
             h2->RebinY(4);
           } else if (ipair == 9+0 || ipair == 9+1 || ipair == 9+2 || ipair == 9+3) {
             h2->RebinY(2);
-          } else if (ipair == 9+4 || ipair == 9+5 || ipair == 9+6 || ipair == 9+7 || ipair == 9+8 || ipair == 9+9 || ipair == 9+10 || ipair == 9+11 || ipair == 9+12 || ipair == 9+13 || ipair == 9+14 || ipair == 9+15) {
+          } else if (ipair  == 9+4 || ipair == 9+5 || ipair == 9+8 || ipair == 9+9 || ipair == 9+12 || ipair == 9+13) {
+            h2->RebinY(2);
+          } else if (ipair < (9+16)) {
             h2->RebinY(4);
           }
-          if (ipt < 5) {
+          if (ipt < 4) {
             h2->RebinY(2);
           }
           h2->RebinX(4);
           //IETA//h1 = h2->ProjectionY(hname + "_tmp6_py", ieta+1, ieta+1, "");
-          h1 = h2->ProjectionY(hname + "_tmp6_py");
+          h1 = h2->ProjectionY(hname + "_tmp6_py", 0+1, 5+1, "");
+          //h1 = h2->ProjectionY(hname + "_tmp6_py");
           h1->SetMarkerStyle(20); h1->SetMarkerSize(0.1);
           h1->SetMarkerColor(palette2[j]); h1->SetLineColor(palette2[j]);
 
@@ -603,7 +679,7 @@ if (1) {
             TString xtitle = h1->GetXaxis()->GetTitle(); xtitle = xtitle(0,27);
             h1->GetXaxis()->SetTitle(xtitle);
             h1->SetStats(0); h1->Draw("e");
-            if (ipt < 5)
+            if (ipt < 4)
               h1->GetXaxis()->SetRangeUser(-600,600);
             else
               h1->GetXaxis()->SetRangeUser(-60,60);
@@ -630,11 +706,13 @@ if (1) {
 
         tlegend->Draw(); tlegend2->Draw();
         gPad->SetLogy(true);
+        if (ipair < 9)  gPad->SetFillColor(bgcolor1);  else  gPad->SetFillColor(bgcolor2);
 
         //IETA//hname = Form("deflection_stp%i_frp%i_pt%i_eta%i", ipair, 99, ipt, ieta); hname = prefix + hname;
         hname = Form("deflection_stp%i_frp%i_pt%i_convoluted", ipair, 99, ipt); hname = prefix + hname;
         gPad->Print(outdir + hname + ".png");
         gPad->SetLogy(false);
+        gPad->SetFillColor(0);
       }
     //IETA//}
   }
