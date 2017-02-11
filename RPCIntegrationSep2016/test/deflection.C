@@ -27,7 +27,8 @@ TGraphAsymmErrors* gr;
 //TFile *_file0 = TFile::Open("histos_add_20170123.root");
 //TFile *_file0 = TFile::Open("histos_add_20170201.root");
 //TFile *_file0 = TFile::Open("histos_add_20170203.root");
-TFile *_file0 = TFile::Open("histos_add_20170206.root");
+//TFile *_file0 = TFile::Open("histos_add_20170206.root");
+TFile *_file0 = TFile::Open("histos_add_20170210.root");
 TString outdir = "figures_deflection/";
 
 gStyle->SetPaintTextFormat(".3f");
@@ -264,12 +265,13 @@ if (0) {
 
 // _____________________________________________________________________________
 // Ratios of deflection angles vs pT [2]
-if (0) {
+if (1) {
   for (int ipair=0; ipair<(9+16); ++ipair) {
     for (int ifr=0; ifr<4; ++ifr) {
       for (int ieta=0; ieta<12; ++ieta) {
         if (ipair == 9+3)  continue;  // null
 
+        float ymin = -4., ymax = 8.;
         int denom_ipair = -1, denom_ifr = -1;
         int denom_csc_ipair = -1, denom_csc_ifr = -1;
 
@@ -323,8 +325,8 @@ if (0) {
           }
         }
 
-        bool good_stats = false;  // FIXME
-        //bool good_stats = true;
+        //bool good_stats = false;
+        bool good_stats = true;
         //if (ipair == 0 || ipair == 1 || ipair == 2) {
         //  // pass
         //} else if (ipair < 9) {
@@ -343,24 +345,46 @@ if (0) {
         h2 = (TH2*) _file0->Get(hname);
         h2 = (TH2*) h2->Clone(hname + "_tmp3");
         if (1) {  // do not distinguish F/F from F/R, R/R from R/F
-          if ((denom_csc_ifr%2) == 0) {
-            h2->Add((TH2*) _file0->Get(hname.ReplaceAll(Form("_frp%i", denom_csc_ifr), Form("_frp%i", denom_csc_ifr+1))));
-          } else {
-            h2->Add((TH2*) _file0->Get(hname.ReplaceAll(Form("_frp%i", denom_csc_ifr), Form("_frp%i", denom_csc_ifr-1))));
+          if (!(ipair == 0 || ipair == 1 || ipair == 2)) {
+            if ((denom_csc_ifr%2) == 0) {
+              h2->Add((TH2*) _file0->Get(hname.ReplaceAll(Form("_frp%i", denom_csc_ifr), Form("_frp%i", denom_csc_ifr+1))));
+            } else {
+              h2->Add((TH2*) _file0->Get(hname.ReplaceAll(Form("_frp%i", denom_csc_ifr), Form("_frp%i", denom_csc_ifr-1))));
+            }
           }
         }
+        if (1) {  // modify range
+          for (int binx=0; binx < h2->GetNbinsX()+2; ++binx) {
+            if (h2->GetXaxis()->GetBinLowEdge(binx) < 0.01 || h2->GetXaxis()->GetBinLowEdge(binx) >= 0.25) {
+              for (int biny=0; biny < h2->GetNbinsY()+2; ++biny) {
+                 h2->SetBinContent(binx, biny, 0);
+              }
+            }
+            if (((ipair == 6 || ipair == 7 || ipair == 8) || (ipair == 9+6 || ipair == 9+7 || ipair == 9+10 || ipair == 9+11 || ipair == 9+14 || ipair == 9+15)) && ((ieta == 0 && h2->GetXaxis()->GetBinLowEdge(binx) >= 0.15) || (ieta == 1 && h2->GetXaxis()->GetBinLowEdge(binx) >= 0.18))) {  // these angles at low eta and low pT are problematic
+              for (int biny=0; biny < h2->GetNbinsY()+2; ++biny) {
+                h2->SetBinContent(binx, biny, 0);
+              }
+            }
+          }
+          for (int binx=0; binx+1 < h2->GetNbinsX()+2; ++binx) {
+            for (int biny=0; biny < h2->GetNbinsY()+2; ++biny) {
+              h2->SetBinContent(binx, biny, h2->GetBinContent(binx+1, biny));
+            }
+          }
+        }
+
         if (ipair == 0 || ipair == 1 || ipair == 2) {
           if (good_stats)  h2->RebinX(2);  else  h2->RebinX(4);
         } else if (ipair == 3 || ipair == 4 || ipair == 5) {
-          if (good_stats)  h2->RebinX(4);  else  h2->RebinX(8);
+          if (good_stats)  h2->RebinX(4);  else  h2->RebinX(6);
         } else if (ipair == 6 || ipair == 7 || ipair == 8) {
-          if (good_stats)  h2->RebinX(8);  else  h2->RebinX(12);
-        } else if (ipair  == 9+0 || ipair == 9+1 || ipair == 9+2 || ipair == 9+3) {
-          if (good_stats)  h2->RebinX(4);  else  h2->RebinX(8);
-        } else if (ipair  == 9+4 || ipair == 9+5 || ipair == 9+8 || ipair == 9+9 || ipair == 9+12 || ipair == 9+13) {
-          if (good_stats)  h2->RebinX(4);  else  h2->RebinX(8);
-        } else if (ipair < (9+16)) {
-          if (good_stats)  h2->RebinX(8);  else  h2->RebinX(12);
+          if (good_stats)  h2->RebinX(6);  else  h2->RebinX(8);
+        } else if (ipair == 9+0 || ipair == 9+1 || ipair == 9+2 || ipair == 9+3) {
+          if (good_stats)  h2->RebinX(4);  else  h2->RebinX(6);
+        } else if (ipair == 9+4 || ipair == 9+5 || ipair == 9+8 || ipair == 9+9 || ipair == 9+12 || ipair == 9+13) {
+          if (good_stats)  h2->RebinX(4);  else  h2->RebinX(6);
+        } else if (ipair == 9+6 || ipair == 9+7 || ipair == 9+10 || ipair == 9+11 || ipair == 9+14 || ipair == 9+15) {
+          if (good_stats)  h2->RebinX(6);  else  h2->RebinX(8);
         }
         pf = h2->ProfileX(hname + "_tmp3_pfx", 1, -1, "s");
         //pf->SetMarkerStyle(1); pf->SetMarkerColor(palette[ifr]);
@@ -372,10 +396,12 @@ if (0) {
         h2 = (TH2*) _file0->Get(hname);
         h2 = (TH2*) h2->Clone(hname + "_tmp4");
         if (1) {  // do not distinguish F/F from F/R, R/R from R/F
-          if ((ifr%2) == 0) {
-            h2->Add((TH2*) _file0->Get(hname.ReplaceAll(Form("_frp%i", ifr), Form("_frp%i", ifr+1))));
-          } else {
-            h2->Add((TH2*) _file0->Get(hname.ReplaceAll(Form("_frp%i", ifr), Form("_frp%i", ifr-1))));
+          if (!(ipair == 0 || ipair == 1 || ipair == 2)) {
+            if ((ifr%2) == 0) {
+              h2->Add((TH2*) _file0->Get(hname.ReplaceAll(Form("_frp%i", ifr), Form("_frp%i", ifr+1))));
+            } else {
+              h2->Add((TH2*) _file0->Get(hname.ReplaceAll(Form("_frp%i", ifr), Form("_frp%i", ifr-1))));
+            }
           }
         }
         if (ipair == 9+4) {  // stp13 hack
@@ -400,44 +426,88 @@ if (0) {
             }
           }
         }
+        if (1) {  // modify range
+          for (int binx=0; binx < h2->GetNbinsX()+2; ++binx) {
+            if (h2->GetXaxis()->GetBinLowEdge(binx) < 0.01 || h2->GetXaxis()->GetBinLowEdge(binx) >= 0.25) {
+              for (int biny=0; biny < h2->GetNbinsY()+2; ++biny) {
+                 h2->SetBinContent(binx, biny, 0);
+              }
+            }
+            if (((ipair == 6 || ipair == 7 || ipair == 8) || (ipair == 9+6 || ipair == 9+7 || ipair == 9+10 || ipair == 9+11 || ipair == 9+14 || ipair == 9+15)) && ((ieta == 0 && h2->GetXaxis()->GetBinLowEdge(binx) >= 0.15) || (ieta == 1 && h2->GetXaxis()->GetBinLowEdge(binx) >= 0.18))) {  // these angles at low eta and low pT are problematic
+              for (int biny=0; biny < h2->GetNbinsY()+2; ++biny) {
+                h2->SetBinContent(binx, biny, 0);
+              }
+            }
+          }
+          for (int binx=0; binx+1 < h2->GetNbinsX()+2; ++binx) {
+            for (int biny=0; biny < h2->GetNbinsY()+2; ++biny) {
+              h2->SetBinContent(binx, biny, h2->GetBinContent(binx+1, biny));
+            }
+          }
+        }
 
         if (ipair == 0 || ipair == 1 || ipair == 2) {
           if (good_stats)  h2->RebinX(2);  else  h2->RebinX(4);
         } else if (ipair == 3 || ipair == 4 || ipair == 5) {
-          if (good_stats)  h2->RebinX(4);  else  h2->RebinX(8);
+          if (good_stats)  h2->RebinX(4);  else  h2->RebinX(6);
         } else if (ipair == 6 || ipair == 7 || ipair == 8) {
-          if (good_stats)  h2->RebinX(8);  else  h2->RebinX(12);
-        } else if (ipair  == 9+0 || ipair == 9+1 || ipair == 9+2 || ipair == 9+3) {
-          if (good_stats)  h2->RebinX(4);  else  h2->RebinX(8);
-        } else if (ipair  == 9+4 || ipair == 9+5 || ipair == 9+8 || ipair == 9+9 || ipair == 9+12 || ipair == 9+13) {
-          if (good_stats)  h2->RebinX(4);  else  h2->RebinX(8);
-        } else if (ipair < (9+16)) {
-          if (good_stats)  h2->RebinX(8);  else  h2->RebinX(12);
+          if (good_stats)  h2->RebinX(6);  else  h2->RebinX(8);
+        } else if (ipair == 9+0 || ipair == 9+1 || ipair == 9+2 || ipair == 9+3) {
+          if (good_stats)  h2->RebinX(4);  else  h2->RebinX(6);
+        } else if (ipair == 9+4 || ipair == 9+5 || ipair == 9+8 || ipair == 9+9 || ipair == 9+12 || ipair == 9+13) {
+          if (good_stats)  h2->RebinX(4);  else  h2->RebinX(6);
+        } else if (ipair == 9+6 || ipair == 9+7 || ipair == 9+10 || ipair == 9+11 || ipair == 9+14 || ipair == 9+15) {
+          if (good_stats)  h2->RebinX(6);  else  h2->RebinX(8);
         }
         pf = h2->ProfileX(hname + "_tmp4_pfx", 1, -1, "s");
         //pf->SetMarkerStyle(1); pf->SetMarkerColor(palette[ifr]);
         //pf->SetLineWidth(2); pf->SetLineColor(palette[ifr]);
         //pf->Draw("same");
         num = pf->ProjectionX(hname + "_tmp4_px", "e");  // num 1D histo
+        num->Divide(denom);
+
+        if (1) {  // increase errors at small pT (high 1/pT)
+          for (int b=1; b<num->GetNbinsX()+1; ++b) {
+            if (num->GetBinContent(b) > 1e-6) {
+              //num->SetBinError(b, num->GetBinError(b) * (num->GetBinCenter(b) / num->GetBinCenter(1)));
+              num->SetBinError(b, num->GetBinError(b) * (1.0 + (1.0 * float(b-1) / num->GetNbinsX())));
+            }
+          }
+        }
+        if (1) {  // avoid discontinuity of dphi ~0
+          for (int b=1; b<num->GetNbinsX()+1; ++b) {
+            double near_zero = 10.;
+            double denom_binc = denom->GetBinContent(b);
+            double num_binc = num->GetBinContent(b) * denom_binc;  // recover numerator bin content before division
+            if (fabs(num_binc) > 1e-9) {
+              if (fabs(num_binc) < near_zero || fabs(denom_binc) < near_zero) {  // almost zero but not identically zero
+                if ((num_binc < 0. && denom_binc >= 0.) || (num_binc >= 0. && denom_binc < 0.)) {
+                  num->SetBinContent(b, 0.);
+                  num->SetBinError(b, 999999.);
+                }
+              }
+            }
+          }
+        }
+        if (1) {  // limit the range
+          for (int b=0; b<num->GetNbinsX()+2; ++b) {
+            if (num->GetBinContent(b) < ymin) {
+              num->SetBinContent(b, ymin);
+              num->SetBinError(b, 999999.);
+            } else if (num->GetBinContent(b) > ymax) {
+              num->SetBinContent(b, ymax);
+              num->SetBinError(b, 999999.);
+            }
+          }
+        }
 
         TString ytitle = h2->GetYaxis()->GetTitle();
         ytitle = "Ratio; num = " + ytitle;
-        float ymin = -4., ymax = 8.;
         num->GetYaxis()->SetTitle(ytitle);
         num->GetYaxis()->SetTitleFont(h2->GetYaxis()->GetTitleFont());
         num->GetYaxis()->SetTitleSize(h2->GetYaxis()->GetTitleSize());
         num->GetYaxis()->SetLabelFont(h2->GetYaxis()->GetLabelFont());
         num->GetYaxis()->SetLabelSize(h2->GetYaxis()->GetLabelSize());
-        num->Divide(denom);
-        for (int b=0; b<num->GetNbinsX()+2; ++b) {
-          if (num->GetBinContent(b) < ymin) {
-            num->SetBinContent(b, ymin);
-            num->SetBinError(b, 999999.);
-          } else if (num->GetBinContent(b) > ymax) {
-            num->SetBinContent(b, ymax);
-            num->SetBinError(b, 999999.);
-          }
-        }
         num->SetMarkerStyle(1); num->SetMarkerColor(palette[ifr]);
         num->SetLineWidth(2); num->SetLineColor(palette[ifr]);
         //num->SetMinimum(ymin); num->SetMaximum(ymax);
@@ -452,25 +522,35 @@ if (0) {
         //}
 
         // Debug
+        //if (1) {
+        //  int discontinuous = -1;
+        //  for (int b=1; b<num->GetNbinsX()+1; ++b) {
+        //    if (num->GetBinCenter(b) > 0.4+0.04)
+        //      continue;
+        //    if (pf->GetBinEntries(b) < 12) {
+        //      discontinuous = b;
+        //      break;
+        //    }
+        //  }
+        //  if (discontinuous != -1) {
+        //    int b = discontinuous;
+        //    std::cout << "DEBUG: NOT CONTINUOUS " << hname << " bin " << b << " " << num->GetBinCenter(b) << " " << pf->GetBinEntries(b) << std::endl;
+        //  }
+        //}
+
+        // Debug
         if (1) {
-          int discontinuous = -1;
           for (int b=1; b<num->GetNbinsX()+1; ++b) {
-            if (num->GetBinCenter(b) > 0.4+0.04)
-              continue;
-            if (pf->GetBinEntries(b) < 12) {
-              discontinuous = b;
-              break;
+            if (num->GetBinContent(b) < 0.) {
+              std::cout << "DEBUG: NEGATIVE RATIO " << hname << " bin " << b << " " << num->GetBinContent(b) << " " << denom->GetBinContent(b) << std::endl;
             }
-          }
-          if (discontinuous != -1) {
-            int b = discontinuous;
-            std::cout << "DEBUG: NOT CONTINUOUS " << hname << " " << b << " " << num->GetBinCenter(b) << " " << pf->GetBinEntries(b) << std::endl;
           }
         }
 
         TF1* f1 = new TF1("f1", "pol0");
         //TF1* f1 = new TF1("f1", "pol2");
-        int status = num->Fit(f1, "Q0", "", 0.04, 0.4+0.04);
+        int status = num->Fit(f1, "Q0");
+        //int status = num->Fit(f1, "Q0", "", 0.04, 0.4+0.04);
         if (status == 0) {
           f1->SetLineWidth(2); f1->SetLineColor(palette[ifr]);
           f1->Draw("same");
@@ -491,12 +571,13 @@ if (0) {
           if (ipair == 9+0 || ipair == 9+1 || ipair == 9+2 || ipair == 9+3) {  // has RE1/2
             if (ieta >= 5)  good = false;
           } else if (ipair == 9+4 || ipair == 9+5 || ipair == 9+6 || ipair == 9+7) {  // has RE2
-            if ((ipair == 9+4 || ipair == 9+5) && ieta >= 5)  good = false;
-            if ((ipair == 9+6 || ipair == 9+7) && ieta >= 4)  good = false;
+            //if ((ipair == 9+4 || ipair == 9+5) && ieta >= 5)  good = false;
+            //if ((ipair == 9+6 || ipair == 9+7) && ieta >= 4)  good = false;
+            if (ieta >= 5)  good = false;
           } else if (ipair == 9+8 || ipair == 9+9 || ipair == 9+10 || ipair == 9+11) {  // has RE3
             if (ieta >= 6)  good = false;
           } else if (ipair == 9+12 || ipair == 9+13 || ipair == 9+14 || ipair == 9+15) {  // has RE4
-            if (ieta >= 7)  good = false;
+            if (ieta >= 6)  good = false;
           }
           if (good) {
             table_common_dphi_2[ipair][ifr][ieta] = f1->GetParameter(0);
@@ -524,7 +605,7 @@ if (0) {
         sitrep->GetYaxis()->SetBinLabel(ifr+1, print_fr[ifr]);
       }
 
-      float ymin = 0.2, ymax = 1.4;
+      float ymin = 0.4, ymax = 1.8;
       sitrep->SetMinimum(ymin); sitrep->SetMaximum(ymax);
       sitrep->SetNdivisions(512, "X");
       sitrep->SetNdivisions(504, "Y");
@@ -555,7 +636,7 @@ if (0) {
 
 // _____________________________________________________________________________
 // Apply [2]
-if (1) {
+if (0) {
   int bgcolor1 = TColor::GetColor("#FFFFFF");
   int bgcolor2 = TColor::GetColor("#FFF0F0");
 
@@ -596,7 +677,8 @@ if (1) {
             if (ifr == 0) {
               h1->SetMinimum(0.5); h1->SetMaximum(5e5);
               //IETA//TString xtitle = h1->GetXaxis()->GetTitle(); xtitle = xtitle(0,27); xtitle = xtitle + Form("{%.1f#leq|#eta|<%.1f}",1.2+0.1*ieta, 1.2+0.1*(ieta+1));
-              TString xtitle = h1->GetXaxis()->GetTitle(); xtitle = xtitle(0,27);
+              TString xtitle = h1->GetXaxis()->GetTitle();
+              //xtitle = xtitle(0,27);
               h1->GetXaxis()->SetTitle(xtitle);
               h1->SetStats(0); h1->Draw("e");
               if (ipt < 4)
