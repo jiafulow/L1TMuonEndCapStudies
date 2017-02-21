@@ -858,7 +858,8 @@ void RPCIntegration::makeExtrapolation() {
 
           // Histogramming
           int ifr = (int(isFront(myhit1.subsystem, myhit1.station, myhit1.ring, myhit1.chamber, myhit1.subsector)) << 1) | int(isFront(myhit2.subsystem, myhit2.station, myhit2.ring, myhit2.chamber, myhit2.subsector));
-          int ieta = int((absEta - 1.2) / (2.4 - 1.2) * 12);
+          int ieta = int((absEta - 1.2) / (2.4 - 1.2) * 12);  // FIXME: switch to hit eta or theta
+          assert(ipair < 9+16 && ifr < 4 && ieta < 12);
 
           int ipt = -1;
           if ((1.0/2 - 0.01) < 1.0/pt && 1.0/pt <= (1.0/2)) {
