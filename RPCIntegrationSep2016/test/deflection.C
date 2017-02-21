@@ -12,6 +12,20 @@ for (int i=0; i<(9+16); ++i)
     for (int k=0; k<12; ++k)
       table_common_dphi_2[i][j][k] = 1.0;
 
+float table_mean_uncorr[9+16][4][8];  // [ipair][ifr][ipt]
+float table_mean_corr[9+16][4][8];
+float table_sigma_uncorr[9+16][4][8];
+float table_sigma_corr[9+16][4][8];
+for (int i=0; i<(9+16); ++i)
+  for (int j=0; j<4; ++j)
+    for (int k=0; k<8; ++k) {
+      table_mean_uncorr[i][j][k] = 0.0;
+      table_mean_corr[i][j][k] = 0.0;
+      table_sigma_uncorr[i][j][k] = 0.0;
+      table_sigma_corr[i][j][k] = 0.0;
+    }
+
+
 TString hname;
 TString prefix;
 TH1* h1;
@@ -21,6 +35,9 @@ TH1* num, * denom;
 TH2* sitrep;
 TF1* f1;
 TGraphAsymmErrors* gr;
+TGraphAsymmErrors* gra;
+TGraphAsymmErrors* grb;
+double ymin, ymax;
 
 //TFile *_file0 = TFile::Open("histos.root");
 //TFile *_file0 = TFile::Open("histos_add.root");
@@ -28,7 +45,8 @@ TGraphAsymmErrors* gr;
 //TFile *_file0 = TFile::Open("histos_add_20170201.root");
 //TFile *_file0 = TFile::Open("histos_add_20170203.root");
 //TFile *_file0 = TFile::Open("histos_add_20170206.root");
-TFile *_file0 = TFile::Open("histos_add_20170210.root");
+//TFile *_file0 = TFile::Open("histos_add_20170210.root");
+TFile *_file0 = TFile::Open("histos_add_20170211.root");
 TString outdir = "figures_deflection/";
 
 gStyle->SetPaintTextFormat(".3f");
@@ -265,13 +283,13 @@ if (0) {
 
 // _____________________________________________________________________________
 // Ratios of deflection angles vs pT [2]
-if (1) {
+if (0) {
   for (int ipair=0; ipair<(9+16); ++ipair) {
     for (int ifr=0; ifr<4; ++ifr) {
       for (int ieta=0; ieta<12; ++ieta) {
         if (ipair == 9+3)  continue;  // null
 
-        float ymin = -4., ymax = 8.;
+        ymin = -4.; ymax = 8.;
         int denom_ipair = -1, denom_ifr = -1;
         int denom_csc_ipair = -1, denom_csc_ifr = -1;
 
@@ -605,7 +623,7 @@ if (1) {
         sitrep->GetYaxis()->SetBinLabel(ifr+1, print_fr[ifr]);
       }
 
-      float ymin = 0.4, ymax = 1.8;
+      ymin = 0.4; ymax = 1.8;
       sitrep->SetMinimum(ymin); sitrep->SetMaximum(ymax);
       sitrep->SetNdivisions(512, "X");
       sitrep->SetNdivisions(504, "Y");
@@ -636,7 +654,7 @@ if (1) {
 
 // _____________________________________________________________________________
 // Apply [2]
-if (0) {
+if (1) {
   int bgcolor1 = TColor::GetColor("#FFFFFF");
   int bgcolor2 = TColor::GetColor("#FFF0F0");
 
@@ -778,6 +796,14 @@ if (0) {
             f1->Draw("same");
             tlegend->AddEntry(h1, Form("#color[%i]{#mu(p_{T} = %i GeV, %s) = %.1f}", f1->GetLineColor(), print_pt[ipt], print_corr[j], f1->GetParameter(1)), "");
             tlegend2->AddEntry(h1, Form("#color[%i]{#sigma(p_{T} = %i GeV, %s) = %.1f}", f1->GetLineColor(), print_pt[ipt], print_corr[j], f1->GetParameter(2)), "");
+
+            if (j == 0) {
+              table_mean_uncorr[ipair][0][ipt] = f1->GetParameter(1);
+              table_sigma_uncorr[ipair][0][ipt] = f1->GetParameter(2);
+            } else {
+              table_mean_corr[ipair][0][ipt] = f1->GetParameter(1);
+              table_sigma_corr[ipair][0][ipt] = f1->GetParameter(2);
+            }
           } else {
             f1 = new TF1();
             f1->SetLineWidth(2); f1->SetLineColor(palette2[j]);
@@ -797,6 +823,61 @@ if (0) {
         gPad->SetFillColor(0);
       }
     //IETA//}
+  }
+
+  // Resolution
+  for (int ipair=0; ipair<(9+16); ++ipair) {
+    hname = Form("deflection_stp%i_frp%i_pt%i", ipair, 4, 0); hname = prefix + hname;
+    h2 = (TH2*) _file0->Get(hname);
+    TString xtitle = h2->GetYaxis()->GetTitle(); xtitle = xtitle(0,27);
+
+    hname = Form("sigma_stp%i", ipair);
+    h1 = new TH1F(hname, Form("; 1/p_{T} [GeV]; #sigma of [%s]", xtitle.Data()), 100, 0, 0.5);
+    gra = new TGraphAsymmErrors(8-1);
+    grb = new TGraphAsymmErrors(8-1);
+
+    for (int ipt=(0+1); ipt<8; ++ipt) {
+      gra->SetPoint(ipt-1, 1.0/print_pt[ipt], table_sigma_uncorr[ipair][0][ipt]);
+      grb->SetPoint(ipt-1, 1.0/print_pt[ipt], table_sigma_corr[ipair][0][ipt]);
+    }
+
+    //ymax = gra->GetMaximum();
+    ymax = TMath::MaxElement(gra->GetN(), gra->GetY());
+    ymax = TMath::Min(ymax, 200.0);
+    h1->SetMinimum(0); h1->SetMaximum(ymax * 2.0);
+    h1->SetStats(0); h1->Draw();
+    gra->SetLineWidth(2); gra->SetLineColor(palette2[0]);
+    gra->SetMarkerStyle(20); gra->SetMarkerColor(palette2[0]);
+    grb->SetLineWidth(2); grb->SetLineColor(palette2[1]);
+    grb->SetMarkerStyle(20); grb->SetMarkerColor(palette2[1]);
+    gra->Draw("lp");
+    grb->Draw("lp");
+
+    gPad->Print(outdir + hname + ".png");
+
+    hname = Form("sigmaovermean_stp%i", ipair);
+    h1 = new TH1F(hname, Form("; 1/p_{T} [GeV]; #sigma/|#mu| of [%s]", xtitle.Data()), 100, 0, 0.5);
+    gra = new TGraphAsymmErrors(8-1);
+    grb = new TGraphAsymmErrors(8-1);
+
+    for (int ipt=(0+1); ipt<8; ++ipt) {
+      gra->SetPoint(ipt-1, 1.0/print_pt[ipt], table_sigma_uncorr[ipair][0][ipt] / fabs(table_mean_uncorr[ipair][0][ipt]));
+      grb->SetPoint(ipt-1, 1.0/print_pt[ipt], table_sigma_corr[ipair][0][ipt] / fabs(table_mean_corr[ipair][0][ipt]));
+    }
+
+    //ymax = gra->GetMaximum();
+    ymax = TMath::MaxElement(gra->GetN(), gra->GetY());
+    ymax = TMath::Min(ymax, 10.0);
+    h1->SetMinimum(0); h1->SetMaximum(ymax * 2.0);
+    h1->SetStats(0); h1->Draw();
+    gra->SetLineWidth(2); gra->SetLineColor(palette2[0]);
+    gra->SetMarkerStyle(20); gra->SetMarkerColor(palette2[0]);
+    grb->SetLineWidth(2); grb->SetLineColor(palette2[1]);
+    grb->SetMarkerStyle(20); grb->SetMarkerColor(palette2[1]);
+    gra->Draw("lp");
+    grb->Draw("lp");
+
+    gPad->Print(outdir + hname + ".png");
   }
 }
 
