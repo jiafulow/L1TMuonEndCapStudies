@@ -91,7 +91,6 @@ private:
 
   std::map<int, int> sitrep_why_;
   std::map<int, int> sitrep_why_address_;
-  std::map<int, int> sitrep_why_eta_;
 
   unsigned nBadEvents_;
   unsigned nEvents_;
@@ -408,11 +407,6 @@ void EmuAccuracy::sitrep(const std::vector<int>& unp_matches, const std::vector<
     return match;
   };
 
-  auto check_track_eta_1 = [](const auto& trk1, const auto& trk2) {
-    bool match = (std::abs(int(trk1.Eta_GMT()) - int(trk2.Eta_GMT())) <= 1);
-    return match;
-  };
-
   auto check_track_phi = [](const auto& trk1, const auto& trk2) {
     bool match = (trk1.Phi_GMT() == trk2.Phi_GMT());
     return match;
@@ -434,7 +428,7 @@ void EmuAccuracy::sitrep(const std::vector<int>& unp_matches, const std::vector<
 
 #ifdef SEP2016_VERSION
     for (const auto& hit : emuHits2_) {
-      if (hit.station == 1 && (hit.ring == 1 || hit.ring == 4)) {
+      if (hit.station == 1 && (hit.ring == 1 || hit.ring == 4)) {  // ME1/1
         reference_t ref = {{hit.endcap, hit.sector, hit.subsector, hit.station, hit.csc_ID}};
         counting[ref]++;
       }
@@ -458,14 +452,13 @@ void EmuAccuracy::sitrep(const std::vector<int>& unp_matches, const std::vector<
 #ifdef SEP2016_VERSION
     const int bw_fph = 13;
     const int bpow = 7;
-    //int ph_pat = trk.xroad.ph_num;
-    int ph_pat = 0; //FIXME
+    int ph_pat = trk.ph_num;
 
     for (const auto& hit : emuHits2_) {
       if (
           (hit.endcap == trk.endcap) &&
           (hit.sector == trk.sector) &&
-          (hit.zone_code & (1<<trk.zone))
+          (hit.zone_code & (1<<(trk.zone-1)))
       ) {
         int ph_seg = hit.phi_fp;
         int ph_seg_red = ph_seg >> (bw_fph-bpow-1);
@@ -495,6 +488,7 @@ void EmuAccuracy::sitrep(const std::vector<int>& unp_matches, const std::vector<
   };
 
 
+  bool empty           = false;
   bool mis_unp_ntracks = false;
   bool mis_emu_ntracks = false;
   bool mis_unp_2       = false;
@@ -508,7 +502,8 @@ void EmuAccuracy::sitrep(const std::vector<int>& unp_matches, const std::vector<
   bool mis_quality     = false;
   bool mis_me11_dupes  = false;
   bool mis_prim_match  = false;
-  bool mis_eta_1       = false;
+
+  empty = (unpTracks_.empty() && emuTracks_.empty());
 
   int cnt_mis_unp = (std::count(unp_matches.begin(), unp_matches.end(), -99));
   int cnt_mis_emu = (std::count(emu_matches.begin(), emu_matches.end(), -99));
@@ -545,19 +540,18 @@ void EmuAccuracy::sitrep(const std::vector<int>& unp_matches, const std::vector<
         const auto& trkExtra = emuTracks2_.at(index_emu);
         mis_me11_dupes = check_me11_dupes(emuHits2_);
         mis_prim_match = check_prim_match(emuHits2_, trkExtra);
-        mis_eta_1      = check_track_eta_1(trk1, trk2);
       }
     }
   }
 
   int why = 0;
-  if (mis_unp_ntracks) {
+  if (empty) {
     why = 1;
-  } else if (mis_emu_ntracks) {
+  } else if (mis_unp_ntracks) {
     why = 2;
-  } else if (mis_unp_2) {
+  } else if (mis_emu_ntracks) {
     why = 3;
-  } else if (mis_emu_2) {
+  } else if (mis_unp_2 || mis_emu_2) {
     why = 4;
   } else if (mis_bx) {
     why = 5;
@@ -581,13 +575,6 @@ void EmuAccuracy::sitrep(const std::vector<int>& unp_matches, const std::vector<
       why_address = 1;
     } else if (mis_prim_match) {
       why_address = 2;
-    }
-  }
-
-  int why_eta = 0;
-  if (!mis_bx && !mis_mode && !mis_address && mis_eta) {
-    if (mis_eta_1) {
-      why_eta = 1;
     }
   }
 
@@ -630,12 +617,10 @@ void EmuAccuracy::sitrep(const std::vector<int>& unp_matches, const std::vector<
 
   sitrep_why_[why]++;
   sitrep_why_address_[why_address]++;
-  sitrep_why_eta_[why_eta]++;
 
-  if (why) {
+  if (why >= 2) {
     std::cout << ">> why        : " << why << std::endl;
     std::cout << ">> why_address: " << why_address << std::endl;
-    std::cout << ">> why_eta    : " << why_eta << std::endl;
   }
 }
 
@@ -646,9 +631,6 @@ void EmuAccuracy::printSitrep() {
   }
   for (const auto& kv : sitrep_why_address_) {
     std::cout << "why_address: " << kv.first << " count: " << kv.second << std::endl;
-  }
-  for (const auto& kv : sitrep_why_eta_) {
-    std::cout << "why_eta    : " << kv.first << " count: " << kv.second << std::endl;
   }
 }
 
