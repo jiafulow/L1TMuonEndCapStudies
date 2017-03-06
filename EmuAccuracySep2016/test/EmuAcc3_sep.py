@@ -127,12 +127,14 @@ from L1TriggerSep2016.L1TMuonEndCap.simEmtfDigis_cfi import simEmtfDigisData
 process.simEmtfDigis = simEmtfDigisData
 process.simEmtfDigis.verbosity = cms.untracked.int32(0)
 if True:
-    #process.simEmtfDigis.spPRParams16.UseSecondEarliest = False
+    #process.simEmtfDigis.spGCParams16.UseSecondEarliest = False
     process.simEmtfDigis.spPCParams16.FixZonePhi = False
     process.simEmtfDigis.spPRParams16.UseSymmetricalPatterns = False
     process.simEmtfDigis.spPAParams16.Bug9BitDPhi = True
     process.simEmtfDigis.spPAParams16.BugMode7CLCT = True
     process.simEmtfDigis.spPAParams16.BugNegPt = True
+    process.simEmtfDigis.spPAParams16.BugGMTPhi = True
+    process.simEmtfDigis.spTBParams16.BugME11Dupes = True
 process.step1 = cms.Path((process.emtfStage2Digis) + (process.muonCSCDigis+process.muonRPCDigis) + process.simEmtfDigis)
 process.schedule = cms.Schedule(process.step1, process.RAWoutput_step)
 

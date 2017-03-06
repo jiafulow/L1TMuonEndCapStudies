@@ -91,9 +91,9 @@ process.RAWoutput.outputCommands = ['drop *', 'keep *_emtfStage2Digis_*_*', 'kee
 
 # Modify source
 fileNames = [
-    "/store/express/Run2016H/ExpressPhysics/FEVT/Express-v2/000/281/707/00000/00148DAF-A684-E611-960A-02163E0134A9.root",
-    "/store/express/Run2016H/ExpressPhysics/FEVT/Express-v2/000/281/707/00000/00469FF0-C684-E611-88F8-02163E013620.root",
-    "/store/express/Run2016H/ExpressPhysics/FEVT/Express-v2/000/281/707/00000/008389AD-A684-E611-9B1D-FA163E480423.root",
+    #"/store/express/Run2016H/ExpressPhysics/FEVT/Express-v2/000/281/707/00000/00148DAF-A684-E611-960A-02163E0134A9.root",
+    #"/store/express/Run2016H/ExpressPhysics/FEVT/Express-v2/000/281/707/00000/00469FF0-C684-E611-88F8-02163E013620.root",
+    #"/store/express/Run2016H/ExpressPhysics/FEVT/Express-v2/000/281/707/00000/008389AD-A684-E611-9B1D-FA163E480423.root",
     #"/store/express/Run2016H/ExpressPhysics/FEVT/Express-v2/000/281/707/00000/00AABA9A-B684-E611-B508-FA163EFD691C.root",
     #"/store/express/Run2016H/ExpressPhysics/FEVT/Express-v2/000/281/707/00000/00DA5315-AA84-E611-8AA9-02163E01199A.root",
     #"/store/express/Run2016H/ExpressPhysics/FEVT/Express-v2/000/281/707/00000/00FD3DF7-A184-E611-9841-02163E01347D.root",
@@ -111,6 +111,12 @@ fileNames = [
     #"/store/express/Run2016H/ExpressPhysics/FEVT/Express-v2/000/281/707/00000/02FCAE61-AC84-E611-8F3D-02163E01474B.root",
     #"/store/express/Run2016H/ExpressPhysics/FEVT/Express-v2/000/281/707/00000/041D7730-AC84-E611-AF34-02163E014485.root",
     #"/store/express/Run2016H/ExpressPhysics/FEVT/Express-v2/000/281/707/00000/0434525C-AC84-E611-B798-FA163EC7FB6E.root",
+
+    #"/store/express/Run2016H/ExpressPhysics/FEVT/Express-v2/000/281/707/00000/0A3B85D3-CC84-E611-AFF0-FA163E0FB60A.root",
+    #"/store/express/Run2016H/ExpressPhysics/FEVT/Express-v2/000/281/707/00000/92DC0864-C184-E611-BBAB-FA163E6DFF96.root",
+    #"/store/express/Run2016H/ExpressPhysics/FEVT/Express-v2/000/281/707/00000/38710460-C184-E611-896B-02163E011EDE.root",
+    #"/store/express/Run2016H/ExpressPhysics/FEVT/Express-v2/000/281/707/00000/6CBAFE5E-AF84-E611-8DF5-02163E0141BF.root",
+    "/store/express/Run2016H/ExpressPhysics/FEVT/Express-v2/000/281/707/00000/04E98787-B484-E611-ADC0-02163E011B0A.root",
 ]
 process.source.fileNames = cms.untracked.vstring(fileNames)
 
@@ -122,7 +128,25 @@ eventsToProcess = [
     #"281707:300921221",
     #"281707:715148676",
     #"281707:135509344",
-    "281707:1289966989",
+    #"281707:1289966989",
+    #"281707:135762032",
+    #"281707:135433760",
+    #"281707:557360349",
+    #"281707:102606175",
+    #"281707:715737774",
+    #"281707:102858794",
+    #"281707:226690412",
+    #"281707:715148676",
+    #"281707:301175855",
+    #"281707:301500443",
+    #"281707:1523488617",
+
+    #"281707:1494640753",
+    #"281707:1095218684",
+    #"281707:580800726",
+    #"281707:1107458671",
+    #"281707:499925070",
+    "281707:701695618",
 ]
 process.source.eventsToProcess = cms.untracked.VEventRange(eventsToProcess)
 
@@ -131,14 +155,16 @@ process.source.eventsToProcess = cms.untracked.VEventRange(eventsToProcess)
 process.load('EventFilter.L1TRawToDigi.emtfStage2Digis_cfi')
 from L1TriggerSep2016.L1TMuonEndCap.simEmtfDigis_cfi import simEmtfDigisData
 process.simEmtfDigis = simEmtfDigisData
-process.simEmtfDigis.verbosity = cms.untracked.int32(0)
+process.simEmtfDigis.verbosity = cms.untracked.int32(1)
 if True:
-    #process.simEmtfDigis.spPRParams16.UseSecondEarliest = False
+    #process.simEmtfDigis.spGCParams16.UseSecondEarliest = False
     process.simEmtfDigis.spPCParams16.FixZonePhi = False
     process.simEmtfDigis.spPRParams16.UseSymmetricalPatterns = False
     process.simEmtfDigis.spPAParams16.Bug9BitDPhi = True
     process.simEmtfDigis.spPAParams16.BugMode7CLCT = True
     process.simEmtfDigis.spPAParams16.BugNegPt = True
+    process.simEmtfDigis.spPAParams16.BugGMTPhi = True
+    process.simEmtfDigis.spTBParams16.BugME11Dupes = True
 process.step1 = cms.Path((process.emtfStage2Digis) + (process.muonCSCDigis+process.muonRPCDigis) + process.simEmtfDigis)
 process.schedule = cms.Schedule(process.step1, process.RAWoutput_step)
 
