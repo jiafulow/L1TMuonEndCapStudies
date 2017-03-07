@@ -93,7 +93,164 @@ private:
 
 // The correction LUT, indexed by [ipair][ifr][ieta]
 // Hardcoded
-static const float table_common_dphi_ieta[9][16][12] = {{{0}}};
+static const float table_common_dphi_ieta[9][16][12] = {
+  {
+    {1,1,1,1,1,1,1,1,1,1,1,1},
+    {1,1,1,1,1,1,1,1,1,1,1,1},
+    {1,1,1,1,1,1,1,1,1,1,1,1},
+    {1,1,1,1,1,1,1,1,1,1,1,1},
+    {1,1,1,1,1,1,1,1,1,1,1,1},
+    {1,1,1,1,1,1,1,1,1,1,1,1},
+    {1,1,1,1,1,1,1,1,1,1,1,1},
+    {1,1,1,1,1,1,1,1,1,1,1,1},
+    {1,1,1,0.826329,0.951533,1,1,1,1,1,1,1},
+    {1,1,1,0.826329,0.951533,1,1,1,1,1,1,1},
+    {1,1,1,4.18494,0.831719,0.835802,0.838787,0.840769,0.839386,0.840755,0.839914,0.838162},
+    {1,1,1,4.18494,0.831719,0.835802,0.838787,0.840769,0.839386,0.840755,0.839914,0.838162},
+    {1,1,1,0.82631,0.955249,1,1,1,1,1,1,1},
+    {1,1,1,0.82631,0.955249,1,1,1,1,1,1,1},
+    {1,1,1,1,1,1,1,1,1,1,1,1},
+    {1,1,1,1,1,1,1,1,1,1,1,1}
+  }, {
+    {1,1,1,1,1,1,1,1,1,1,1,1},
+    {1,1,1,1,1,1,1,1,1,1,1,1},
+    {1,1,1,1,1,1,1,1,1,1,1,1},
+    {1,1,1,1,1,1,1,1,1,1,1,1},
+    {1,1,1,1,1,1,1,1,1,1,1,1},
+    {1,1,1,1,1,1,1,1,1,1,1,1},
+    {1,1,1,1,1,1,1,1,1,1,1,1},
+    {1,1,1,1,1,1,1,1,1,1,1,1},
+    {1,1,1,-0.184858,0.838774,0.857649,1,1,1,1,1,1},
+    {1,1,1,-0.184858,0.838774,0.857649,1,1,1,1,1,1},
+    {1,1,1,1.15616,0.860875,0.846226,0.852129,0.857306,0.860823,0.859827,0.862646,0.867052},
+    {1,1,1,1.15616,0.860875,0.846226,0.852129,0.857306,0.860823,0.859827,0.862646,0.867052},
+    {1,1,1,0.995954,0.993803,1.00848,1,1,1,1,1,1},
+    {1,1,1,0.995954,0.993803,1.00848,1,1,1,1,1,1},
+    {1,1,1,1,1,1,1,1,1,1,1,1},
+    {1,1,1,1,1,1,1,1,1,1,1,1}
+  }, {
+    {1,1,1,1,1,1,1,1,1,1,1,1},
+    {1,1,1,1,1,1,1,1,1,1,1,1},
+    {1,1,1,1,1,1,1,1,1,1,1,1},
+    {1,1,1,1,1,1,1,1,1,1,1,1},
+    {1,1,1,1,1,1,1,1,1,1,1,1},
+    {1,1,1,1,1,1,1,1,1,1,1,1},
+    {1,1,1,1,1,1,1,1,1,1,1,1},
+    {1,1,1,1,1,1,1,1,1,1,1,1},
+    {1,1,1,1.91611,0.843419,0.826703,1,1,1,1,1,1},
+    {1,1,1,1.91611,0.843419,0.826703,1,1,1,1,1,1},
+    {1,1,1,4.73918,0.845645,0.870426,0.850829,0.857627,0.863674,0.861718,0.867913,0.874991},
+    {1,1,1,4.73918,0.845645,0.870426,0.850829,0.857627,0.863674,0.861718,0.867913,0.874991},
+    {1,1,1,0.980512,0.986643,0.979748,1,1,1,1,1,1},
+    {1,1,1,0.980512,0.986643,0.979748,1,1,1,1,1,1},
+    {1,1,1,1,1,1,1,1,1,1,1,1},
+    {1,1,1,1,1,1,1,1,1,1,1,1}
+  }, {
+    {0.461093,0.470769,1,0.438645,1,1,1,1,1,1,1,1},
+    {0.461093,0.470769,1,0.438645,1,1,1,1,1,1,1,1},
+    {0.550523,0.611699,1,0.573474,1,1,1,1,1,1,1,1},
+    {0.550523,0.611699,1,0.573474,1,1,1,1,1,1,1,1},
+    {0.852788,0.808882,1,0.74258,1,1,1,1,1,1,1,1},
+    {0.852788,0.808882,1,0.74258,1,1,1,1,1,1,1,1},
+    {0.871892,0.878511,1,0.855374,1,1,1,1,1,1,1,1},
+    {0.871892,0.878511,1,0.855374,1,1,1,1,1,1,1,1},
+    {0.625469,0.595089,0.603792,0.613069,0.540642,1,1,1,1,1,1,1},
+    {0.625469,0.595089,0.603792,0.613069,0.540642,1,1,1,1,1,1,1},
+    {0.668854,0.696153,0.735713,0.744354,0.689826,1,1,1,1,1,1,1},
+    {0.668854,0.696153,0.735713,0.744354,0.689826,1,1,1,1,1,1,1},
+    {0.98117,0.927771,0.914328,0.89406,0.890856,1,1,1,1,1,1,1},
+    {0.98117,0.927771,0.914328,0.89406,0.890856,1,1,1,1,1,1,1},
+    {1,1,1,1,1,1,1,1,1,1,1,1},
+    {1,1,1,1,1,1,1,1,1,1,1,1}
+  }, {
+    {0.493093,0.584856,1,0.575428,1,1,1,1,1,1,1,1},
+    {0.493093,0.584856,1,0.575428,1,1,1,1,1,1,1,1},
+    {0.606009,0.677803,1,0.601322,1,1,1,1,1,1,1,1},
+    {0.606009,0.677803,1,0.601322,1,1,1,1,1,1,1,1},
+    {0.809538,0.852994,1,0.838924,1,1,1,1,1,1,1,1},
+    {0.809538,0.852994,1,0.838924,1,1,1,1,1,1,1,1},
+    {0.871868,0.928714,1,0.876958,1,1,1,1,1,1,1,1},
+    {0.871868,0.928714,1,0.876958,1,1,1,1,1,1,1,1},
+    {0.574237,0.637473,0.702528,0.734866,0.744734,1,1,1,1,1,1,1},
+    {0.574237,0.637473,0.702528,0.734866,0.744734,1,1,1,1,1,1,1},
+    {0.712057,0.714718,0.733573,0.745892,0.756625,1,1,1,1,1,1,1},
+    {0.712057,0.714718,0.733573,0.745892,0.756625,1,1,1,1,1,1,1},
+    {0.964301,0.960763,0.997004,0.978608,0.993706,1,1,1,1,1,1,1},
+    {0.964301,0.960763,0.997004,0.978608,0.993706,1,1,1,1,1,1,1},
+    {1,1,1,1,1,1,1,1,1,1,1,1},
+    {1,1,1,1,1,1,1,1,1,1,1,1}
+  }, {
+    {0.527599,0.595174,1,0.559138,1,1,1,1,1,1,1,1},
+    {0.527599,0.595174,1,0.559138,1,1,1,1,1,1,1,1},
+    {0.609337,0.66386,1,0.58314,1,1,1,1,1,1,1,1},
+    {0.609337,0.66386,1,0.58314,1,1,1,1,1,1,1,1},
+    {0.846807,0.858257,1,0.829497,1,1,1,1,1,1,1,1},
+    {0.846807,0.858257,1,0.829497,1,1,1,1,1,1,1,1},
+    {0.877568,0.929633,1,0.873891,1,1,1,1,1,1,1,1},
+    {0.877568,0.929633,1,0.873891,1,1,1,1,1,1,1,1},
+    {0.572111,0.639567,0.672575,0.725796,0.723734,1,1,1,1,1,1,1},
+    {0.572111,0.639567,0.672575,0.725796,0.723734,1,1,1,1,1,1,1},
+    {0.702682,0.707656,0.72427,0.747779,0.754796,1,1,1,1,1,1,1},
+    {0.702682,0.707656,0.72427,0.747779,0.754796,1,1,1,1,1,1,1},
+    {0.980709,0.95144,0.977001,0.989567,0.984446,1,1,1,1,1,1,1},
+    {0.980709,0.95144,0.977001,0.989567,0.984446,1,1,1,1,1,1,1},
+    {1,1,1,1,1,1,1,1,1,1,1,1},
+    {1,1,1,1,1,1,1,1,1,1,1,1}
+  }, {
+    {1.93922,1.20575,1.37434,1.4417,1,1,1,1,1,1,1,1},
+    {1.93922,1.20575,1.37434,1.4417,1,1,1,1,1,1,1,1},
+    {2.33721,1.26093,1.5699,1.54553,1,1,1,1,1,1,1,1},
+    {2.33721,1.26093,1.5699,1.54553,1,1,1,1,1,1,1,1},
+    {2.1858,1,1.38776,1.49085,1,1,1,1,1,1,1,1},
+    {2.1858,1,1.38776,1.49085,1,1,1,1,1,1,1,1},
+    {2.47334,1,1.38751,1.68873,1,1,1,1,1,1,1,1},
+    {2.47334,1,1.38751,1.68873,1,1,1,1,1,1,1,1},
+    {0.556038,0.471826,0.534429,0.507992,0.378368,0.593094,1,1,1,1,1,1},
+    {0.556038,0.471826,0.534429,0.507992,0.378368,0.593094,1,1,1,1,1,1},
+    {0.44502,0.501535,0.563239,0.588559,0.480622,0.580772,0.590541,0.617739,0.610488,0.639079,0.625721,0.628907},
+    {0.44502,0.501535,0.563239,0.588559,0.480622,0.580772,0.590541,0.617739,0.610488,0.639079,0.625721,0.628907},
+    {0.791157,1.22119,1.16088,0.938632,0.877565,0.966703,1,1,1,1,1,1},
+    {0.791157,1.22119,1.16088,0.938632,0.877565,0.966703,1,1,1,1,1,1},
+    {1,1,1,1,1,1,1,1,1,1,1,1},
+    {1,1,1,1,1,1,1,1,1,1,1,1}
+  }, {
+    {0.340075,1.38479,1.41902,1.56352,1,1,1,1,1,1,1,1},
+    {0.340075,1.38479,1.41902,1.56352,1,1,1,1,1,1,1,1},
+    {1.92384,1.28143,1.13018,1.60926,1,1,1,1,1,1,1,1},
+    {1.92384,1.28143,1.13018,1.60926,1,1,1,1,1,1,1,1},
+    {0.566284,1,1.38579,1.55373,1,1,1,1,1,1,1,1},
+    {0.566284,1,1.38579,1.55373,1,1,1,1,1,1,1,1},
+    {2.04622,1,1.23656,1.67177,1,1,1,1,1,1,1,1},
+    {2.04622,1,1.23656,1.67177,1,1,1,1,1,1,1,1},
+    {1.5213,0.994794,1.23628,0.580533,0.418491,0.668831,1,1,1,1,1,1},
+    {1.5213,0.994794,1.23628,0.580533,0.418491,0.668831,1,1,1,1,1,1},
+    {0.829185,0.639666,0.750328,0.619916,0.509476,0.542842,0.588804,0.626851,0.651338,0.71124,0.720077,0.729862},
+    {0.829185,0.639666,0.750328,0.619916,0.509476,0.542842,0.588804,0.626851,0.651338,0.71124,0.720077,0.729862},
+    {1.09053,1.10787,1.12543,1.09338,0.991479,1.05019,1,1,1,1,1,1},
+    {1.09053,1.10787,1.12543,1.09338,0.991479,1.05019,1,1,1,1,1,1},
+    {1,1,1,1,1,1,1,1,1,1,1,1},
+    {1,1,1,1,1,1,1,1,1,1,1,1}
+  }, {
+    {1.08113,0.863649,0.795501,1,1.10989,0.845028,1,1,1,1,1,1},
+    {1.08113,0.863649,0.795501,1,1.10989,0.845028,1,1,1,1,1,1},
+    {0.990336,0.365578,0.35958,1,0.593591,0.414396,1,1,1,1,1,1},
+    {0.990336,0.365578,0.35958,1,0.593591,0.414396,1,1,1,1,1,1},
+    {1.13743,1.08006,0.786491,1.1168,1.13352,0.797259,1,1,1,1,1,1},
+    {1.13743,1.08006,0.786491,1.1168,1.13352,0.797259,1,1,1,1,1,1},
+    {0.674709,0.735516,0.59279,1.06562,0.601168,0.607802,1,1,1,1,1,1},
+    {0.674709,0.735516,0.59279,1.06562,0.601168,0.607802,1,1,1,1,1,1},
+    {1.41907,1.35137,1.19947,1.26818,1.32891,1.01325,1,1,1,1,1,1},
+    {1.41907,1.35137,1.19947,1.26818,1.32891,1.01325,1,1,1,1,1,1},
+    {1.01876,1.05772,0.97773,1.01656,1.09945,0.797823,1.04252,1.102,1.09416,0.623252,0.702057,0.857394},
+    {1.01876,1.05772,0.97773,1.01656,1.09945,0.797823,1.04252,1.102,1.09416,0.623252,0.702057,0.857394},
+    {1.47176,1.93444,1.63112,1.67047,1.69935,1.15919,1,1,1,1,1,1},
+    {1.47176,1.93444,1.63112,1.67047,1.69935,1.15919,1,1,1,1,1,1},
+    {1,1,1,1,1,1,1,1,1,1,1,1},
+    {1,1,1,1,1,1,1,1,1,1,1,1}
+  }
+};
+
+
 
 // The correction LUT, indexed by [ipair][ifr][itheta]
 // Hardcoded
@@ -216,17 +373,17 @@ auto isRPC = [](const l1t::EMTFHitExtra& hit) {
   return (hit.subsystem == TriggerPrimitive::kRPC);
 };
 
-auto get_eta_bin = [](const l1t::EMTFHitExtra& hit) {
+auto get_eta_bin = [](float eta) {
   // 12 bins in [1.2,2.4] still using floating point
-  double absEta = std::abs(hit.eta);
+  double absEta = std::abs(eta);
   if (absEta <  1.2)  absEta = 1.2;
   if (absEta >= 2.4)  absEta = 2.4 * 0.99999999;
   return (static_cast<int>((absEta - 1.2) / (2.4 - 1.2) * 12));
 };
 
-auto get_theta_bin = [](const l1t::EMTFHitExtra& hit) {
+auto get_theta_bin = [](int theta) {
   // 16 bins in [0,127] integer units
-  return (hit.theta_fp/8);
+  return (theta/8);
 };
 
 // _____________________________________________________________________________
@@ -248,14 +405,17 @@ void RPCIntegration::makeDPhiPlots() {
     const auto& part = genParts_.front();
     const int    charge = part.charge();
     const double pt     = part.pt();
-    const double eta    = part.eta();
+    //const double eta    = part.eta();
 
-    // Keep the hits in a sector processor in myhits.
+    // Keep the hits and tracks in a sector processor
     std::vector<l1t::EMTFHitExtra> myhits;
+    std::vector<l1t::EMTFTrackExtra> mytracks;
 
     // Loop over sectors
     for (int sector = 1; sector <= 6; ++sector) {
       myhits.clear();
+      mytracks.clear();
+
       int mode = 0;
 
       for (const auto& hit : emuHits_) {
@@ -265,6 +425,14 @@ void RPCIntegration::makeDPhiPlots() {
         if (hit.sector == sector && (isCSC(hit) || isRPC(hit))) {
           mode |= (1<<(4-hit.station));
           myhits.push_back(hit);
+        }
+      }
+
+      for (const auto& track : emuTracks_) {
+        assert(1 <= track.sector && track.sector <= 6);
+
+        if (track.sector == sector) {
+          mytracks.push_back(track);
         }
       }
 
@@ -286,8 +454,8 @@ void RPCIntegration::makeDPhiPlots() {
       std::vector<l1t::EMTFHitExtra> myhits1;
       std::vector<l1t::EMTFHitExtra> myhits2;
 
-      // Loop over pairs
-      for (int ipair = 0; ipair < 9; ++ipair) {
+      // Loop over pairs (only when there is a track)
+      for (int ipair = 0; (mytracks.size() > 0) && (ipair < 9); ++ipair) {
         myhits1.clear();
         myhits2.clear();
 
@@ -325,6 +493,13 @@ void RPCIntegration::makeDPhiPlots() {
         // If the pair is valid
         if (myhits1.size() > 0 && myhits2.size() > 0) {
 
+          // Pick the first track
+          const l1t::EMTFTrackExtra& in_track = mytracks.front();
+          int theta_int = in_track.theta_int;
+          float theta_angle = l1t::calc_theta_rad_from_int( theta_int );
+          float eta = l1t::calc_eta_from_theta_rad( theta_angle );
+          //eta = (in_track.endcap == 2) ? -eta : eta;
+
           // There can be more than one hits in a station. Pick one randomly
           std::uniform_int_distribution<> index1(0, myhits1.size()-1);
           std::uniform_int_distribution<> index2(0, myhits2.size()-1);
@@ -345,11 +520,11 @@ void RPCIntegration::makeDPhiPlots() {
           assert(ifr < 16);
 
           // Find ieta index using the hit in 'front' station
-          int ieta = get_eta_bin(myhit1);
+          int ieta = get_eta_bin(eta);
           assert(ieta < 12);
 
           // Find itheta index
-          int itheta = get_theta_bin(myhit1);
+          int itheta = get_theta_bin(theta_int);
           assert(itheta < 16);
 
           // Find ipt index
@@ -379,55 +554,54 @@ void RPCIntegration::makeDPhiPlots() {
           // Reverse dphi if positive muon
           if (charge > 0)  dphi = -dphi;
 
-          //const float common_dphi_ratio = table_common_dphi_ieta[ipair][ifr][ieta];
+          const float common_dphi_ratio = table_common_dphi_ieta[ipair][ifr][ieta];
           //const float common_dphi_ratio = table_common_dphi_itheta[ipair][ifr][itheta];
-          const float common_dphi_ratio = 1.0;  //FIXME
           const int common_dphi = static_cast<int>(std::round(1.0 / common_dphi_ratio * dphi));
 
           // dphi vs particle 1/pT
-          hname = Form("deflection_stp%i_frp%i_eta%i", ipair, ifr, ieta);
+          hname = Form("deflection_pair%i_fr%i_eta%i", ipair, ifr, ieta);
           h2 = histogram2Ds_.at(hname);
           h2->Fill(1.0/pt, dphi);
-          hname = Form("deflection_stp%i_frp%i_eta%i", ipair, 16, ieta);  // inclusive ifr
+          hname = Form("deflection_pair%i_fr%i_eta%i", ipair, 16, ieta);  // inclusive ifr
           h2 = histogram2Ds_.at(hname);
           h2->Fill(1.0/pt, dphi);
-          hname = Form("deflection_stp%i_frp%i_theta%i", ipair, ifr, itheta);
+          hname = Form("deflection_pair%i_fr%i_theta%i", ipair, ifr, itheta);
           h2 = histogram2Ds_.at(hname);
           h2->Fill(1.0/pt, dphi);
-          hname = Form("deflection_stp%i_frp%i_theta%i", ipair, 16, itheta);  // inclusive ifr
+          hname = Form("deflection_pair%i_fr%i_theta%i", ipair, 16, itheta);  // inclusive ifr
           h2 = histogram2Ds_.at(hname);
           h2->Fill(1.0/pt, dphi);
 
           // corrected dphi vs particle 1/pT
-          hname = Form("common_deflection_stp%i_frp%i_eta%i", ipair, ifr, ieta);
+          hname = Form("common_deflection_pair%i_fr%i_eta%i", ipair, ifr, ieta);
           h2 = histogram2Ds_.at(hname);
           h2->Fill(1.0/pt, common_dphi);
-          hname = Form("common_deflection_stp%i_frp%i_eta%i", ipair, 16, ieta);  // inclusive ifr
+          hname = Form("common_deflection_pair%i_fr%i_eta%i", ipair, 16, ieta);  // inclusive ifr
           h2 = histogram2Ds_.at(hname);
           h2->Fill(1.0/pt, common_dphi);
-          hname = Form("common_deflection_stp%i_frp%i_theta%i", ipair, ifr, itheta);
+          hname = Form("common_deflection_pair%i_fr%i_theta%i", ipair, ifr, itheta);
           h2 = histogram2Ds_.at(hname);
           h2->Fill(1.0/pt, common_dphi);
-          hname = Form("common_deflection_stp%i_frp%i_theta%i", ipair, 16, itheta);  // inclusive ifr
+          hname = Form("common_deflection_pair%i_fr%i_theta%i", ipair, 16, itheta);  // inclusive ifr
           h2 = histogram2Ds_.at(hname);
           h2->Fill(1.0/pt, common_dphi);
 
           if (ipt != -1) {
             // dphi vs particle |eta|
-            hname = Form("deflection_stp%i_frp%i_pt%i", ipair, ifr, ipt);
+            hname = Form("deflection_pair%i_fr%i_pt%i", ipair, ifr, ipt);
             h2 = histogram2Ds_.at(hname);
-            h2->Fill(std::abs(eta), dphi);
-            hname = Form("deflection_stp%i_frp%i_pt%i", ipair, 16, ipt);  // inclusive
+            h2->Fill(std::abs(part.eta()), dphi);
+            hname = Form("deflection_pair%i_fr%i_pt%i", ipair, 16, ipt);  // inclusive
             h2 = histogram2Ds_.at(hname);
-            h2->Fill(std::abs(eta), dphi);
+            h2->Fill(std::abs(part.eta()), dphi);
 
             // corrected dphi vs particle |eta|
-            hname = Form("common_deflection_stp%i_frp%i_pt%i", ipair, ifr, ipt);
+            hname = Form("common_deflection_pair%i_fr%i_pt%i", ipair, ifr, ipt);
             h2 = histogram2Ds_.at(hname);
-            h2->Fill(std::abs(eta), common_dphi);
-            hname = Form("common_deflection_stp%i_frp%i_pt%i", ipair, 16, ipt);  // inclusive
+            h2->Fill(std::abs(part.eta()), common_dphi);
+            hname = Form("common_deflection_pair%i_fr%i_pt%i", ipair, 16, ipt);  // inclusive
             h2 = histogram2Ds_.at(hname);
-            h2->Fill(std::abs(eta), common_dphi);
+            h2->Fill(std::abs(part.eta()), common_dphi);
           }
 
         }  // end if the pair is valid
@@ -464,22 +638,22 @@ void RPCIntegration::bookHistograms() {
   };
 
   TString deflection_labels2[] = {
-      "RR+RR",
-      "RR+RF",
-      "RR+MR",
-      "RR+MF",
-      "RF+RR",
-      "RF+RF",
-      "RF+MR",
-      "RF+MF",
-      "MR+RR",
-      "MR+RF",
-      "MR+MR",
-      "MR+MF",
-      "RF+RR",
-      "RF+RF",
-      "RF+MR",
-      "MF+MF",
+      "RR/RR",
+      "RR/RF",
+      "RR/MR",
+      "RR/MF",
+      "RF/RR",
+      "RF/RF",
+      "RF/MR",
+      "RF/MF",
+      "MR/RR",
+      "MR/RF",
+      "MR/MR",
+      "MR/MF",
+      "MF/RR",
+      "MF/RF",
+      "MF/MR",
+      "MF/MF",
       "all"
   };
 
@@ -533,30 +707,30 @@ void RPCIntegration::bookHistograms() {
 
       // dphi vs 1/pT
       for (int ieta=0; ieta<12; ++ieta) {
-        hname = Form("deflection_stp%i_frp%i_eta%i", ipair, ifr, ieta);
+        hname = Form("deflection_pair%i_fr%i_eta%i", ipair, ifr, ieta);
         h2 = new TH2F(hname, TString("; 1/p_{T} [1/GeV]; ")+deflection_labels1[ipair]+" ("+deflection_labels2[ifr]+") {"+deflection_labels3[ieta]+"}", 50, 0., 0.5, 808, -808, 808);
         histogram2Ds_[hname] = h2;
 
-        hname = Form("common_deflection_stp%i_frp%i_eta%i", ipair, ifr, ieta);
+        hname = Form("common_deflection_pair%i_fr%i_eta%i", ipair, ifr, ieta);
         histogram2Ds_[hname] = (TH2F*) h2->Clone(hname);
       }
 
       for (int itheta=0; itheta<16; ++itheta) {
-        hname = Form("deflection_stp%i_frp%i_theta%i", ipair, ifr, itheta);
+        hname = Form("deflection_pair%i_fr%i_theta%i", ipair, ifr, itheta);
         h2 = new TH2F(hname, TString("; 1/p_{T} [1/GeV]; ")+deflection_labels1[ipair]+" ("+deflection_labels2[ifr]+") {"+deflection_labels4[itheta]+"}", 50, 0., 0.5, 808, -808, 808);
         histogram2Ds_[hname] = h2;
 
-        hname = Form("common_deflection_stp%i_frp%i_theta%i", ipair, ifr, itheta);
+        hname = Form("common_deflection_pair%i_fr%i_theta%i", ipair, ifr, itheta);
         histogram2Ds_[hname] = (TH2F*) h2->Clone(hname);
       }
 
       // dphi vs |eta|
       for (int ipt=0; ipt<8; ++ipt) {
-        hname = Form("deflection_stp%i_frp%i_pt%i", ipair, ifr, ipt);
+        hname = Form("deflection_pair%i_fr%i_pt%i", ipair, ifr, ipt);
         h2 = new TH2F(hname, TString("; |#eta|; ")+deflection_labels1[ipair]+" ("+deflection_labels2[ifr]+") {"+deflection_labels5[ipt]+"}", 48, 1.2, 2.4, 808, -808, 808);
         histogram2Ds_[hname] = h2;
 
-        hname = Form("common_deflection_stp%i_frp%i_pt%i", ipair, ifr, ipt);
+        hname = Form("common_deflection_pair%i_fr%i_pt%i", ipair, ifr, ipt);
         histogram2Ds_[hname] = (TH2F*) h2->Clone(hname);
       }
     }
