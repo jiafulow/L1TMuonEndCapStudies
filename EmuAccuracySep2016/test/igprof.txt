@@ -1,5 +1,0 @@
-igprof -d -mp -z -o igprof.mp.gz cmsRun EmuAcc3_sep.py >& igtest.mp.EmuAcc3_sep.log &
-igprof-analyse --sqlite -d -v -g -r MEM_TOTAL igprof.mp.gz | sqlite3 igreport_tester_mp.sql3
-
-igprof -d -pp -z -o igprof.pp.gz cmsRun EmuAcc3_sep.py >& igtest.pp.EmuAcc3_sep.log &
-igprof-analyse --sqlite -d -v -g igprof.pp.gz | sqlite3 igreport_tester_pp.sql3

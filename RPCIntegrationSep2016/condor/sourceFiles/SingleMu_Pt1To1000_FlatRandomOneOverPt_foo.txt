@@ -1,1 +1,0 @@
-/store/mc/RunIISpring16DR80/SingleMu_Pt1To1000_FlatRandomOneOverPt/GEN-SIM-RAW/NoPURAW_NZS_withHLT_80X_mcRun2_asymptotic_v14-v1/40000/0C7F3E84-6564-E611-B422-0025904B2334.root

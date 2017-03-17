@@ -1,9 +1,0 @@
-cmsDriver.py l1Ntuple \
-  --step RAW2DIGI \
-  --data --eventcontent RAW \
-  --era Run2_2016 \
-  --conditions auto:run2_data \
-  --customise L1Trigger/Configuration/customiseReEmul.L1TReEmulFromRAW \
-  --customise L1Trigger/L1TNtuples/customiseL1Ntuple.L1NtupleAODRAWEMU \
-  --filein /store/express/Run2016H/ExpressPhysics/FEVT/Express-v2/000/281/707/00000/00148DAF-A684-E611-960A-02163E0134A9.root \
-  --no_exec -n 100
