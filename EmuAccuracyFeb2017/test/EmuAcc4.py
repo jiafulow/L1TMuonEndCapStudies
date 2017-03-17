@@ -123,7 +123,7 @@ process.source.eventsToProcess = cms.untracked.VEventRange(eventsToProcess)
 
 # My paths and schedule definitions
 process.load('EventFilter.L1TRawToDigi.emtfStage2Digis_cfi')
-from L1TriggerSep2016.L1TMuonEndCap.simEmtfDigis_cfi import simEmtfDigisData
+from L1Trigger.L1TMuonEndCap.simEmtfDigis_cfi import simEmtfDigisData
 process.simEmtfDigis = simEmtfDigisData
 process.simEmtfDigis.verbosity = cms.untracked.int32(0)
 if True:

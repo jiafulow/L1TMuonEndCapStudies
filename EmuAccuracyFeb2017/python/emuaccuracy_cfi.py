@@ -1,6 +1,6 @@
 import FWCore.ParameterSet.Config as cms
 
-emuaccuracy = cms.EDAnalyzer('EmuAccuracySep2016',
+emuaccuracy = cms.EDAnalyzer('EmuAccuracyFeb2017',
     unpHitTag = cms.InputTag('emtfStage2Digis'),
     unpTrackTag = cms.InputTag('emtfStage2Digis'),
     #emuHitTag = cms.InputTag('simEmtfDigis', 'EMTF'),

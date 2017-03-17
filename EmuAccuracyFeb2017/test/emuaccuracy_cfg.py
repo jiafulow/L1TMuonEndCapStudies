@@ -22,7 +22,7 @@ process.options = cms.untracked.PSet()
 
 
 # Plugin: EmuAccuracy
-process.load("L1TMuonEndCapStudies.EmuAccuracySep2016.emuaccuracy_cfi")
+process.load("L1TMuonEndCapStudies.EmuAccuracyFeb2017.emuaccuracy_cfi")
 #process.emuaccuracy.emuHitTag = cms.InputTag('simEmtfDigis', '')
 #process.emuaccuracy.emuTrackTag = cms.InputTag('simEmtfDigis', '')
 #process.emuaccuracy.emuHitTag2 = cms.InputTag('simEmtfDigis', 'CSC')
