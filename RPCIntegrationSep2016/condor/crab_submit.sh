@@ -68,7 +68,7 @@ config.JobType.pluginName = 'Analysis'
 config.JobType.psetName = 'pset.py'
 config.JobType.outputFiles = ['histos.root']
 #config.JobType.pyCfgParams = []
-config.JobType.maxMemoryMB = 3000
+config.JobType.maxMemoryMB = 3500
 #config.JobType.maxJobRuntimeMin = 1800
 
 config.Data.inputDataset = '$(grep '^/' ${CRABSRCPATH}/${DATASET}.txt)'
