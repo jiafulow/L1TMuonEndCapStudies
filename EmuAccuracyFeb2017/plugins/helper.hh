@@ -9,24 +9,24 @@ struct TracksMatch {
           trk1.BX(),
           trk1.Endcap(),
           trk1.Sector(),
-          trk1.Pt_LUT_addr(),
-          //trk1.Pt_GMT(),
+          trk1.PtLUT().address,
+          //trk1.GMT_pt(),
           trk1.Mode(),
-          trk1.Eta_GMT(),
-          trk1.Phi_GMT(),
-          trk1.Charge_GMT(),
-          trk1.Quality()
+          trk1.GMT_eta(),
+          trk1.GMT_phi(),
+          trk1.GMT_charge(),
+          trk1.GMT_quality()
         ) == std::make_tuple(
           trk2.BX(),
           trk2.Endcap(),
           trk2.Sector(),
-          trk2.Pt_LUT_addr(),
-          //trk2.Pt_GMT(),
+          trk2.PtLUT().address,
+          //trk2.GMT_pt(),
           trk2.Mode(),
-          trk2.Eta_GMT(),
-          trk2.Phi_GMT(),
-          trk2.Charge_GMT(),
-          trk2.Quality()
+          trk2.GMT_eta(),
+          trk2.GMT_phi(),
+          trk2.GMT_charge(),
+          trk2.GMT_quality()
         )
     );
     return m;
@@ -40,13 +40,13 @@ struct TrackPrint {
         << "bx: "           << trk.BX()
         << " endcap: "      << trk.Endcap()
         << " sector: "      << trk.Sector()
-        << " ptlut_addr: "  << trk.Pt_LUT_addr()
-        << " gmt_pt: "      << trk.Pt_GMT()
+        << " ptlut_addr: "  << trk.PtLUT().address
+        << " gmt_pt: "      << trk.GMT_pt()
         << " mode: "        << trk.Mode()
-        << " eta: "         << trk.Eta_GMT()
-        << " phi: "         << trk.Phi_GMT()
-        << " charge: "      << trk.Charge_GMT()
-        << " quality: "     << trk.Quality()
+        << " eta: "         << trk.GMT_eta()
+        << " phi: "         << trk.GMT_phi()
+        << " charge: "      << trk.GMT_charge()
+        << " quality: "     << trk.GMT_quality()
         << std::endl;
     return;
   }
@@ -55,16 +55,13 @@ struct TrackPrint {
 struct HitPrint {
   template<class T>
   void operator()(const T& h) const {
-
-#ifdef SEP2016_VERSION
-    int bx      = h.bx + 3;
-    int sector  = h.pc_sector;
-    int station = (h.pc_station == 0 && h.subsector == 1) ? 1 : h.pc_station;
-    int chamber = h.pc_chamber + 1;
-    int strip   = (h.station == 1 && h.ring == 4) ? h.strip + 128 : h.strip;  // ME1/1a
-    std::cout << bx << " " << h.endcap << " " << sector << " " << h.subsector << " " << station << " " << h.valid << " " << h.quality << " " << h.pattern << " " << h.wire << " " << chamber << " " << h.bend << " " << strip << std::endl;
-#endif
-
+    int bx      = h.BX() + 3;
+    int endcap  = (h.Endcap() == 1) ? 1 : 2;
+    int sector  = h.PC_sector();
+    int station = (h.PC_station() == 0 && h.Subsector() == 1) ? 1 : h.PC_station();
+    int chamber = h.PC_chamber() + 1;
+    int strip   = (h.Station() == 1 && h.Ring() == 4) ? h.Strip() + 128 : h.Strip();  // ME1/1a
+    std::cout << bx << " " << endcap << " " << sector << " " << h.Subsector() << " " << station << " " << h.Valid() << " " << h.Quality() << " " << h.Pattern() << " " << h.Wire() << " " << chamber << " " << h.Bend() << " " << strip << std::endl;
     return;
   }
 };

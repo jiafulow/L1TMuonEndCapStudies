@@ -14,25 +14,7 @@
 #include "FWCore/MessageLogger/interface/MessageLogger.h"
 
 #include "DataFormats/L1TMuon/interface/EMTFHit.h"
-#include "DataFormats/L1TMuon/interface/EMTFHitExtra.h"
 #include "DataFormats/L1TMuon/interface/EMTFTrack.h"
-#include "DataFormats/L1TMuon/interface/EMTFTrackExtra.h"
-
-#include "DataFormatsSep2016/L1TMuon/interface/EMTFHit.h"
-#include "DataFormatsSep2016/L1TMuon/interface/EMTFHitExtra.h"
-#include "DataFormatsSep2016/L1TMuon/interface/EMTFTrack.h"
-#include "DataFormatsSep2016/L1TMuon/interface/EMTFTrackExtra.h"
-
-
-#define SEP2016_VERSION
-
-#ifdef SEP2016_VERSION
-namespace l1t_std = l1t;
-namespace l1t_sep = L1TMuonEndCap;
-#else
-namespace l1t_std = l1t;
-namespace l1t_sep = l1t;
-#endif
 
 #include "helper.hh"
 
@@ -68,26 +50,17 @@ private:
   const edm::InputTag unpTrackTag_;
   const edm::InputTag emuTrackTag_;
 
-  const edm::InputTag emuHitTag2_;
-  const edm::InputTag emuTrackTag2_;
-
   int verbose_;
 
-  edm::EDGetTokenT<l1t_std::EMTFHitCollection>   unpHitToken_;
-  edm::EDGetTokenT<l1t_sep::EMTFHitCollection>   emuHitToken_;
-  edm::EDGetTokenT<l1t_std::EMTFTrackCollection> unpTrackToken_;
-  edm::EDGetTokenT<l1t_sep::EMTFTrackCollection> emuTrackToken_;
+  edm::EDGetTokenT<l1t::EMTFHitCollection>   unpHitToken_;
+  edm::EDGetTokenT<l1t::EMTFHitCollection>   emuHitToken_;
+  edm::EDGetTokenT<l1t::EMTFTrackCollection> unpTrackToken_;
+  edm::EDGetTokenT<l1t::EMTFTrackCollection> emuTrackToken_;
 
-  edm::EDGetTokenT<l1t_sep::EMTFHitExtraCollection>   emuHitToken2_;
-  edm::EDGetTokenT<l1t_sep::EMTFTrackExtraCollection> emuTrackToken2_;
-
-  l1t_std::EMTFHitCollection    unpHits_;
-  l1t_sep::EMTFHitCollection    emuHits_;
-  l1t_std::EMTFTrackCollection  unpTracks_;
-  l1t_sep::EMTFTrackCollection  emuTracks_;
-
-  l1t_sep::EMTFHitExtraCollection    emuHits2_;
-  l1t_sep::EMTFTrackExtraCollection  emuTracks2_;
+  l1t::EMTFHitCollection    unpHits_;
+  l1t::EMTFHitCollection    emuHits_;
+  l1t::EMTFTrackCollection  unpTracks_;
+  l1t::EMTFTrackCollection  emuTracks_;
 
   std::map<int, int> sitrep_why_;
   std::map<int, int> sitrep_why_address_;
@@ -102,17 +75,12 @@ EmuAccuracy::EmuAccuracy(const edm::ParameterSet& iConfig) :
     emuHitTag_   (iConfig.getParameter<edm::InputTag>("emuHitTag")),
     unpTrackTag_ (iConfig.getParameter<edm::InputTag>("unpTrackTag")),
     emuTrackTag_ (iConfig.getParameter<edm::InputTag>("emuTrackTag")),
-    emuHitTag2_  (iConfig.getParameter<edm::InputTag>("emuHitTag2")),
-    emuTrackTag2_(iConfig.getParameter<edm::InputTag>("emuTrackTag2")),
     verbose_     (iConfig.getUntrackedParameter<int> ("verbosity"))
 {
-    unpHitToken_   = consumes<l1t_std::EMTFHitCollection>  (unpHitTag_);
-    emuHitToken_   = consumes<l1t_sep::EMTFHitCollection>  (emuHitTag_);
-    unpTrackToken_ = consumes<l1t_std::EMTFTrackCollection>(unpTrackTag_);
-    emuTrackToken_ = consumes<l1t_sep::EMTFTrackCollection>(emuTrackTag_);
-
-    emuHitToken2_    = consumes<l1t_sep::EMTFHitExtraCollection>  (emuHitTag2_);
-    emuTrackToken2_  = consumes<l1t_sep::EMTFTrackExtraCollection>(emuTrackTag2_);
+    unpHitToken_   = consumes<l1t::EMTFHitCollection>  (unpHitTag_);
+    emuHitToken_   = consumes<l1t::EMTFHitCollection>  (emuHitTag_);
+    unpTrackToken_ = consumes<l1t::EMTFTrackCollection>(unpTrackTag_);
+    emuTrackToken_ = consumes<l1t::EMTFTrackCollection>(emuTrackTag_);
 
     nBadEvents_ = 0;
     nEvents_    = 0;
@@ -134,9 +102,6 @@ void EmuAccuracy::getHandles(const edm::Event& iEvent) {
   edm::Handle<decltype(emuHits_)>    emuHits_handle;
   edm::Handle<decltype(unpTracks_)>  unpTracks_handle;
   edm::Handle<decltype(emuTracks_)>  emuTracks_handle;
-
-  edm::Handle<decltype(emuHits2_)>   emuHits2_handle;
-  edm::Handle<decltype(emuTracks2_)> emuTracks2_handle;
 
   if (iEvent.isRealData()) {
     if (!unpHitToken_.isUninitialized()) {
@@ -169,22 +134,6 @@ void EmuAccuracy::getHandles(const edm::Event& iEvent) {
   }
   if (!emuTracks_handle.isValid()) {
     edm::LogError("EmuAccuracy") << "Cannot get the product: " << emuTrackTag_;
-    return;
-  }
-
-  if (!emuHitToken2_.isUninitialized()) {
-    iEvent.getByToken(emuHitToken2_, emuHits2_handle);
-  }
-  if (!emuHits2_handle.isValid()) {
-    edm::LogError("EmuAccuracy") << "Cannot get the product: " << emuHitTag2_;
-    return;
-  }
-
-  if (!emuTrackToken2_.isUninitialized()) {
-    iEvent.getByToken(emuTrackToken2_, emuTracks2_handle);
-  }
-  if (!emuTracks2_handle.isValid()) {
-    edm::LogError("EmuAccuracy") << "Cannot get the product: " << emuTrackTag2_;
     return;
   }
 
@@ -226,25 +175,6 @@ void EmuAccuracy::getHandles(const edm::Event& iEvent) {
     if (out_of_emu_sector(trk))  continue;
     emuTracks_.push_back(trk);
   }
-
-  emuHits2_.clear();
-  for (const auto& hit : (*emuHits2_handle)) {
-    emuHits2_.push_back(hit);
-  }
-  //assert(emuHits_.size() == emuHits2_.size());
-
-  emuTracks2_.clear();
-  for (const auto& trk : (*emuTracks2_handle)) {
-#ifdef SEP2016_VERSION
-    if (trk.bx < -1 || +1 < trk.bx)      continue;  //if (out_of_emu_bx(trk))      continue;
-    if (trk.endcap==2 && trk.sector==6)  continue;  //if (out_of_emu_sector(trk))  continue;
-#else
-    if (out_of_emu_bx(trk))      continue;
-    if (out_of_emu_sector(trk))  continue;
-#endif
-    emuTracks2_.push_back(trk);
-  }
-  //assert(emuTracks_.size() == emuTracks2_.size());
 
 }
 
@@ -338,9 +268,9 @@ void EmuAccuracy::printHits() {
   HitPrint hitPrint;
 
   // Emulator hits
-  std::cout << "Num of emulator hits = " << emuHits2_.size() << std::endl;
+  std::cout << "Num of emulator hits = " << emuHits_.size() << std::endl;
   std::cout << "bx e s ss st vf ql cp wg id bd hs" << std::endl;
-  for (const auto& hit : emuHits2_) {
+  for (const auto& hit : emuHits_) {
     hitPrint(hit);
   }
 
@@ -388,52 +318,50 @@ void EmuAccuracy::sitrep(const std::vector<int>& unp_matches, const std::vector<
   };
 
   auto check_track_mode = [](const auto& trk1, const auto& trk2) {
-    bool match = (trk1.Mode() == trk2.Mode() && trk1.Mode_LUT() == trk2.Mode_LUT());
+    bool match = (trk1.Mode() == trk2.Mode() && trk1.Mode_inv() == trk2.Mode_inv());
     return match;
   };
 
   auto check_track_address = [](const auto& trk1, const auto& trk2) {
-    bool match = (trk1.Pt_LUT_addr() == trk2.Pt_LUT_addr());
+    bool match = (trk1.PtLUT().address == trk2.PtLUT().address);
     return match;
   };
 
   auto check_track_pt = [](const auto& trk1, const auto& trk2) {
-    bool match = (trk1.Pt_GMT() == trk2.Pt_GMT());
+    bool match = (trk1.GMT_pt() == trk2.GMT_pt());
     return match;
   };
 
   auto check_track_eta = [](const auto& trk1, const auto& trk2) {
-    bool match = (trk1.Eta_GMT() == trk2.Eta_GMT());
+    bool match = (trk1.GMT_eta() == trk2.GMT_eta());
     return match;
   };
 
   auto check_track_phi = [](const auto& trk1, const auto& trk2) {
-    bool match = (trk1.Phi_GMT() == trk2.Phi_GMT());
+    bool match = (trk1.GMT_phi() == trk2.GMT_phi());
     return match;
   };
 
   auto check_track_charge = [](const auto& trk1, const auto& trk2) {
-    bool match = (trk1.Charge_GMT() == trk2.Charge_GMT() && trk1.Charge_valid() == trk2.Charge_valid());
+    bool match = (trk1.GMT_charge() == trk2.GMT_charge() && trk1.GMT_charge_valid() == trk2.GMT_charge_valid());
     return match;
   };
 
   auto check_track_quality = [](const auto& trk1, const auto& trk2) {
-    bool match = (trk1.Quality() == trk2.Quality());
+    bool match = (trk1.GMT_quality() == trk2.GMT_quality());
     return match;
   };
 
-  auto check_me11_dupes = [](const auto& emuHits2_) {
+  auto check_me11_dupes = [](const auto& emuHits_) {
     typedef std::array<int, 5> reference_t;
     std::map<reference_t, int> counting;
 
-#ifdef SEP2016_VERSION
-    for (const auto& hit : emuHits2_) {
-      if (hit.station == 1 && (hit.ring == 1 || hit.ring == 4)) {  // ME1/1
-        reference_t ref = {{hit.endcap, hit.sector, hit.subsector, hit.station, hit.csc_ID}};
+    for (const auto& hit : emuHits_) {
+      if (hit.Station() == 1 && (hit.Ring() == 1 || hit.Ring() == 4)) {  // ME1/1
+        reference_t ref = {{hit.Endcap(), hit.Sector(), hit.Subsector(), hit.Station(), hit.CSC_ID()}};
         counting[ref]++;
       }
     }
-#endif
 
     bool found = false;
     for (const auto& kv : counting)
@@ -442,29 +370,28 @@ void EmuAccuracy::sitrep(const std::vector<int>& unp_matches, const std::vector<
     return found;
   };
 
-  auto check_prim_match = [](const auto& emuHits2_, const auto& trk) {
+  auto check_prim_match = [](const auto& emuHits_, const auto& trk) {
     std::array<int, 4> minima;
     std::array<int, 4> next_minima;
 
     minima.fill(999999);
     next_minima.fill(999999);
 
-#ifdef SEP2016_VERSION
     const int bw_fph = 13;
     const int bpow = 7;
-    int ph_pat = trk.ph_num;
+    int ph_pat = trk.Ph_num();
 
-    for (const auto& hit : emuHits2_) {
+    for (const auto& hit : emuHits_) {
       if (
-          (hit.endcap == trk.endcap) &&
-          (hit.sector == trk.sector) &&
-          (hit.zone_code & (1<<(trk.zone-1)))
+          (hit.Endcap() == trk.Endcap()) &&
+          (hit.Sector() == trk.Sector()) &&
+          (hit.Zone_code() & (1<<(trk.Zone()-1)))
       ) {
-        int ph_seg = hit.phi_fp;
+        int ph_seg = hit.Phi_fp();
         int ph_seg_red = ph_seg >> (bw_fph-bpow-1);
         int ph_diff = (ph_pat > ph_seg_red) ? (ph_pat - ph_seg_red) : (ph_seg_red - ph_pat);
 
-        int istation = (hit.station-1);
+        int istation = (hit.Station()-1);
 
         if (minima.at(istation) > ph_diff) {
           minima.at(istation) = ph_diff;
@@ -473,7 +400,6 @@ void EmuAccuracy::sitrep(const std::vector<int>& unp_matches, const std::vector<
         }
       }
     }
-#endif
 
     bool found = false;
     for (int istation = 0; istation < 4; ++istation) {
@@ -537,9 +463,9 @@ void EmuAccuracy::sitrep(const std::vector<int>& unp_matches, const std::vector<
         mis_charge  = !check_track_charge(trk1, trk2);
         mis_quality = !check_track_quality(trk1, trk2);
 
-        const auto& trkExtra = emuTracks2_.at(index_emu);
-        mis_me11_dupes = check_me11_dupes(emuHits2_);
-        mis_prim_match = check_prim_match(emuHits2_, trkExtra);
+        const auto& trk = emuTracks_.at(index_emu);
+        mis_me11_dupes = check_me11_dupes(emuHits_);
+        mis_prim_match = check_prim_match(emuHits_, trk);
       }
     }
   }
@@ -578,6 +504,7 @@ void EmuAccuracy::sitrep(const std::vector<int>& unp_matches, const std::vector<
     }
   }
 
+#if 0
   if (why == 0) {
     // Compare pT
     auto approx_equal = [] (float a, float b) { return std::abs(a-b) < 0.5+1e-3; };
@@ -614,6 +541,7 @@ void EmuAccuracy::sitrep(const std::vector<int>& unp_matches, const std::vector<
       i += 1;
     }
   }
+#endif
 
   sitrep_why_[why]++;
   sitrep_why_address_[why_address]++;
@@ -652,5 +580,5 @@ void EmuAccuracy::fillDescriptions(edm::ConfigurationDescriptions& descriptions)
 
 // _____________________________________________________________________________
 // Define this as a plug-in
-typedef EmuAccuracy EmuAccuracySep2016;
-DEFINE_FWK_MODULE(EmuAccuracySep2016);
+typedef EmuAccuracy EmuAccuracyFeb2017;
+DEFINE_FWK_MODULE(EmuAccuracyFeb2017);
