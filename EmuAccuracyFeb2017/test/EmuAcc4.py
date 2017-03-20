@@ -51,7 +51,7 @@ process.RAWoutput = cms.OutputModule("PoolOutputModule",
         filterName = cms.untracked.string('')
     ),
     eventAutoFlushCompressedSize = cms.untracked.int32(5242880),
-    fileName = cms.untracked.string('l1Ntuple_RAW2DIGI_sep.root'),
+    fileName = cms.untracked.string('l1Ntuple_RAW2DIGI.root'),
     outputCommands = process.RAWEventContent.outputCommands,
     splitLevel = cms.untracked.int32(0)
 )
@@ -123,8 +123,10 @@ process.source.eventsToProcess = cms.untracked.VEventRange(eventsToProcess)
 
 # My paths and schedule definitions
 process.load('EventFilter.L1TRawToDigi.emtfStage2Digis_cfi')
-from L1Trigger.L1TMuonEndCap.simEmtfDigis_cfi import simEmtfDigisData
-process.simEmtfDigis = simEmtfDigisData
+#from L1Trigger.L1TMuonEndCap.simEmtfDigis_cfi import simEmtfDigisData
+#process.simEmtfDigis = simEmtfDigisData
+process.simEmtfDigis.CSCInput = cms.InputTag('emtfStage2Digis')
+process.simEmtfDigis.RPCInput = cms.InputTag('muonRPCDigis')
 process.simEmtfDigis.verbosity = cms.untracked.int32(0)
 if True:
     #process.simEmtfDigis.spGCParams16.UseSecondEarliest = False
