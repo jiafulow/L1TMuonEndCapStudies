@@ -14,8 +14,8 @@ process.maxEvents = cms.untracked.PSet(
 # Input source
 process.source = cms.Source("PoolSource",
     #fileNames = cms.untracked.vstring('file:l1Ntuple_RAW2DIGI.root'),
-    #fileNames = cms.untracked.vstring('file:l1Ntuple_RAW2DIGI_sep.root'),
-    fileNames = cms.untracked.vstring('file:l1Ntuple_RAW2DIGI_sep_1.root', 'file:l1Ntuple_RAW2DIGI_sep_2.root', 'file:l1Ntuple_RAW2DIGI_sep_3.root', 'file:l1Ntuple_RAW2DIGI_sep_4.root', 'file:l1Ntuple_RAW2DIGI_sep_5.root', 'file:l1Ntuple_RAW2DIGI_sep_6.root'),
+    fileNames = cms.untracked.vstring('file:l1Ntuple_RAW2DIGI_sep.root'),
+    #fileNames = cms.untracked.vstring('file:l1Ntuple_RAW2DIGI_sep_1.root', 'file:l1Ntuple_RAW2DIGI_sep_2.root', 'file:l1Ntuple_RAW2DIGI_sep_3.root', 'file:l1Ntuple_RAW2DIGI_sep_4.root', 'file:l1Ntuple_RAW2DIGI_sep_5.root', 'file:l1Ntuple_RAW2DIGI_sep_6.root'),
 )
 
 process.options = cms.untracked.PSet()
@@ -27,7 +27,7 @@ process.load("L1TMuonEndCapStudies.EmuAccuracySep2016.emuaccuracy_cfi")
 #process.emuaccuracy.emuTrackTag = cms.InputTag('simEmtfDigis', '')
 #process.emuaccuracy.emuHitTag2 = cms.InputTag('simEmtfDigis', 'CSC')
 #process.emuaccuracy.emuTrackTag2 = cms.InputTag('simEmtfDigis', '')
-process.emuaccuracy.verbosity = 0
+process.emuaccuracy.verbosity = 1
 
 # Paths
 process.p = cms.Path(process.emuaccuracy)
