@@ -12,8 +12,8 @@ def tweak_input(njobs, jobid):
 
 def tweak_output(njobs, jobid):
   #process.RAWSIMoutput.fileName = process.RAWSIMoutput.fileName._value.replace('.root', '_%i.root' % jobid)
-  #process.TFileService.fileName = process.TFileService.fileName._value.replace('.root', '_%i.root' % jobid)
-  process.rpcintegration.outFileName = process.rpcintegration.outFileName._value.replace('.root', '_%i.root' % jobid)
+  process.TFileService.fileName = process.TFileService.fileName._value.replace('.root', '_%i.root' % jobid)
+  #process.rpcintegration.outFileName = process.rpcintegration.outFileName._value.replace('.root', '_%i.root' % jobid)
 
 def tweak_maxEvents(njobs, jobid):
   process.maxEvents.input = -1

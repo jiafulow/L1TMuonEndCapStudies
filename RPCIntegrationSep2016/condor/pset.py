@@ -143,8 +143,20 @@ process.schedule = cms.Schedule(process.step1, process.RAWSIMoutput_step)
 #    f.write(process.dumpPython())
 
 
-process.load("L1TMuonEndCapStudies.RPCIntegrationSep2016.rpcintegration_cfi")
-process.p = cms.Path(process.rpcintegration)
+## Plugin: RPCIntegration
+#process.load("L1TMuonEndCapStudies.RPCIntegrationSep2016.rpcintegration_cfi")
+#process.p = cms.Path(process.rpcintegration)
+#process.schedule.remove(process.RAWSIMoutput_step)
+#process.schedule.append(process.p)
+
+# Plugin: RPCIntegration2
+process.load("L1TMuonEndCapStudies.RPCIntegrationSep2016.rpcintegration2_cfi")
+process.p = cms.Path(process.rpcintegration2)
 process.schedule.remove(process.RAWSIMoutput_step)
 process.schedule.append(process.p)
+
+# TFileService (needed for RPCIntegration2)
+process.TFileService = cms.Service("TFileService",
+    fileName = cms.string(process.rpcintegration2.outFileName._value)
+)
 
