@@ -1,11 +1,13 @@
 from ROOT import TFile, TTree, TH1F
-from itertools import izip
+from itertools import izip, count
 
 
 # ______________________________________________________________________________
 # Configurables
 
 filename = "L1Ntuple_1.root"
+
+maxEvents = -1
 
 tfile = TFile.Open(filename)
 tree_event = tfile.Get("l1EventTree/L1EventTree")
@@ -19,11 +21,6 @@ assert(tree_emul)
 assert(tree_data_tfmuon)
 assert(tree_emul_tfmuon)
 
-
-# ______________________________________________________________________________
-# Histograms
-
-h_mode = TH1F("mode", "; diff in mode", 33, -16.5, 16.5)
 
 # ______________________________________________________________________________
 # Functions
@@ -42,6 +39,16 @@ class MyMuon:
   def __repr__(self):
     return "({0} {1} {2} {3} {4} {5})".format(self.bx, self.qual, self.mtf, self.pt, self.eta, self.phi)
 
+  def __eq__(self, other):
+    b = \
+        self.bx == other.bx and \
+        self.qual == other.qual and \
+        self.mtf == other.mtf and \
+        self.pt == other.pt and \
+        self.eta == other.eta and \
+        self.phi == other.phi
+    return b
+
 def make_muons(evt):
   muons = []
   for (bx, qual, mtf, pt, eta, phi) in izip(evt.muonBx, evt.muonQual, evt.muonTfMuonIdx, evt.muonIEt, evt.muonIEta, evt.muonIPhi):
@@ -50,42 +57,122 @@ def make_muons(evt):
   return muons
 
 def filter_muons(muons):
-  #f = lambda m : (-1 <= m.bx <= +1) and (m.qual != 0) and ((0 <= m.mtf <= 17) or (90 <= m.mtf <= 107))
-  f = lambda m : True
+  f = lambda m : (-1 <= m.bx <= +1) and (m.qual != 0) and ((0 <= m.mtf <= 17) or (90 <= m.mtf <= 107))
+  #f = lambda m : True
   return [m for m in muons if f(m)]
+
+def debug_gmt(evt, label):
+  for (
+      bx, qual, mtf, pt, eta, phi,
+      q, iso, fpt, feta, fphi, vtxeta, vtxphi, deta, dphi, i
+  ) in izip(
+      evt.muonBx, evt.muonQual, evt.muonTfMuonIdx, evt.muonIEt, evt.muonIEta, evt.muonIPhi,
+      evt.muonChg, evt.muonIso, evt.muonEt, evt.muonEta, evt.muonPhi, evt.muonIEtaAtVtx, evt.muonIPhiAtVtx, evt.muonIDEta, evt.muonIDPhi, count(),
+  ):
+    print "....", label, bx, qual, mtf, pt, eta, phi, "/", q, iso, fpt, feta, fphi, vtxeta, vtxphi, deta, dphi
+  return
+
+def debug_emtf(evt, label):
+  emtf = evt.L1UpgradeEmtfMuon
+  for (
+      bx, qual, mtf, pt, eta, phi,
+      q, vq, hf, glbphi, link, proc, i,
+  ) in izip(
+      emtf.tfMuonBx, emtf.tfMuonHwQual, emtf.tfMuonTrackFinderType, emtf.tfMuonHwPt, emtf.tfMuonHwEta, emtf.tfMuonHwPhi,
+      emtf.tfMuonHwSign, emtf.tfMuonHwSignValid, emtf.tfMuonHwHF, emtf.tfMuonGlobalPhi, emtf.tfMuonLink, emtf.tfMuonProcessor, count(),
+  ):
+    trAdd0 = 0 if (emtf.tfMuonWh[i] >= 0) else 1
+    trAdd1 = abs(emtf.tfMuonWh[i])
+    trAdd2 = emtf.tfMuonTrAdd[4*i+0]
+    trAdd3 = emtf.tfMuonTrAdd[4*i+1]
+    trAdd4 = emtf.tfMuonTrAdd[4*i+2]
+    trAdd5 = emtf.tfMuonTrAdd[4*i+3]
+    print "....", label, bx, qual, mtf, pt, eta, phi, "/", q, vq, hf, glbphi, link, proc, trAdd0, trAdd1, trAdd2, trAdd3, trAdd4, trAdd5
+  return
 
 
 # ______________________________________________________________________________
 # Event loop
 
+summary = {}
+
 for (ievt, (evt0, evt1, evt2, evt3, evt4)) in enumerate(izip(tree_event, tree_data, tree_emul, tree_data_tfmuon, tree_emul_tfmuon)):
   run_number, event_number, lumi_number = evt0.Event.run, evt0.Event.event, evt0.Event.lumi
 
-  muons1 = make_muons(evt1)
-  muons2 = make_muons(evt2)
+  if (maxEvents != -1) and (ievt >= maxEvents):
+    break
+
+  muons1 = make_muons(evt1)  # GMT muons from unpacker
+  muons2 = make_muons(evt2)  # GMT muons from emulator
 
   muons1_f = filter_muons(muons1)
   muons2_f = filter_muons(muons2)
 
+  #differente = not (muons1_f == muons2_f)
 
-  print ievt, run_number, event_number, lumi_number, len(muons1_f), len(muons2_f)
+  def compare(lhs, rhs):
+    results = []
+    for l, r in izip(lhs, rhs):
+      diff = 0
+      # not using diff = 1. reserved for more than one different track
+      if l.bx != r.bx:
+        diff = 2
+      elif l.qual != r.qual:
+        diff = 3
+      elif l.mtf != r.mtf:
+        diff = 4
+      elif abs(l.pt - r.pt) > 1:  # for pT, allow delta of +/-1
+        diff = 5
+      elif l.eta != r.eta:
+        diff = 6
+      elif l.phi != r.phi:
+        diff = 7
+      results.append(diff)
+
+    diff2 = 0
+    for diff in results:
+      if diff != 0:
+        diff2 += 1
+
+    diff3 = 0
+    if diff2 > 1:
+      # More than one different track
+      diff3 = 1
+    else:
+      # Only one different track
+      for diff in results:
+        if diff != 0:
+          diff3 = diff
+    return diff3
+
+  differente = compare(muons1_f, muons2_f)
+
+  # Counter
+  summary[differente] = summary.get(differente, 0) + 1
+  summary[-1] = summary.get(-1, 0) + 1
+
+  # Debug
+  print ("Processing evt %i, Run %i, Event %i, LumiSection %i." % (ievt+1, run_number, event_number, lumi_number)), ("# muons: %i, %i" % (len(muons1_f), len(muons2_f)))
   print "..", muons1_f
   print "..", muons2_f
 
+  if differente:
+    print "!DIFFERENTE! code: %i" % differente
 
-  ## Debug
-  #for (bx, qual, mtf, pt, eta, phi) in izip(evt1.muonBx, evt1.muonQual, evt1.muonTfMuonIdx, evt1.muonEt, evt1.muonEta, evt1.muonPhi):
-  #  print "....", "evt1", bx, qual, mtf, pt, eta, phi
+    # Debug
+    debug_gmt(evt1, "gmt_unp")
+    debug_gmt(evt2, "gmt_emu")
 
-  ## Debug
-  #for (bx, qual, mtf, pt, eta, phi) in izip(evt2.muonBx, evt2.muonQual, evt2.muonTfMuonIdx, evt2.muonEt, evt2.muonEta, evt2.muonPhi):
-  #  print "....", "evt2", bx, qual, mtf, pt, eta, phi
+    # Debug
+    debug_emtf(evt3, "emtf_unp")
+    debug_emtf(evt4, "emtf_emu")
 
-  ## Debug
-  #for (bx, qual, mtf, pt, eta, phi) in izip(evt3.L1UpgradeEmtfMuon.tfMuonBx, evt3.L1UpgradeEmtfMuon.tfMuonHwQual, evt3.L1UpgradeEmtfMuon.tfMuonTrackFinderType, evt3.L1UpgradeEmtfMuon.tfMuonHwPt, evt3.L1UpgradeEmtfMuon.tfMuonHwEta, evt3.L1UpgradeEmtfMuon.tfMuonHwPhi):
-  #  print "....", "evt3", bx, qual, mtf, pt, eta, phi
+  print "-" * 60
 
-  # Debug
-  for (bx, qual, mtf, pt, eta, phi) in izip(evt4.L1UpgradeEmtfMuon.tfMuonBx, evt4.L1UpgradeEmtfMuon.tfMuonHwQual, evt4.L1UpgradeEmtfMuon.tfMuonTrackFinderType, evt4.L1UpgradeEmtfMuon.tfMuonHwPt, evt4.L1UpgradeEmtfMuon.tfMuonHwEta, evt4.L1UpgradeEmtfMuon.tfMuonHwPhi):
-    print "....", "evt4", bx, qual, mtf, pt, eta, phi
+# ______________________________________________________________________________
+# Summary
+
+print "Total difference: %i/%i" % (summary[-1] - summary[0], summary[-1])
+for k, v in summary.iteritems():
+  print "diff code %i: %i" % (k, v)
 
