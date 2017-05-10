@@ -127,10 +127,23 @@ fileNames2 = [
     "/store/user/jiafulow/L1MuonTrigger/9_0_0/SingleMuon_PositiveEndCap/ParticleGuns/CRAB3/170510_154046/0000/SingleMuon_PositiveEndCap_108.root",
     "/store/user/jiafulow/L1MuonTrigger/9_0_0/SingleMuon_PositiveEndCap/ParticleGuns/CRAB3/170510_154046/0000/SingleMuon_PositiveEndCap_109.root",
     "/store/user/jiafulow/L1MuonTrigger/9_0_0/SingleMuon_PositiveEndCap/ParticleGuns/CRAB3/170510_154046/0000/SingleMuon_PositiveEndCap_110.root",
+    "/store/user/jiafulow/L1MuonTrigger/9_0_0/SingleMuon_PositiveEndCap/ParticleGuns/CRAB3/170510_154046/0000/SingleMuon_PositiveEndCap_111.root",
+    "/store/user/jiafulow/L1MuonTrigger/9_0_0/SingleMuon_PositiveEndCap/ParticleGuns/CRAB3/170510_154046/0000/SingleMuon_PositiveEndCap_112.root",
+    "/store/user/jiafulow/L1MuonTrigger/9_0_0/SingleMuon_PositiveEndCap/ParticleGuns/CRAB3/170510_154046/0000/SingleMuon_PositiveEndCap_113.root",
+    "/store/user/jiafulow/L1MuonTrigger/9_0_0/SingleMuon_PositiveEndCap/ParticleGuns/CRAB3/170510_154046/0000/SingleMuon_PositiveEndCap_114.root",
+    "/store/user/jiafulow/L1MuonTrigger/9_0_0/SingleMuon_PositiveEndCap/ParticleGuns/CRAB3/170510_154046/0000/SingleMuon_PositiveEndCap_115.root",
+    "/store/user/jiafulow/L1MuonTrigger/9_0_0/SingleMuon_PositiveEndCap/ParticleGuns/CRAB3/170510_154046/0000/SingleMuon_PositiveEndCap_116.root",
+    "/store/user/jiafulow/L1MuonTrigger/9_0_0/SingleMuon_PositiveEndCap/ParticleGuns/CRAB3/170510_154046/0000/SingleMuon_PositiveEndCap_117.root",
+    "/store/user/jiafulow/L1MuonTrigger/9_0_0/SingleMuon_PositiveEndCap/ParticleGuns/CRAB3/170510_154046/0000/SingleMuon_PositiveEndCap_118.root",
+    "/store/user/jiafulow/L1MuonTrigger/9_0_0/SingleMuon_PositiveEndCap/ParticleGuns/CRAB3/170510_154046/0000/SingleMuon_PositiveEndCap_119.root",
+    "/store/user/jiafulow/L1MuonTrigger/9_0_0/SingleMuon_PositiveEndCap/ParticleGuns/CRAB3/170510_154046/0000/SingleMuon_PositiveEndCap_120.root",
 ]
-fileNames3 = [
-    "file:SingleMuon_PositiveEndCap.0.root",
-]
+fileNames3 = []
+if False:
+  import glob
+  dirname = '/store/user/jiafulow/L1MuonTrigger/9_0_0/SingleMuon_PositiveEndCap/ParticleGuns/CRAB3/170510_154046/0000/'
+  fileNames3 = glob.glob('/cms/data'+dirname+'*.root')
+  fileNames3 = [x[9:] for x in fileNames3]
 process.source.fileNames = cms.untracked.vstring(fileNames2)
 
 
