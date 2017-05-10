@@ -2,12 +2,12 @@
 # using: 
 # Revision: 1.19 
 # Source: /local/reps/CMSSW/CMSSW/Configuration/Applications/python/ConfigBuilder.py,v 
-# with command line options: Configuration/GenProduction/python/TSG-PhaseIISpring17GS-00001-fragment.py --step GEN,SIM,DIGI:pdigi_valid,L1,L1TrackTrigger,DIGI2RAW,RAW2DIGI --mc --eventcontent RAWSIM --datatier GEN-SIM-DIGI-RAW --nThreads 4 --conditions 90X_upgrade2023_realistic_v9 --beamspot HLLHC14TeV --geometry Extended2023D4 --era Phase2C2_timing --pileup NoPileUp -n 100 --no_exec
+# with command line options: L1TMuonSimulations/Configuration/python/SingleMuonFlatOneOverPt2To7000_PositiveEndCap_cfi.py --step GEN,SIM,DIGI:pdigi_valid,L1,L1TrackTrigger,DIGI2RAW,RAW2DIGI --mc --eventcontent RAWSIM --datatier GEN-SIM-DIGI-RAW --processName RAWSIM --conditions 90X_upgrade2023_realistic_v9 --beamspot HLLHC14TeV --geometry Extended2023D4 --era Phase2C2_timing --pileup NoPileUp --python_filename pset_SingleMuon_PositiveEndCap.py --fileout file:SingleMuon_PositiveEndCap.root --no_exec --nThreads 4 -n 100
 import FWCore.ParameterSet.Config as cms
 
 from Configuration.StandardSequences.Eras import eras
 
-process = cms.Process('RAW2DIGI',eras.Phase2C2_timing)
+process = cms.Process('RAWSIM',eras.Phase2C2_timing)
 
 # import of standard configurations
 process.load('Configuration.StandardSequences.Services_cff')
@@ -31,7 +31,7 @@ process.load('Configuration.StandardSequences.EndOfProcess_cff')
 process.load('Configuration.StandardSequences.FrontierConditions_GlobalTag_cff')
 
 process.maxEvents = cms.untracked.PSet(
-    input = cms.untracked.int32(1000)
+    input = cms.untracked.int32(100)
 )
 
 # Input source
@@ -43,7 +43,7 @@ process.options = cms.untracked.PSet(
 
 # Production Info
 process.configurationMetadata = cms.untracked.PSet(
-    annotation = cms.untracked.string('Configuration/GenProduction/python/TSG-PhaseIISpring17GS-00001-fragment.py nevts:100'),
+    annotation = cms.untracked.string('L1TMuonSimulations/Configuration/python/SingleMuonFlatOneOverPt2To7000_PositiveEndCap_cfi.py nevts:100'),
     name = cms.untracked.string('Applications'),
     version = cms.untracked.string('$Revision: 1.19 $')
 )
@@ -61,7 +61,7 @@ process.RAWSIMoutput = cms.OutputModule("PoolOutputModule",
         filterName = cms.untracked.string('')
     ),
     eventAutoFlushCompressedSize = cms.untracked.int32(20971520),
-    fileName = cms.untracked.string('l1NtupleMC_GEN_SIM_DIGI_L1_L1TrackTrigger_DIGI2RAW_RAW2DIGI.root'),
+    fileName = cms.untracked.string('file:SingleMuon_PositiveEndCap.root'),
     outputCommands = process.RAWSIMEventContent.outputCommands,
     splitLevel = cms.untracked.int32(0)
 )
@@ -74,20 +74,22 @@ process.mix.digitizers = cms.PSet(process.theDigitizersValid)
 from Configuration.AlCa.GlobalTag import GlobalTag
 process.GlobalTag = GlobalTag(process.GlobalTag, '90X_upgrade2023_realistic_v9', '')
 
-process.generator = cms.EDProducer("FlatRandomPtGunProducer",
-    AddAntiParticle = cms.bool(True),
+process.generator = cms.EDProducer("FlatRandomPtGunProducer2",
+    AddAntiParticle = cms.bool(False),
     PGunParameters = cms.PSet(
-        MaxEta = cms.double(2.6),
+        MaxEta = cms.double(2.5),
         MaxPhi = cms.double(3.14159265359),
-        MaxPt = cms.double(100),
-        MinEta = cms.double(-2.6),
+        MaxPt = cms.double(7000.0),
+        MinEta = cms.double(1.0),
         MinPhi = cms.double(-3.14159265359),
-        MinPt = cms.double(8),
-        PartID = cms.vint32(-13)
+        MinPt = cms.double(2.0),
+        PartID = cms.vint32(-13),
+        PtSpectrum = cms.string('flatOneOverPt'),
+        RandomCharge = cms.bool(True)
     ),
     Verbosity = cms.untracked.int32(0),
     firstRun = cms.untracked.uint32(1),
-    psethack = cms.string('single mu Pt8to100')
+    psethack = cms.string('single muon+/- pt 2 to 7000 flat in 1/pt positive endcap')
 )
 
 
@@ -125,10 +127,10 @@ process = customiseEarlyDelete(process)
 
 # ______________________________________________________________________________
 # Modify output
-process.RAWSIMoutput.outputCommands = ['drop *', 'keep *_genParticles_*_*', 'keep *_simCscTriggerPrimitiveDigis_*_*', 'keep *_simMuonRPCDigis_*_*', 'keep *_simMuonGEMDigis_*_*', 'keep *_simEmtfDigis_*_*']
-#process.RAWSIMoutput.outputCommands.append('keep *_mix_MergedTrackTruth_*')
-#for x in ['keep *_simMuonGEMDigis_*_*', 'keep *_simMuonGEMPadDigis_*_*', 'keep *_simMuonGEMPadDigiClusters_*_*']:
-#    process.RAWSIMoutput.outputCommands.append(x)
+#process.RAWSIMoutput.outputCommands = ['drop *', 'keep *_genParticles_*_*', 'keep *_simCscTriggerPrimitiveDigis_*_*', 'keep *_simMuonRPCDigis_*_*', 'keep *_simMuonGEMDigis_*_*', 'keep *_simEmtfDigis_*_*']
+process.RAWSIMoutput.outputCommands.append('keep *_mix_MergedTrackTruth_*')
+for x in ['keep *_simMuonGEMDigis_*_*', 'keep *_simMuonGEMPadDigis_*_*', 'keep *_simMuonGEMPadDigiClusters_*_*']:
+    process.RAWSIMoutput.outputCommands.append(x)
 
 # My paths and schedule definitions
 if True:

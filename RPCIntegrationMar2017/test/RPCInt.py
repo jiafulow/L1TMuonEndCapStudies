@@ -22,7 +22,7 @@ process.load('Configuration.StandardSequences.EndOfProcess_cff')
 process.load('Configuration.StandardSequences.FrontierConditions_GlobalTag_cff')
 
 process.maxEvents = cms.untracked.PSet(
-    input = cms.untracked.int32(1000)
+    input = cms.untracked.int32(-1)
 )
 
 # Input source
@@ -85,9 +85,13 @@ process = customiseEarlyDelete(process)
 # End adding early deletion
 
 
+
 # ______________________________________________________________________________
 # Modify output
 process.RAWSIMoutput.outputCommands = ['drop *', 'keep *_genParticles_*_*', 'keep *_simCscTriggerPrimitiveDigis_*_*', 'keep *_simMuonRPCDigis_*_*', 'keep *_simMuonGEMDigis_*_*', 'keep *_simEmtfDigis_*_*']
+#process.RAWSIMoutput.outputCommands.append('keep *_mix_MergedTrackTruth_*')
+#for x in ['keep *_simMuonGEMDigis_*_*', 'keep *_simMuonGEMPadDigis_*_*', 'keep *_simMuonGEMPadDigiClusters_*_*']:
+#    process.RAWSIMoutput.outputCommands.append(x)
 
 # Modify source
 fileNames = [
@@ -112,24 +116,44 @@ fileNames = [
     "/store/mc/PhaseIISpring17D/SingleMu_FlatPt-8to100/GEN-SIM-DIGI-RAW/NoPU_90X_upgrade2023_realistic_v9-v1/70000/2EC94971-4D26-E711-B155-A0000420FE80.root",
     "/store/mc/PhaseIISpring17D/SingleMu_FlatPt-8to100/GEN-SIM-DIGI-RAW/NoPU_90X_upgrade2023_realistic_v9-v1/70000/340AE58E-4D26-E711-A096-A0000420FE80.root",
 ]
-process.source.fileNames = cms.untracked.vstring(fileNames)
+fileNames2 = [
+    "/store/user/jiafulow/L1MuonTrigger/9_0_0/SingleMuon_PositiveEndCap/ParticleGuns/CRAB3/170510_154046/0000/SingleMuon_PositiveEndCap_101.root",
+    "/store/user/jiafulow/L1MuonTrigger/9_0_0/SingleMuon_PositiveEndCap/ParticleGuns/CRAB3/170510_154046/0000/SingleMuon_PositiveEndCap_102.root",
+    "/store/user/jiafulow/L1MuonTrigger/9_0_0/SingleMuon_PositiveEndCap/ParticleGuns/CRAB3/170510_154046/0000/SingleMuon_PositiveEndCap_103.root",
+    "/store/user/jiafulow/L1MuonTrigger/9_0_0/SingleMuon_PositiveEndCap/ParticleGuns/CRAB3/170510_154046/0000/SingleMuon_PositiveEndCap_104.root",
+    "/store/user/jiafulow/L1MuonTrigger/9_0_0/SingleMuon_PositiveEndCap/ParticleGuns/CRAB3/170510_154046/0000/SingleMuon_PositiveEndCap_105.root",
+    "/store/user/jiafulow/L1MuonTrigger/9_0_0/SingleMuon_PositiveEndCap/ParticleGuns/CRAB3/170510_154046/0000/SingleMuon_PositiveEndCap_106.root",
+    "/store/user/jiafulow/L1MuonTrigger/9_0_0/SingleMuon_PositiveEndCap/ParticleGuns/CRAB3/170510_154046/0000/SingleMuon_PositiveEndCap_107.root",
+    "/store/user/jiafulow/L1MuonTrigger/9_0_0/SingleMuon_PositiveEndCap/ParticleGuns/CRAB3/170510_154046/0000/SingleMuon_PositiveEndCap_108.root",
+    "/store/user/jiafulow/L1MuonTrigger/9_0_0/SingleMuon_PositiveEndCap/ParticleGuns/CRAB3/170510_154046/0000/SingleMuon_PositiveEndCap_109.root",
+    "/store/user/jiafulow/L1MuonTrigger/9_0_0/SingleMuon_PositiveEndCap/ParticleGuns/CRAB3/170510_154046/0000/SingleMuon_PositiveEndCap_110.root",
+]
+fileNames3 = [
+    "file:SingleMuon_PositiveEndCap.0.root",
+]
+process.source.fileNames = cms.untracked.vstring(fileNames2)
 
 
 # My paths and schedule definitions
-process.load('L1Trigger.L1TMuonEndCap.fakeEmtfParams_cff')
-from L1Trigger.L1TMuonEndCap.simEmtfDigis_cfi import simEmtfDigisMC
-process.simEmtfDigis = simEmtfDigisMC
-process.simEmtfDigis.verbosity = cms.untracked.int32(1)
+if False:
+    process.simMuonRPCDigis.doBkgNoise               = False
+    process.simMuonGEMDigis.doBkgNoise               = False
 if True:
-    #process.simCscTriggerPrimitiveDigis.CSCComparatorDigiProducer = cms.InputTag("simMuonCSCDigis","MuonCSCComparatorDigi")
-    #process.simCscTriggerPrimitiveDigis.CSCWireDigiProducer = cms.InputTag("simMuonCSCDigis","MuonCSCWireDigi")
-
+    from Configuration.StandardSequences.SimL1Emulator_cff import simCscTriggerPrimitiveDigis
+    process.simCscTriggerPrimitiveDigis = simCscTriggerPrimitiveDigis
+    process.simCscTriggerPrimitiveDigis.CSCComparatorDigiProducer = cms.InputTag("simMuonCSCDigis","MuonCSCComparatorDigi")
+    process.simCscTriggerPrimitiveDigis.CSCWireDigiProducer = cms.InputTag("simMuonCSCDigis","MuonCSCWireDigi")
+    from L1Trigger.L1TMuonEndCap.simEmtfDigis_cfi import simEmtfDigisMC
+    process.simEmtfDigis = simEmtfDigisMC
+    #process.simEmtfDigis.verbosity = cms.untracked.int32(1)
+if True:
+    process.load('L1Trigger.L1TMuonEndCap.fakeEmtfParams_cff')
     process.simEmtfDigis.spPCParams16.ZoneBoundaries = [0,36,54,96,127]
     process.simEmtfDigis.spPCParams16.UseNewZones    = True
     process.simEmtfDigis.spPCParams16.FixME11Edges   = True
     #process.simEmtfDigis.spPCParams16.CoordLUTDir    = 'ph_lut_v2'
     process.simEmtfDigis.GEMEnable                   = True
-process.step1 = cms.Path(process.simEmtfDigis)
+process.step1 = cms.Path((process.simCscTriggerPrimitiveDigis) + process.simEmtfDigis)
 process.schedule = cms.Schedule(process.step1, process.RAWSIMoutput_step)
 
 
