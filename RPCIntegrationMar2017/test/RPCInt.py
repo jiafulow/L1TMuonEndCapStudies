@@ -2,12 +2,12 @@
 # using: 
 # Revision: 1.19 
 # Source: /local/reps/CMSSW/CMSSW/Configuration/Applications/python/ConfigBuilder.py,v 
-# with command line options: l1NtupleMC --step RAW2DIGI --mc --eventcontent RAWSIM --era Run2_2016 --conditions auto:run2_mc --customise L1Trigger/Configuration/customiseReEmul.L1TReEmulMCFromRAW --customise L1Trigger/L1TNtuples/customiseL1Ntuple.L1NtupleRAWEMUGEN_MC --filein /store/mc/RunIISpring16DR80/SingleMu_Pt1To1000_FlatRandomOneOverPt/GEN-SIM-RAW/NoPURAW_NZS_withHLT_80X_mcRun2_asymptotic_v14-v1/60000/26CA310A-4164-E611-BE48-001E67248566.root --no_exec -n 100
+# with command line options: l1NtupleMC --step RAW2DIGI --mc --eventcontent RAWSIM --nThreads 4 --conditions 90X_upgrade2023_realistic_v9 --beamspot HLLHC14TeV --geometry Extended2023D4 --era Phase2C2_timing --filein file:dummy.root -n 100 --no_exec
 import FWCore.ParameterSet.Config as cms
 
 from Configuration.StandardSequences.Eras import eras
 
-process = cms.Process('RAW2DIGI',eras.Run2_2016)
+process = cms.Process('RAW2DIGI',eras.Phase2C2_timing)
 
 # import of standard configurations
 process.load('Configuration.StandardSequences.Services_cff')
@@ -15,22 +15,21 @@ process.load('SimGeneral.HepPDTESSource.pythiapdt_cfi')
 process.load('FWCore.MessageService.MessageLogger_cfi')
 process.load('Configuration.EventContent.EventContent_cff')
 process.load('SimGeneral.MixingModule.mixNoPU_cfi')
-process.load('Configuration.StandardSequences.GeometryRecoDB_cff')
+process.load('Configuration.Geometry.GeometryExtended2023D4Reco_cff')
 process.load('Configuration.StandardSequences.MagneticField_cff')
 process.load('Configuration.StandardSequences.RawToDigi_cff')
 process.load('Configuration.StandardSequences.EndOfProcess_cff')
 process.load('Configuration.StandardSequences.FrontierConditions_GlobalTag_cff')
 
 process.maxEvents = cms.untracked.PSet(
-    #input = cms.untracked.int32(1000)
-    input = cms.untracked.int32(-1)
+    input = cms.untracked.int32(1000)
 )
 
 # Input source
 process.source = cms.Source("PoolSource",
-    fileNames = cms.untracked.vstring('/store/mc/RunIISpring16DR80/SingleMu_Pt1To1000_FlatRandomOneOverPt/GEN-SIM-RAW/NoPURAW_NZS_withHLT_80X_mcRun2_asymptotic_v14-v1/60000/EC6D71F4-2F64-E611-A229-001EC9ADC0B4.root'),
-    #fileNames = cms.untracked.vstring('/store/mc/RunIISpring16DR80/SingleMu_Pt1To1000_FlatRandomOneOverPt/GEN-SIM-RAW/NoPURAW_NZS_withHLT_80X_mcRun2_asymptotic_v14-v1/60000/26CA310A-4164-E611-BE48-001E67248566.root'),
-    secondaryFileNames = cms.untracked.vstring()
+    fileNames = cms.untracked.vstring('file:dummy.root'),
+    secondaryFileNames = cms.untracked.vstring(),
+    inputCommands = cms.untracked.vstring('keep *', 'drop *_simEmtfDigis_*_*', 'drop *_simGmtStage2Digis_*_*', 'drop *_simGtStage2Digis_*_*'),
 )
 
 process.options = cms.untracked.PSet(
@@ -47,12 +46,14 @@ process.configurationMetadata = cms.untracked.PSet(
 # Output definition
 
 process.RAWSIMoutput = cms.OutputModule("PoolOutputModule",
+    compressionAlgorithm = cms.untracked.string('LZMA'),
+    compressionLevel = cms.untracked.int32(9),
     dataset = cms.untracked.PSet(
         dataTier = cms.untracked.string(''),
         filterName = cms.untracked.string('')
     ),
-    eventAutoFlushCompressedSize = cms.untracked.int32(5242880),
-    fileName = cms.untracked.string('l1NtupleMC_RAW2DIGI_sep.root'),
+    eventAutoFlushCompressedSize = cms.untracked.int32(20971520),
+    fileName = cms.untracked.string('l1NtupleMC_RAW2DIGI.root'),
     outputCommands = process.RAWSIMEventContent.outputCommands,
     splitLevel = cms.untracked.int32(0)
 )
@@ -61,7 +62,7 @@ process.RAWSIMoutput = cms.OutputModule("PoolOutputModule",
 
 # Other statements
 from Configuration.AlCa.GlobalTag import GlobalTag
-process.GlobalTag = GlobalTag(process.GlobalTag, 'auto:run2_mc', '')
+process.GlobalTag = GlobalTag(process.GlobalTag, '90X_upgrade2023_realistic_v9', '')
 
 # Path and EndPath definitions
 process.raw2digi_step = cms.Path(process.RawToDigi)
@@ -71,66 +72,64 @@ process.RAWSIMoutput_step = cms.EndPath(process.RAWSIMoutput)
 # Schedule definition
 process.schedule = cms.Schedule(process.raw2digi_step,process.endjob_step,process.RAWSIMoutput_step)
 
-# customisation of the process.
-
-# Automatic addition of the customisation function from L1Trigger.Configuration.customiseReEmul
-from L1Trigger.Configuration.customiseReEmul import L1TReEmulMCFromRAW 
-
-#call to customisation function L1TReEmulMCFromRAW imported from L1Trigger.Configuration.customiseReEmul
-process = L1TReEmulMCFromRAW(process)
-
-# Automatic addition of the customisation function from L1Trigger.L1TNtuples.customiseL1Ntuple
-from L1Trigger.L1TNtuples.customiseL1Ntuple import L1NtupleRAWEMUGEN_MC 
-
-#call to customisation function L1NtupleRAWEMUGEN_MC imported from L1Trigger.L1TNtuples.customiseL1Ntuple
-process = L1NtupleRAWEMUGEN_MC(process)
-
-# End of customisation functions
+#Setup FWK for multithreaded
+#process.options.numberOfThreads=cms.untracked.uint32(4)
+#process.options.numberOfStreams=cms.untracked.uint32(0)
 
 
+# Customisation from command line
+
+# Add early deletion of temporary data products to reduce peak memory need
+from Configuration.StandardSequences.earlyDeleteSettings_cff import customiseEarlyDelete
+process = customiseEarlyDelete(process)
+# End adding early deletion
+
+
+# ______________________________________________________________________________
 # Modify output
-process.RAWSIMoutput.outputCommands = ['drop *', 'keep *_genParticles_*_*', 'keep *_simCscTriggerPrimitiveDigis_*_*', 'keep *_simMuonRPCDigis_*_*', 'keep *_simEmtfDigis_*_*']
+process.RAWSIMoutput.outputCommands = ['drop *', 'keep *_genParticles_*_*', 'keep *_simCscTriggerPrimitiveDigis_*_*', 'keep *_simMuonRPCDigis_*_*', 'keep *_simMuonGEMDigis_*_*', 'keep *_simEmtfDigis_*_*']
 
 # Modify source
 fileNames = [
-    "/store/mc/RunIISpring16DR80/SingleMu_Pt1To1000_FlatRandomOneOverPt/GEN-SIM-RAW/NoPURAW_NZS_withHLT_80X_mcRun2_asymptotic_v14-v1/60000/26CA310A-4164-E611-BE48-001E67248566.root",
-    "/store/mc/RunIISpring16DR80/SingleMu_Pt1To1000_FlatRandomOneOverPt/GEN-SIM-RAW/NoPURAW_NZS_withHLT_80X_mcRun2_asymptotic_v14-v1/60000/EC6D71F4-2F64-E611-A229-001EC9ADC0B4.root",
-    "/store/mc/RunIISpring16DR80/SingleMu_Pt1To1000_FlatRandomOneOverPt/GEN-SIM-RAW/NoPURAW_NZS_withHLT_80X_mcRun2_asymptotic_v14-v1/60000/FC81006E-3A64-E611-BE81-001EC9ADDD7B.root",
-    "/store/mc/RunIISpring16DR80/SingleMu_Pt1To1000_FlatRandomOneOverPt/GEN-SIM-RAW/NoPURAW_NZS_withHLT_80X_mcRun2_asymptotic_v14-v1/60000/C0A70950-4C64-E611-8C76-008CFA165F30.root",
-    "/store/mc/RunIISpring16DR80/SingleMu_Pt1To1000_FlatRandomOneOverPt/GEN-SIM-RAW/NoPURAW_NZS_withHLT_80X_mcRun2_asymptotic_v14-v1/60000/926CFD80-4F64-E611-9344-008CFA1112B0.root",
-    "/store/mc/RunIISpring16DR80/SingleMu_Pt1To1000_FlatRandomOneOverPt/GEN-SIM-RAW/NoPURAW_NZS_withHLT_80X_mcRun2_asymptotic_v14-v1/60000/745A1421-4B64-E611-85A7-008CFA580778.root",
-    "/store/mc/RunIISpring16DR80/SingleMu_Pt1To1000_FlatRandomOneOverPt/GEN-SIM-RAW/NoPURAW_NZS_withHLT_80X_mcRun2_asymptotic_v14-v1/60000/58240974-4664-E611-AAEF-00259076082A.root",
-    "/store/mc/RunIISpring16DR80/SingleMu_Pt1To1000_FlatRandomOneOverPt/GEN-SIM-RAW/NoPURAW_NZS_withHLT_80X_mcRun2_asymptotic_v14-v1/60000/14CEDA3A-4864-E611-A74C-002590574922.root",
-    "/store/mc/RunIISpring16DR80/SingleMu_Pt1To1000_FlatRandomOneOverPt/GEN-SIM-RAW/NoPURAW_NZS_withHLT_80X_mcRun2_asymptotic_v14-v1/60000/C0EF161F-4B64-E611-A6BE-00259070E27A.root",
-    "/store/mc/RunIISpring16DR80/SingleMu_Pt1To1000_FlatRandomOneOverPt/GEN-SIM-RAW/NoPURAW_NZS_withHLT_80X_mcRun2_asymptotic_v14-v1/60000/94ECA959-4D64-E611-9FC7-008CFA11134C.root",
-    "/store/mc/RunIISpring16DR80/SingleMu_Pt1To1000_FlatRandomOneOverPt/GEN-SIM-RAW/NoPURAW_NZS_withHLT_80X_mcRun2_asymptotic_v14-v1/40000/027C504B-8F64-E611-929A-0025904B21E2.root",
-    "/store/mc/RunIISpring16DR80/SingleMu_Pt1To1000_FlatRandomOneOverPt/GEN-SIM-RAW/NoPURAW_NZS_withHLT_80X_mcRun2_asymptotic_v14-v1/40000/044809A8-5664-E611-8C2F-0025904B2A8E.root",
-    "/store/mc/RunIISpring16DR80/SingleMu_Pt1To1000_FlatRandomOneOverPt/GEN-SIM-RAW/NoPURAW_NZS_withHLT_80X_mcRun2_asymptotic_v14-v1/40000/060F5CB0-8264-E611-8B9F-0025904E405A.root",
-    "/store/mc/RunIISpring16DR80/SingleMu_Pt1To1000_FlatRandomOneOverPt/GEN-SIM-RAW/NoPURAW_NZS_withHLT_80X_mcRun2_asymptotic_v14-v1/40000/08D335B2-8664-E611-BCEA-0025904B2334.root",
-    "/store/mc/RunIISpring16DR80/SingleMu_Pt1To1000_FlatRandomOneOverPt/GEN-SIM-RAW/NoPURAW_NZS_withHLT_80X_mcRun2_asymptotic_v14-v1/40000/0C7F3E84-6564-E611-B422-0025904B2334.root",
-    "/store/mc/RunIISpring16DR80/SingleMu_Pt1To1000_FlatRandomOneOverPt/GEN-SIM-RAW/NoPURAW_NZS_withHLT_80X_mcRun2_asymptotic_v14-v1/40000/0E09109A-7464-E611-B845-0025904E4034.root",
-    "/store/mc/RunIISpring16DR80/SingleMu_Pt1To1000_FlatRandomOneOverPt/GEN-SIM-RAW/NoPURAW_NZS_withHLT_80X_mcRun2_asymptotic_v14-v1/40000/0E146694-8C64-E611-8019-002590821168.root",
-    "/store/mc/RunIISpring16DR80/SingleMu_Pt1To1000_FlatRandomOneOverPt/GEN-SIM-RAW/NoPURAW_NZS_withHLT_80X_mcRun2_asymptotic_v14-v1/40000/1093A1BA-4F64-E611-A6EF-0025904CC418.root",
-    "/store/mc/RunIISpring16DR80/SingleMu_Pt1To1000_FlatRandomOneOverPt/GEN-SIM-RAW/NoPURAW_NZS_withHLT_80X_mcRun2_asymptotic_v14-v1/40000/1262865A-6364-E611-9A9E-003048C7BA3C.root",
-    "/store/mc/RunIISpring16DR80/SingleMu_Pt1To1000_FlatRandomOneOverPt/GEN-SIM-RAW/NoPURAW_NZS_withHLT_80X_mcRun2_asymptotic_v14-v1/40000/129B9075-8264-E611-A6AD-00259081ED0A.root",
+    "/store/mc/PhaseIISpring17D/SingleMu_FlatPt-8to100/GEN-SIM-DIGI-RAW/NoPU_90X_upgrade2023_realistic_v9-v1/70000/042D2403-4326-E711-94EC-5065F37D1132.root",
+    "/store/mc/PhaseIISpring17D/SingleMu_FlatPt-8to100/GEN-SIM-DIGI-RAW/NoPU_90X_upgrade2023_realistic_v9-v1/70000/063545D6-5326-E711-B3D7-5065F37D8152.root",
+    "/store/mc/PhaseIISpring17D/SingleMu_FlatPt-8to100/GEN-SIM-DIGI-RAW/NoPU_90X_upgrade2023_realistic_v9-v1/70000/063B7709-4326-E711-A2AF-24BE05C68681.root",
+    "/store/mc/PhaseIISpring17D/SingleMu_FlatPt-8to100/GEN-SIM-DIGI-RAW/NoPU_90X_upgrade2023_realistic_v9-v1/70000/06FEAF34-E025-E711-BF53-0CC47A0AD476.root",
+    "/store/mc/PhaseIISpring17D/SingleMu_FlatPt-8to100/GEN-SIM-DIGI-RAW/NoPU_90X_upgrade2023_realistic_v9-v1/70000/0833B49E-4926-E711-BEA0-5065F37D90C2.root",
+    "/store/mc/PhaseIISpring17D/SingleMu_FlatPt-8to100/GEN-SIM-DIGI-RAW/NoPU_90X_upgrade2023_realistic_v9-v1/70000/0AC074AE-4926-E711-8712-4C79BA3203F5.root",
+    "/store/mc/PhaseIISpring17D/SingleMu_FlatPt-8to100/GEN-SIM-DIGI-RAW/NoPU_90X_upgrade2023_realistic_v9-v1/70000/0E743386-E725-E711-A710-0025907859B8.root",
+    "/store/mc/PhaseIISpring17D/SingleMu_FlatPt-8to100/GEN-SIM-DIGI-RAW/NoPU_90X_upgrade2023_realistic_v9-v1/70000/10C4732E-0226-E711-9926-002590D9D8BA.root",
+    "/store/mc/PhaseIISpring17D/SingleMu_FlatPt-8to100/GEN-SIM-DIGI-RAW/NoPU_90X_upgrade2023_realistic_v9-v1/70000/1493CC7C-E725-E711-A323-003048CB7B30.root",
+    "/store/mc/PhaseIISpring17D/SingleMu_FlatPt-8to100/GEN-SIM-DIGI-RAW/NoPU_90X_upgrade2023_realistic_v9-v1/70000/14F582CF-5326-E711-836D-5065F37D21E2.root",
+    "/store/mc/PhaseIISpring17D/SingleMu_FlatPt-8to100/GEN-SIM-DIGI-RAW/NoPU_90X_upgrade2023_realistic_v9-v1/70000/16619DE4-4226-E711-B865-E0071B740D80.root",
+    "/store/mc/PhaseIISpring17D/SingleMu_FlatPt-8to100/GEN-SIM-DIGI-RAW/NoPU_90X_upgrade2023_realistic_v9-v1/70000/1A98CBAF-FA25-E711-BDBA-0025907D2212.root",
+    "/store/mc/PhaseIISpring17D/SingleMu_FlatPt-8to100/GEN-SIM-DIGI-RAW/NoPU_90X_upgrade2023_realistic_v9-v1/70000/1CC4AEF9-5326-E711-95B8-A0000420FE80.root",
+    "/store/mc/PhaseIISpring17D/SingleMu_FlatPt-8to100/GEN-SIM-DIGI-RAW/NoPU_90X_upgrade2023_realistic_v9-v1/70000/1E927703-4326-E711-9EC9-A0000420FE80.root",
+    "/store/mc/PhaseIISpring17D/SingleMu_FlatPt-8to100/GEN-SIM-DIGI-RAW/NoPU_90X_upgrade2023_realistic_v9-v1/70000/20814EC1-1C26-E711-B6BA-0CC47A0AD6C4.root",
+    "/store/mc/PhaseIISpring17D/SingleMu_FlatPt-8to100/GEN-SIM-DIGI-RAW/NoPU_90X_upgrade2023_realistic_v9-v1/70000/2832FF6C-4D26-E711-A9D6-A0000420FE80.root",
+    "/store/mc/PhaseIISpring17D/SingleMu_FlatPt-8to100/GEN-SIM-DIGI-RAW/NoPU_90X_upgrade2023_realistic_v9-v1/70000/289F5A13-4326-E711-9FF4-5065F3811272.root",
+    "/store/mc/PhaseIISpring17D/SingleMu_FlatPt-8to100/GEN-SIM-DIGI-RAW/NoPU_90X_upgrade2023_realistic_v9-v1/70000/2E8EADB5-4926-E711-BC98-A0000620FE80.root",
+    "/store/mc/PhaseIISpring17D/SingleMu_FlatPt-8to100/GEN-SIM-DIGI-RAW/NoPU_90X_upgrade2023_realistic_v9-v1/70000/2EC94971-4D26-E711-B155-A0000420FE80.root",
+    "/store/mc/PhaseIISpring17D/SingleMu_FlatPt-8to100/GEN-SIM-DIGI-RAW/NoPU_90X_upgrade2023_realistic_v9-v1/70000/340AE58E-4D26-E711-A096-A0000420FE80.root",
 ]
 process.source.fileNames = cms.untracked.vstring(fileNames)
 
 
 # My paths and schedule definitions
-from L1TriggerSep2016.L1TMuonEndCap.simEmtfDigis_cfi import simEmtfDigisMC
+process.load('L1Trigger.L1TMuonEndCap.fakeEmtfParams_cff')
+from L1Trigger.L1TMuonEndCap.simEmtfDigis_cfi import simEmtfDigisMC
 process.simEmtfDigis = simEmtfDigisMC
-process.simEmtfDigis.verbosity = cms.untracked.int32(0)
+process.simEmtfDigis.verbosity = cms.untracked.int32(1)
 if True:
-    process.simCscTriggerPrimitiveDigis.CSCComparatorDigiProducer = cms.InputTag("simMuonCSCDigis","MuonCSCComparatorDigi")
-    process.simCscTriggerPrimitiveDigis.CSCWireDigiProducer = cms.InputTag("simMuonCSCDigis","MuonCSCWireDigi")
+    #process.simCscTriggerPrimitiveDigis.CSCComparatorDigiProducer = cms.InputTag("simMuonCSCDigis","MuonCSCComparatorDigi")
+    #process.simCscTriggerPrimitiveDigis.CSCWireDigiProducer = cms.InputTag("simMuonCSCDigis","MuonCSCWireDigi")
 
-    #process.simEmtfDigis.RPCEnable                   = True
-    #process.simEmtfDigis.spPCParams16.ZoneBoundaries = [0,36,54,96,127]
-    #process.simEmtfDigis.spPCParams16.UseNewZones    = True
+    process.simEmtfDigis.spPCParams16.ZoneBoundaries = [0,36,54,96,127]
+    process.simEmtfDigis.spPCParams16.UseNewZones    = True
+    process.simEmtfDigis.spPCParams16.FixME11Edges   = True
     #process.simEmtfDigis.spPCParams16.CoordLUTDir    = 'ph_lut_v2'
-    #process.simEmtfDigis.spPCParams16.FixME11Edges   = True
-process.step1 = cms.Path((process.simCscTriggerPrimitiveDigis) + process.simEmtfDigis)
+    process.simEmtfDigis.GEMEnable                   = True
+process.step1 = cms.Path(process.simEmtfDigis)
 process.schedule = cms.Schedule(process.step1, process.RAWSIMoutput_step)
 
 
