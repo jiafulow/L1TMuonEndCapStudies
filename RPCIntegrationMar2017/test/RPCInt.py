@@ -169,6 +169,12 @@ if True:
 process.step1 = cms.Path((process.simCscTriggerPrimitiveDigis) + process.simEmtfDigis)
 process.schedule = cms.Schedule(process.step1, process.RAWSIMoutput_step)
 
+# Run triple EMTF emulators
+process.simEmtfDigisCSC = process.simEmtfDigis.clone(RPCEnable = False, GEMEnable = False)
+process.simEmtfDigisRPC = process.simEmtfDigis.clone(RPCEnable = True , GEMEnable = False)
+process.step1.replace(process.simEmtfDigis, process.simEmtfDigisCSC*process.simEmtfDigisRPC*process.simEmtfDigis)
+process.RAWSIMoutput.outputCommands.append('keep *_simEmtfDigis*_*_*')
+
 
 # Configure framework report and summary
 process.options = cms.untracked.PSet(wantSummary = cms.untracked.bool(True))
