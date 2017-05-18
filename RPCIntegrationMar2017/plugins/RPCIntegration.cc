@@ -262,37 +262,27 @@ void RPCIntegration::makeEfficiency() {
     const double absEta = std::abs(part.eta());
     assert(charge == 1 || charge == -1);
 
-    bool overwrite_with_ideal = false;
-    if (overwrite_with_ideal) {
-      l1t::EMTFTrack tmp_track;
+    l1t::EMTFTrack ideal_track;
+    ideal_track.set_mode(0);
 
-      tmp_track.set_mode(0);
-      for (int sector = 1; sector <= 6; ++sector) {
-        int mode = 0;
-        for (const auto& hit : emuHits_) {
-          int hit_sector = (hit.Sector_idx() % 6) + 1;
-          assert(1 <= hit_sector && hit_sector <= 6);
-          assert(1 <= hit.Station() && hit.Station() <= 4);
-          if (hit_sector == sector && hit.Subsystem() == TriggerPrimitive::kCSC) {
-            mode |= (1<<(4-hit.Station()));
-          }
-          //if (hit_sector == sector && hit.Subsystem() == TriggerPrimitive::kRPC) {
-          //  mode |= (1<<(4-hit.Station()));
-          //}
-          //if (hit_sector == sector && hit.Subsystem() == TriggerPrimitive::kGEM) {
-          //  mode |= (1<<(4-hit.Station()));
-          //}
-        }
-        if (tmp_track.Mode() < mode) {
-          tmp_track.set_mode(mode);
+    for (int sector = 1; sector <= 6; ++sector) {
+      int mode = 0;
+      for (const auto& hit : emuHits_) {
+        assert(1 <= hit.PC_sector() && hit.PC_sector() <= 6);
+        assert(1 <= hit.Station() && hit.Station() <= 4);
+        if (hit.PC_sector() == sector) {
+          mode |= (1<<(4-hit.Station()));
         }
       }
-      assert(tmp_track.Mode() <= 15);
-
-      trigger = true;
-      l1pt_bin = 3;
-      mode_bin = get_mode_bin(tmp_track);
+      //if (ideal_track.Mode() < mode) {
+      //  ideal_track.set_mode(mode);
+      //}
+      if (trigger && emuTracks_.front().Sector() == sector) {
+        ideal_track.set_mode(mode);
+      }
     }
+    assert(ideal_track.Mode() <= 15);
+
 
     // _________________________________________________________________________
     // Fill histograms
@@ -320,7 +310,6 @@ void RPCIntegration::makeEfficiency() {
     // Efficiency vs eta
     for (int i=0; i<4; ++i) {  // mode
       for (int j=0; j<4; ++j) {  // pT
-        //if (!(pt >= 2.)) continue;  // gen pT requirement
         if (!(pt >= 20.)) continue;  // gen pT requirement
 
         hname = Form("denom_vs_eta_mode%i_l1pt%i", i, j);
@@ -337,6 +326,83 @@ void RPCIntegration::makeEfficiency() {
         }
       }
     }
+
+    // Station efficiency vs eta
+    for (int j=0; j<4; ++j) {  // station
+      if (!(pt >= 20.)) continue;  // gen pT requirement
+
+      hname = Form("denom_vs_eta_st%i", j);
+      h = histograms_.at(hname);
+      h->Fill(absEta);
+
+      bool good_station = ideal_track.Mode() & (1<<(3-j));
+      if (good_station) {
+        hname = Form("num_vs_eta_st%i", j);
+        h = histograms_.at(hname);
+        h->Fill(absEta);
+      }
+    }
+
+    // Deflection angles of GEM-CSC and RPC-CSC
+    for (int j=0; j<4; ++j) {  // station
+      if (trigger) {
+        std::vector<l1t::EMTFHit> myhits0;
+        const int sector = emuTracks_.front().Sector();
+        std::copy_if(emuHits_.begin(), emuHits_.end(), std::back_inserter(myhits0), [sector](const auto& hit) { return (hit.PC_sector() == sector); });
+
+        std::vector<l1t::EMTFHit> myhits1;
+        std::vector<l1t::EMTFHit> myhits2;
+
+        // For GEM-CSC
+        if (j == 0) {  // station 1
+          std::copy_if(myhits0.begin(), myhits0.end(), std::back_inserter(myhits1), [](const auto& hit) { return (hit.Station() == 1 && (hit.Ring() == 1 || hit.Ring() == 4) && hit.Subsystem() == TriggerPrimitive::kGEM); });
+          std::copy_if(myhits0.begin(), myhits0.end(), std::back_inserter(myhits2), [](const auto& hit) { return (hit.Station() == 1 && (hit.Ring() == 1 || hit.Ring() == 4) && hit.Subsystem() == TriggerPrimitive::kCSC); });
+        } else if (j == 1) {  // station 2
+          std::copy_if(myhits0.begin(), myhits0.end(), std::back_inserter(myhits1), [](const auto& hit) { return (hit.Station() == 2 && hit.Ring() == 1 && hit.Subsystem() == TriggerPrimitive::kGEM); });
+          std::copy_if(myhits0.begin(), myhits0.end(), std::back_inserter(myhits2), [](const auto& hit) { return (hit.Station() == 2 && hit.Ring() == 1 && hit.Subsystem() == TriggerPrimitive::kCSC); });
+        } else {
+          continue;
+        }
+
+        if (myhits1.size() > 0 && myhits2.size() > 0) {
+          std::uniform_int_distribution<> index1(0, myhits1.size()-1);
+          std::uniform_int_distribution<> index2(0, myhits2.size()-1);
+          const l1t::EMTFHit& myhit1 = myhits1.at(index1(genrd));
+          const l1t::EMTFHit& myhit2 = myhits2.at(index2(genrd));
+
+          int ipt = -1;
+          if ((1.0/2 - 0.01) < 1.0/pt && 1.0/pt <= (1.0/2)) {
+            ipt = 0;
+          } else if ((1.0/3 - 0.01) < 1.0/pt && 1.0/pt <= (1.0/3)) {
+            ipt = 1;
+          } else if ((1.0/5 - 0.01) < 1.0/pt && 1.0/pt <= (1.0/5)) {
+            ipt = 2;
+          } else if ((1.0/10 - 0.01) < 1.0/pt && 1.0/pt <= (1.0/10)) {
+            ipt = 3;
+          } else if ((1.0/20 - 0.01) < 1.0/pt && 1.0/pt <= (1.0/20)) {
+            ipt = 4;
+          } else if ((1.0/50 - 0.005) < 1.0/pt && 1.0/pt <= (1.0/50)) {
+            ipt = 5;
+          } else if ((1.0/100 - 0.002) < 1.0/pt && 1.0/pt <= (1.0/100)) {
+            ipt = 6;
+          } else if ((1.0/200 - 0.001) < 1.0/pt && 1.0/pt <= (1.0/200)) {
+            ipt = 7;
+          }
+
+          // Find dphi
+          double dphi = myhit1.Phi_sim() - myhit2.Phi_sim();
+
+          // Reverse dphi if positive muon
+          if (charge > 0)  dphi = -dphi;
+
+          if (ipt != -1) {
+            hname = Form("deflection_gem_csc_st%i_pt%i", j, ipt);
+            h = histograms_.at(hname);
+            h->Fill(dphi);
+          }
+        }  // end if found two hits
+      }  // end if trigger and good_station
+    }  // end loop over station
 
   }  // end if keep_event
 
@@ -393,6 +459,34 @@ void RPCIntegration::bookHistograms() {
       }
     }
   }
+
+  // Station efficiency vs eta (requiring gen pT >= 20)
+  //   st 0,1,2,3 = st1, st2, st3, st4
+
+  for (int j=0; j<4; ++j) {  // station
+    for (int k=0; k<2; ++k) {
+      if (k == 0)
+        hname = Form("denom_vs_eta_st%i", j);
+      else
+        hname = Form("num_vs_eta_st%i", j);
+      h = new TH1F(hname, "; gen |#eta|; entries", 70, 1.1, 2.5);
+      histograms_[hname] = h;
+    }
+  }
+
+  // Deflection angles of GEM-CSC and RPC-CSC
+  //   st 0,1,2,3 = st1, st2, st3, st4
+  //   pt 0..7 = 2, 3, 5, 10, 20, 50, 100, 200
+
+  for (int j=0; j<2; ++j) {  // station
+    for (int k=0; k<8; ++k) {  // pT
+      hname = Form("deflection_gem_csc_st%i_pt%i", j, k);
+      //h = new TH1F(hname, "; GEM #phi - CSC #phi [deg]", 51, -1.02, 1.02);
+      h = new TH1F(hname, "; GEM #phi - CSC #phi [deg]", 51, -1.54, 0.5);
+      histograms_[hname] = h;
+    }
+  }
+
 }
 
 void RPCIntegration::writeHistograms() {
