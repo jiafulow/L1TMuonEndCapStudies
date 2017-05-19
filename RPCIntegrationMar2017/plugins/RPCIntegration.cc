@@ -5,6 +5,7 @@
 #include <iostream>
 #include <algorithm>
 #include <random>
+#include <cstdint>
 
 #include "TString.h"
 #include "TFile.h"
@@ -50,33 +51,29 @@ private:
   virtual void analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup) override;
   virtual void endJob() override;
 
-  // Member functions
-  void getHandles(const edm::Event& iEvent);
+  // Main functions
+  void process();
 
-  void makeEfficiency();
+  // Aux functions
+  void getHandles(const edm::Event& iEvent);
 
   void bookHistograms();
   void writeHistograms();
 
-  // Options
+  // Configurables
   const edm::InputTag emuHitTag_;
   const edm::InputTag emuTrackTag_;
-
   const edm::InputTag genPartTag_;
-
   const std::string outFileName_;
-
   int verbose_;
 
   // Member data
   edm::EDGetTokenT<l1t::EMTFHitCollection>   emuHitToken_;
   edm::EDGetTokenT<l1t::EMTFTrackCollection> emuTrackToken_;
-
   edm::EDGetTokenT<reco::GenParticleCollection> genPartToken_;
 
   l1t::EMTFHitCollection    emuHits_;
   l1t::EMTFTrackCollection  emuTracks_;
-
   reco::GenParticleCollection genParts_;
 
   std::map<TString, TH1F*> histograms_;
@@ -92,23 +89,21 @@ RPCIntegration::RPCIntegration(const edm::ParameterSet& iConfig) :
     outFileName_  (iConfig.getParameter<std::string>  ("outFileName")),
     verbose_      (iConfig.getUntrackedParameter<int> ("verbosity"))
 {
-  emuHitToken_   = consumes<l1t::EMTFHitCollection>  (emuHitTag_);
-  emuTrackToken_ = consumes<l1t::EMTFTrackCollection>(emuTrackTag_);
-
-  genPartToken_ = consumes<reco::GenParticleCollection>(genPartTag_);
+  emuHitToken_   = consumes<l1t::EMTFHitCollection>     (emuHitTag_);
+  emuTrackToken_ = consumes<l1t::EMTFTrackCollection>   (emuTrackTag_);
+  genPartToken_  = consumes<reco::GenParticleCollection>(genPartTag_);
 }
 
 RPCIntegration::~RPCIntegration() {}
 
-// _____________________________________________________________________________
 void RPCIntegration::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup) {
   getHandles(iEvent);
-
-  makeEfficiency();
+  process();
 }
 
 // _____________________________________________________________________________
 void RPCIntegration::getHandles(const edm::Event& iEvent) {
+
   // EMTF hits and tracks
   edm::Handle<decltype(emuHits_)>   emuHits_handle;
   edm::Handle<decltype(emuTracks_)> emuTracks_handle;
@@ -166,7 +161,7 @@ void RPCIntegration::getHandles(const edm::Event& iEvent) {
 }
 
 // _____________________________________________________________________________
-void RPCIntegration::makeEfficiency() {
+void RPCIntegration::process() {
   TString hname;
   TH1F* h;
 
@@ -391,6 +386,7 @@ void RPCIntegration::makeEfficiency() {
 
           // Find dphi
           double dphi = myhit1.Phi_sim() - myhit2.Phi_sim();
+          //int dphi_int = myhit1.Phi_fp() - myhit2.Phi_fp();
 
           // Reverse dphi if positive muon
           if (charge > 0)  dphi = -dphi;
