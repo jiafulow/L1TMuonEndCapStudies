@@ -24,6 +24,17 @@ process.load("L1TMuonEndCapStudies.RPCIntegrationMar2017.rpcintegration_cfi")
 process.rpcintegration.outFileName = "histos.root"
 process.rpcintegration.verbosity = 1
 
+# Plugin: NtupleMaker
+#process.load("L1TMuonEndCapStudies.RPCIntegrationMar2017.rpcintegration_cfi")
+#process.ntuplemaker.outFileName = "ntuple.root"
+#process.ntuplemaker.verbosity = 1
+
+# TFileService (needed for NtupleMaker)
+process.TFileService = cms.Service("TFileService",
+    fileName = cms.string(process.ntuplemaker.outFileName._value)
+)
+
 # Paths
 process.p = cms.Path(process.rpcintegration)
+#process.p = cms.Path(process.ntuplemaker)
 
